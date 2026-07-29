@@ -142,6 +142,10 @@ type State = {
     isNewMessageLineReached: boolean;
     showScrollToBottomToast: boolean;
     isScrollToBottomDismissed: boolean;
+    lastPostListIds: string[] | undefined;
+    lastAtOldestPost: boolean;
+    lastAtLatestPost: boolean;
+    lastAutoRetryEnable: boolean;
 }
 
 export default class PostList extends React.PureComponent<Props, State> {
@@ -175,6 +179,10 @@ export default class PostList extends React.PureComponent<Props, State> {
             isNewMessageLineReached: false,
             showScrollToBottomToast: false,
             isScrollToBottomDismissed: false,
+            lastPostListIds: [channelIntroMessage],
+            lastAtOldestPost: false,
+            lastAtLatestPost: false,
+            lastAutoRetryEnable: false,
         };
 
         this.listRef = React.createRef();
@@ -259,31 +267,47 @@ export default class PostList extends React.PureComponent<Props, State> {
         EventEmitter.removeListener(EventTypes.POST_LIST_SCROLL_TO_BOTTOM, this.scrollToLatestMessages);
     }
 
-    static getDerivedStateFromProps(props: Props) {
-        const postListIds = props.postListIds || [];
+    static getDerivedStateFromProps(props: Props, state: State) {
+        const rawPostListIds = props.postListIds;
+        const atOldestPost = props.atOldestPost ?? false;
+        const atLatestPost = props.atLatestPost ?? false;
+        const autoRetryEnable = props.autoRetryEnable;
+
+        if (
+            state.lastPostListIds === rawPostListIds &&
+            state.lastAtOldestPost === atOldestPost &&
+            state.lastAtLatestPost === atLatestPost &&
+            state.lastAutoRetryEnable === autoRetryEnable
+        ) {
+            return null;
+        }
+
+        const postListIds = rawPostListIds || [];
         let newPostListIds;
 
-        if (props.atOldestPost) {
+        if (atOldestPost) {
             newPostListIds = [...postListIds, PostListRowListIds.CHANNEL_INTRO_MESSAGE];
-        } else if (props.autoRetryEnable) {
+        } else if (autoRetryEnable) {
             newPostListIds = [...postListIds, PostListRowListIds.OLDER_MESSAGES_LOADER];
         } else {
             newPostListIds = [...postListIds, PostListRowListIds.LOAD_OLDER_MESSAGES_TRIGGER];
         }
 
-        if (!props.atLatestPost) {
-            if (props.autoRetryEnable) {
+        if (!atLatestPost) {
+            if (autoRetryEnable) {
                 newPostListIds = [PostListRowListIds.NEWER_MESSAGES_LOADER, ...newPostListIds];
             } else {
                 newPostListIds = [PostListRowListIds.LOAD_NEWER_MESSAGES_TRIGGER, ...newPostListIds];
             }
         }
 
-        const nextState: Partial<State> = {
+        return {
             postListIds: newPostListIds,
+            lastPostListIds: rawPostListIds,
+            lastAtOldestPost: atOldestPost,
+            lastAtLatestPost: atLatestPost,
+            lastAutoRetryEnable: autoRetryEnable,
         };
-
-        return nextState;
     }
 
     handleWindowResize = () => {

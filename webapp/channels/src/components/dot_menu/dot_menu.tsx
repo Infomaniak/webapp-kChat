@@ -197,12 +197,13 @@ export class DotMenuClass extends React.PureComponent<Props, State> {
         this.canPostBeForwarded = false;
     }
 
-    static getDerivedStateFromProps(props: Props) {
-        const state: Partial<State> = {
-            canEdit: props.canEdit && !props.isReadOnly,
-            canDelete: props.canDelete && !props.isReadOnly,
-        };
-        return state;
+    static getDerivedStateFromProps(props: Props, state: State) {
+        const canEdit = props.canEdit && !props.isReadOnly;
+        const canDelete = props.canDelete && !props.isReadOnly;
+        if (state.canEdit === canEdit && state.canDelete === canDelete) {
+            return null;
+        }
+        return {canEdit, canDelete};
     }
 
     disableCanEditPostByTime() {

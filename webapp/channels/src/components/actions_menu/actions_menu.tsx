@@ -114,12 +114,16 @@ export class ActionMenuClass extends React.PureComponent<Props, State> {
         }
     }
 
-    static getDerivedStateFromProps(props: Props) {
-        const state: Partial<State> = {};
-        if (props.appBindings) {
-            state.appBindings = props.appBindings;
+    static getDerivedStateFromProps(props: Props, state: State) {
+        if (props.appBindings === state.appBindings) {
+            return null;
         }
-        return state;
+        if (!props.appBindings) {
+            // Original behavior: when props provides no bindings, don't touch state.
+            // This preserves bindings that were fetched via fetchBindings() + setState.
+            return null;
+        }
+        return {appBindings: props.appBindings};
     }
 
     fetchBindings = () => {
