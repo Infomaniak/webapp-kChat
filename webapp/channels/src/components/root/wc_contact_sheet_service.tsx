@@ -79,7 +79,10 @@ export function WcContactSheetService() {
             el.kChatTeamName = newConfig.teamName ?? '';
             el.kChatUserName = newConfig.username ?? '';
             el.copiableUserId = newConfig.userId;
-            el.presence = (newConfig.hideStatus || newConfig.user?.is_bot) ? undefined : newConfig.userStatus;
+
+            const isBotOrDeactivated = newConfig.user?.is_bot || Boolean(newConfig.user?.delete_at);
+
+            el.presence = (newConfig.hideStatus || isBotOrDeactivated) ? undefined : newConfig.userStatus;
             el.src = newConfig.overwriteIcon || newConfig.src;
             el.timezone = newConfig.user?.timezone?.useAutomaticTimezone ? newConfig.user?.timezone.automaticTimezone : newConfig.user?.timezone?.manualTimezone;
             el.userId = newConfig.shouldDisplayMinimalPanel ? undefined : newConfig.user?.user_id;
@@ -89,7 +92,7 @@ export function WcContactSheetService() {
                 newConfig.user?.last_name,
             ].filter(Boolean).join(' ') || newConfig.username;
 
-            if (newConfig.user?.is_bot) {
+            if (isBotOrDeactivated) {
                 el.hiddenInformations = ['userTimezone', 'email'];
                 el.hiddenOptions = ['send-mail', 'search-incoming-mail', 'block-user', 'schedule-event', 'create-contact', 'show-contact', 'start-call', 'manage-profile'];
             } else {
