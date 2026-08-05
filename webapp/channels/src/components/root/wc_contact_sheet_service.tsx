@@ -8,7 +8,7 @@ import {isAnyModalOpen} from 'selectors/views/modals';
 import {useWebComponent} from 'components/common/hooks/useWebComponent';
 
 import {getHistory} from 'utils/browser_history';
-import {copyToClipboard} from 'utils/utils';
+import {isDesktopApp} from 'utils/user_agent';
 
 export interface ContactSheetConfig {
     accountId: number;
@@ -38,6 +38,7 @@ export interface WcContactSheetElement extends HTMLElement {
     isExternal: boolean;
     kChatTeamName: string;
     kChatUserName: string;
+    copiableUserId: string;
     presence: string | undefined;
     src: string | undefined;
     timezone: string | undefined;
@@ -77,6 +78,7 @@ export function WcContactSheetService() {
             el.isExternal = newConfig.isUserGuest;
             el.kChatTeamName = newConfig.teamName ?? '';
             el.kChatUserName = newConfig.username ?? '';
+            el.copiableUserId = newConfig.userId;
             el.presence = (newConfig.hideStatus || newConfig.user?.is_bot) ? undefined : newConfig.userStatus;
             el.src = newConfig.overwriteIcon || newConfig.src;
             el.timezone = newConfig.user?.timezone?.useAutomaticTimezone ? newConfig.user?.timezone.automaticTimezone : newConfig.user?.timezone?.manualTimezone;
@@ -128,21 +130,34 @@ export function WcContactSheetService() {
         }
 
         const handleQuickActionClick = (e: CustomEvent) => {
-            const {option} = e.detail;
+            const {action, user} = e.detail ?? {};
             const values = latestConfig.current;
 
-            if (values) {
-                if (option.id === 'send-direct-message') {
-                    getHistory().push(`/${values.teamName}/messages/@${values.username}`);
-                    e.preventDefault();
-                }
-                if (option.id === 'start-call') {
-                    getHistory().push(`/${values.teamName}/messages/@${values.user?.username}?call=true`);
-                    e.preventDefault();
-                }
-                if (option.id === 'copy-kchat-user-id') {
-                    copyToClipboard(values.userId);
-                    e.preventDefault();
+            if (!values || !action) {
+                return;
+            }
+
+            if (action.id === 'send-kchat') {
+                getHistory().push(`/${values.teamName}/messages/@${values.username}`);
+                e.preventDefault();
+                // eslint-disable-next-line no-console
+                el.close().catch((err) => console.error('WcContactSheetService: failed to close sheet', err));
+                return;
+            }
+
+            if (action.id === 'start-call') {
+                getHistory().push(`/${values.teamName}/messages/@${values.user?.username}?call=true`);
+                e.preventDefault();
+                // eslint-disable-next-line no-console
+                el.close().catch((err) => console.error('WcContactSheetService: failed to close sheet', err));
+                return;
+            }
+
+            if (isDesktopApp() && ['send-mail', 'search-incoming-mail'].includes(action.id)) {
+                e.preventDefault();
+                const href = action.computeHref?.(user);
+                if (href && href.startsWith('https:')) {
+                    window.open(href, '_blank');
                 }
             }
         };
@@ -150,11 +165,11 @@ export function WcContactSheetService() {
         const handleClose = () => latestConfig.current?.returnFocus?.();
 
         el.addEventListener('close', handleClose);
-        el.addEventListener('quickActionClick', handleQuickActionClick as EventListenerOrEventListenerObject);
+        el.addEventListener('idshQuickActionClick', handleQuickActionClick as EventListenerOrEventListenerObject);
 
         return () => {
             el.removeEventListener('close', handleClose);
-            el.removeEventListener('quickActionClick', handleQuickActionClick as EventListenerOrEventListenerObject);
+            el.removeEventListener('idshQuickActionClick', handleQuickActionClick as EventListenerOrEventListenerObject);
         };
     }, [isReady, sheetRef]);
 
