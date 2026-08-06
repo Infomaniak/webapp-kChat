@@ -74,10 +74,7 @@ variables:
     - .yarn/cache/
 
 .tests: &tests
-  tags:
-    - docker-executor
-    - kubernetes
-    - shared
+  tags: [shared, standard]
   rules:
     - *rule-not-scheduled
     - *rule-merge-request
@@ -107,8 +104,7 @@ workflow:
 install:deps:
   stage: install
   image: node:${NODE_VERSION}
-  tags:
-    - kubernetes
+  tags: [shared, standard]
   rules:
     - *rule-not-scheduled
     - *rule-merge-request
@@ -129,8 +125,7 @@ install:deps:
 build:packages:
   stage: build_packages
   image: node:${NODE_VERSION}
-  tags:
-    - kubernetes
+  tags: [shared, standard]
   needs: ["install:deps"]
   rules:
     - *rule-not-scheduled
@@ -158,8 +153,7 @@ build:packages:
 translations:check:
   stage: quality
   image: node:${NODE_VERSION}
-  tags:
-    - kubernetes
+  tags: [shared, standard]
   needs: ["install:deps"]
   rules:
     - *rule-merge-request
@@ -176,8 +170,7 @@ translations:check:
 lint:eslint:
   stage: quality
   image: node:${NODE_VERSION}
-  tags:
-    - kubernetes
+  tags: [shared, standard]
   needs:
     - job: "install:deps"
     - job: "build:packages"
@@ -199,8 +192,7 @@ lint:eslint:
 check-types:typescript:
   stage: quality
   image: node:${NODE_VERSION}
-  tags:
-    - kubernetes
+  tags: [shared, standard]
   needs:
     - job: "install:deps"
     - job: "build:packages"
@@ -219,8 +211,7 @@ check-types:typescript:
 check:react-doctor:
   stage: quality
   image: node:20
-  tags:
-    - kubernetes
+  tags: [shared, standard]
   needs:
     - job: "install:deps"
     - job: "build:packages"
@@ -260,16 +251,11 @@ test:unit:
     expire_in: 1 day
     reports:
       junit: webapp/channels/coverage/junit.xml
-      coverage_report:
-        coverage_format: cobertura
-        path: webapp/channels/coverage/cobertura-coverage.xml
-  coverage: /Lines\s*:\s*(\d+.?\d*)%/
 
 build:front:
   stage: build
   image: node:${NODE_VERSION}
-  tags:
-    - kubernetes
+  tags: [shared, standard]
   needs:
     - job: "install:deps"
     - job: "build:packages"
@@ -342,8 +328,7 @@ release:front:
   image:
     name: minio/mc:${MINIO_CLIENT_VERSION}
     entrypoint: [""]
-  tags:
-    - kubernetes
+  tags: [shared, standard]
   needs: ["build:front"]
   rules:
     - *rule-preprod
@@ -410,10 +395,7 @@ release:sentry:
   stage: .post
   interruptible: false
   image: getsentry/sentry-cli:${SENTRY_VERSION}
-  tags:
-    - docker-executor
-    - kubernetes
-    - shared
+  tags: [shared, standard]
   needs: ["build:front"]
   rules:
     - *rule-preprod
@@ -436,8 +418,7 @@ deploy:image:
   image:
     name: gcr.io/kaniko-project/executor:${KANIKO_VERSION}
     entrypoint: [""]
-  tags:
-    - kubernetes
+  tags: [shared, standard]
   needs: ["build:front"]
   rules:
     - if: *if-tag

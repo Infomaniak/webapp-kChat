@@ -11,18 +11,6 @@ const config = {
         GIT_RELEASE: '1.0.0',
         COMMIT_HASH: '0123456789abcdefghij1234567890abcdefghij',
     },
-    collectCoverageFrom: [
-        'src/actions/**/*.{js,jsx,ts,tsx}',
-        'src/client/**/*.{js,jsx,ts,tsx}',
-        'src/components/**/*.{jsx,tsx}',
-        'src/plugins/**/*.{js,jsx,ts,tsx}',
-        'src/reducers/**/*.{js,jsx,ts,tsx}',
-        'src/routes/**/*.{js,jsx,ts,tsx}',
-        'src/selectors/**/*.{js,jsx,ts,tsx}',
-        'src/stores/**/*.{js,jsx,ts,tsx}',
-        'src/utils/**/*.{js,jsx,ts,tsx}',
-    ],
-    coverageReporters: ['text-summary', 'lcov', 'cobertura'],
     fakeTimers: {
         doNotFake: ['performance'],
     },
