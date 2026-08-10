@@ -605,6 +605,28 @@ describe('Reducers.RHS', () => {
         });
     });
 
+    test('should preserve rhsFocusIntent through HIGHLIGHT_REPLY', () => {
+        const focusIntent = {target: 'textbox', requestId: 'abc-123'};
+
+        const stateAfterSelect = rhsReducer(
+            {},
+            {
+                type: ActionTypes.SELECT_POST,
+                postId: '123',
+                channelId: '321',
+                timestamp: 1234,
+                focusIntent,
+            },
+        );
+
+        const stateAfterHighlight = rhsReducer(stateAfterSelect, {
+            type: ActionTypes.HIGHLIGHT_REPLY,
+            postId: '123',
+        });
+
+        expect(stateAfterHighlight.rhsFocusIntent).toEqual(focusIntent);
+    });
+
     test('should clear highlighted reply', () => {
         const nextState = rhsReducer(
             {highlightedPostId: '42'},

@@ -418,7 +418,7 @@ function rhsFocusIntent(state: RhsFocusIntent = null, action: MMAction): RhsFocu
     case ActionTypes.RHS_FOCUSED:
         return null;
     case ActionTypes.HIGHLIGHT_REPLY:
-        return null;
+        return state;
     case ActionTypes.UNSUPPRESS_RHS:
         // IK: Reset intent when leaving Threads page to prevent stale intent from blocking main textbox focus
         return null;
