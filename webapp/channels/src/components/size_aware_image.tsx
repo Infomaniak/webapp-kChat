@@ -21,6 +21,7 @@ import LoadingImagePreview from 'components/loading_image_preview';
 import WithTooltip from 'components/with_tooltip';
 
 import {FileTypes} from 'utils/constants';
+import {getOriginalImageUrl} from 'utils/post_utils';
 import {isServerVersionGreaterThanOrEqualTo} from 'utils/server_version';
 import {getDesktopVersion, isDesktopApp} from 'utils/user_agent';
 import {copyToClipboard, getFileType, isGIFImage, localizeMessage} from 'utils/utils';
@@ -554,7 +555,7 @@ export class SizeAwareImage extends React.PureComponent<Props, State> {
 
             // check if image is external, if not copy this.props.src
             if (!this.isInternalImage) {
-                copyToClipboard(this.props.src ?? '');
+                copyToClipboard(getOriginalImageUrl(this.props.src ?? ''));
                 this.startCopyTimer();
                 return;
             }

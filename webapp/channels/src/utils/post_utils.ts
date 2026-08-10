@@ -98,6 +98,24 @@ export function getImageSrc(src: string, hasImageProxy = false): string {
     return src;
 }
 
+export function getOriginalImageUrl(src: string): string {
+    if (!src) {
+        return src;
+    }
+
+    const imageAPI = Client4.getBaseRoute() + '/image?url=';
+
+    if (src.startsWith(imageAPI)) {
+        try {
+            return decodeURIComponent(src.substring(imageAPI.length));
+        } catch {
+            return src.substring(imageAPI.length);
+        }
+    }
+
+    return src;
+}
+
 export function canDeletePost(state: GlobalState, post: Post, channel?: Channel): boolean {
     if (post.type === Constants.PostTypes.FAKE_PARENT_DELETED) {
         return false;
