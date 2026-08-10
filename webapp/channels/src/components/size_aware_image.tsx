@@ -283,7 +283,10 @@ export class SizeAwareImage extends React.PureComponent<Props, State> {
             };
         }
 
-        const imageSrc = this.isSwappableGIF() && !this.state.isIntersecting ? src : (fileURL || src);
+        let imageSrc = src;
+        if (this.isSwappableGIF() && this.state.isIntersecting) {
+            imageSrc = fileURL || src;
+        }
 
         const image = (
             <Image
