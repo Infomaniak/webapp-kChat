@@ -340,6 +340,8 @@ var config = {
 };
 
 function generateCSP() {
+    const wcHost = new URL(process.env.WEBCOMPONENT_ENDPOINT || 'https://web-components.storage.infomaniak.com/next').host;
+
     const scriptSrc = [
         "'self'",
         "'unsafe-eval'",
@@ -349,6 +351,7 @@ function generateCSP() {
         'js.stripe.com/v3',
         'fonts.storage.infomaniak.com',
         'web-components.storage.infomaniak.com',
+        wcHost,
         'welcome.infomaniak.com',
         'kmeet.infomaniak.com',
         'onlyoffice.infomaniak.com',
@@ -359,6 +362,7 @@ function generateCSP() {
         "'unsafe-inline'",
         'blob:',
         'web-components.storage.infomaniak.com',
+        wcHost,
         'documentserver.kdrive.infomaniak.com',
         'onlyoffice.infomaniak.com',
     ];
