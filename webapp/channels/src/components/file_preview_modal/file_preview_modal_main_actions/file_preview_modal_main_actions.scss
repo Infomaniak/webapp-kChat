@@ -1,3 +1,12 @@
+.print-iframe {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border: 0;
+}
+
 .file-preview-modal-main-actions {
     &__actions {
         z-index: 999;
@@ -8,6 +17,20 @@
 
         i {
             font-size: 2.4rem;
+        }
+
+        .file-preview-modal-main-actions__print-icon {
+            display: flex;
+            width: 2.4rem;
+            height: 2.4rem;
+            align-items: center;
+            justify-content: center;
+            color: inherit;
+
+            svg {
+                width: 100%;
+                height: 100%;
+            }
         }
     }
 
