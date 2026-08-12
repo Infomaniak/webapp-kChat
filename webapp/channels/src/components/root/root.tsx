@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {AppName, NavigateMessage} from '@infomaniak/ksuite-bridge';
-import {KSuiteBridge, NavigateMessageKey, OpenAppMessageKey} from '@infomaniak/ksuite-bridge';
+import type {NavigateMessage} from '@infomaniak/ksuite-bridge';
+import {KSuiteBridge, NavigateMessageKey} from '@infomaniak/ksuite-bridge';
 import * as Sentry from '@sentry/react';
 import classNames from 'classnames';
 import deepEqual from 'fast-deep-equal';
@@ -43,7 +43,6 @@ import {TEAM_NAME_PATH_PATTERN} from 'utils/path';
 import {transformStateForSentry} from 'utils/sentry';
 import {isServerVersionGreaterThanOrEqualTo} from 'utils/server_version';
 import {getSiteURL} from 'utils/url';
-import {extractKSuiteAppName} from 'utils/url-ksuite-app';
 import {isInIframe} from 'utils/url-ksuite-redirect';
 import {getDesktopVersion, isAndroidWeb, isChromebook, isDesktopApp, isIosWeb} from 'utils/user_agent';
 import {applyTheme, injectWebcomponentInit, isTextDroppableEvent} from 'utils/utils';
@@ -223,7 +222,6 @@ export default class Root extends React.PureComponent<Props, State> {
         window.removeEventListener('emitReportSubmitted', this.handleEmitReportSubmitted);
         document.removeEventListener('drop', this.handleDropEvent);
         document.removeEventListener('dragover', this.handleDragOverEvent);
-        document.removeEventListener('click', this.ksuiteLinkHandler);
     }
 
     onConfigLoaded = () => {
@@ -472,43 +470,6 @@ export default class Root extends React.PureComponent<Props, State> {
         ksuiteBridge?.sendMessage({type: NavigateMessageKey, path: location.pathname});
     };
 
-    ksuiteLinkHandler: EventListener = (e) => {
-        const {ksuiteBridge} = this.props;
-
-        if (!ksuiteBridge.isConnected) {
-            return;
-        }
-
-        const target = e.target;
-        if (!(target instanceof HTMLAnchorElement)) {
-            return;
-        }
-
-        if (target.target !== '_blank') {
-            return;
-        }
-        if (!target.href) {
-            return;
-        }
-
-        const appName = extractKSuiteAppName(target.href);
-        if (!appName) {
-            return;
-        }
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        const {origin, pathname, search} = new URL(target.href);
-
-        ksuiteBridge.sendMessage({
-            type: OpenAppMessageKey,
-            name: appName as AppName,
-            path: pathname.concat(search),
-            origin,
-        });
-    };
-
     runMounted = () => {
         const token = localStorage.getItem('IKToken');
 
@@ -574,10 +535,6 @@ export default class Root extends React.PureComponent<Props, State> {
 
         if (spaceId) {
             storeBridgeParam('spaceId', spaceId)(store.dispatch);
-        }
-
-        if (this.embeddedInIFrame) {
-            document.addEventListener('click', this.ksuiteLinkHandler);
         }
 
         injectWebcomponentInit();
