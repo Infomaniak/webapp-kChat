@@ -217,6 +217,7 @@ $z-index-tour-tips-backdrop: 1250;
 
     &__overlay {
         position: fixed;
+        z-index: $z-index-tour-tips-backdrop - 1;
         top: 0;
         right: 0;
         bottom: 0;
