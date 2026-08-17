@@ -8,7 +8,6 @@ import type {Dispatch} from 'redux';
 
 import type {Post} from '@mattermost/types/posts';
 
-import {translatePost} from 'mattermost-redux/actions/posts';
 import {setThreadFollow} from 'mattermost-redux/actions/threads';
 import {getChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getLicense, getConfig} from 'mattermost-redux/selectors/entities/general';
@@ -120,7 +119,6 @@ function makeMapStateToProps() {
             timezone: getCurrentTimezone(state),
             isMilitaryTime,
             isInThread,
-            postTranslationEnabled: config.FeatureFlagTranslation === 'true',
             canMove: channel ? canWrangler(state, channel.type, threadReplyCount) : false,
             channelType: channel?.type,
         };
@@ -139,7 +137,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
             markPostAsUnread,
             setThreadFollow,
             setGlobalItem,
-            translatePost,
         }, dispatch),
     };
 }

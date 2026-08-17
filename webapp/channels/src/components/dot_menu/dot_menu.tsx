@@ -9,7 +9,6 @@ import {
     DotsHorizontalIcon,
     EmoticonPlusOutlineIcon,
     FlaskOutlineIcon,
-    FormatLetterCaseIcon,
     LinkVariantIcon,
     MarkAsUnreadIcon,
     MessageArrowRightOutlineIcon,
@@ -102,7 +101,6 @@ type Props = {
     handleAddReactionClick?: (showEmojiPicker: boolean) => void;
     isMenuOpen?: boolean;
     isReadOnly?: boolean;
-    postTranslationEnabled: boolean;
     isLicensed?: boolean; // TechDebt: Made non-mandatory while converting to typescript
     postEditTimeLimit?: string; // TechDebt: Made non-mandatory while converting to typescript
     enableEmojiPicker?: boolean; // TechDebt: Made non-mandatory while converting to typescript
@@ -155,8 +153,6 @@ type Props = {
          * Function to set the thread as followed/unfollowed
          */
         setThreadFollow: (userId: string, teamId: string, threadId: string, newState: boolean) => void;
-
-        translatePost: (postId: string, forceThread?: boolean) => void;
     }; // TechDebt: Made non-mandatory while converting to typescript
 
     canEdit: boolean;
@@ -463,11 +459,6 @@ export class DotMenuClass extends React.PureComponent<Props, State> {
         this.props.handleDropdownOpened?.(open);
     };
 
-    translatePost = () => {
-        const {actions, post, isInThread} = this.props;
-        actions.translatePost(post.id, isInThread);
-    };
-
     render(): JSX.Element {
         const {formatMessage} = this.props.intl;
         const hasMultipleFiles = this.props?.post?.metadata?.files?.length > 1;
@@ -680,19 +671,6 @@ export class DotMenuClass extends React.PureComponent<Props, State> {
                         leadingElement={this.props.post.is_pinned ? <PinIcon size={18}/> : <PinOutlineIcon size={18}/>}
                         trailingElements={<ShortcutKey shortcutKey='P'/>}
                         onClick={this.handlePinMenuItemActivated}
-                    />
-                }
-                {!isSystemMessage && this.props.postTranslationEnabled &&
-                    <Menu.Item
-                        labels={
-                            <FormattedMessage
-                                id='post_info.translate'
-                                defaultMessage='Translate'
-                            />
-                        }
-                        leadingElement={<FormatLetterCaseIcon size={18}/>}
-                        trailingElements={<ShortcutKey shortcutKey='T'/>}
-                        onClick={this.translatePost}
                     />
                 }
                 {!isSystemMessage && hasMultipleFiles &&

@@ -133,7 +133,6 @@ describe('components/dot_menu/DotMenu', () => {
             setEditingPost: jest.fn(),
             setGlobalItem: jest.fn(),
             setThreadFollow: jest.fn(),
-            translatePost: jest.fn(),
             unflagPost: jest.fn(),
             unpinPost: jest.fn(),
         },
@@ -150,7 +149,6 @@ describe('components/dot_menu/DotMenu', () => {
         isMilitaryTime: false,
         isInThread: false,
         canMove: true,
-        postTranslationEnabled: false,
         channelType: 'O' as const,
     };
 
