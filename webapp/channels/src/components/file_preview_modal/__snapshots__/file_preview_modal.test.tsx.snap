@@ -27,7 +27,7 @@ exports[`components/FilePreviewModal should fall back to default preview if plug
   onExited={[MockFunction]}
   onHide={[Function]}
   renderBackdrop={[Function]}
-  restoreFocus={true}
+  restoreFocus={false}
   role="none"
   show={true}
   style={
@@ -171,7 +171,7 @@ exports[`components/FilePreviewModal should match snapshot 1`] = `
   onExited={[MockFunction]}
   onHide={[Function]}
   renderBackdrop={[Function]}
-  restoreFocus={true}
+  restoreFocus={false}
   role="none"
   show={true}
   style={
@@ -315,7 +315,7 @@ exports[`components/FilePreviewModal should match snapshot for external file 1`]
   onExited={[MockFunction]}
   onHide={[Function]}
   renderBackdrop={[Function]}
-  restoreFocus={true}
+  restoreFocus={false}
   role="none"
   show={true}
   style={
@@ -459,7 +459,7 @@ exports[`components/FilePreviewModal should match snapshot when plugin overrides
   onExited={[MockFunction]}
   onHide={[Function]}
   renderBackdrop={[Function]}
-  restoreFocus={true}
+  restoreFocus={false}
   role="none"
   show={true}
   style={
@@ -642,7 +642,7 @@ exports[`components/FilePreviewModal should match snapshot, loaded 1`] = `
   onExited={[MockFunction]}
   onHide={[Function]}
   renderBackdrop={[Function]}
-  restoreFocus={true}
+  restoreFocus={false}
   role="none"
   show={true}
   style={
@@ -799,7 +799,7 @@ exports[`components/FilePreviewModal should match snapshot, loaded and showing f
   onExited={[MockFunction]}
   onHide={[Function]}
   renderBackdrop={[Function]}
-  restoreFocus={true}
+  restoreFocus={false}
   role="none"
   show={true}
   style={
@@ -956,7 +956,7 @@ exports[`components/FilePreviewModal should match snapshot, loaded with .js file
   onExited={[MockFunction]}
   onHide={[Function]}
   renderBackdrop={[Function]}
-  restoreFocus={true}
+  restoreFocus={false}
   role="none"
   show={true}
   style={
@@ -1114,7 +1114,7 @@ exports[`components/FilePreviewModal should match snapshot, loaded with .m4a fil
   onExited={[MockFunction]}
   onHide={[Function]}
   renderBackdrop={[Function]}
-  restoreFocus={true}
+  restoreFocus={false}
   role="none"
   show={true}
   style={
@@ -1270,7 +1270,7 @@ exports[`components/FilePreviewModal should match snapshot, loaded with .mov fil
   onExited={[MockFunction]}
   onHide={[Function]}
   renderBackdrop={[Function]}
-  restoreFocus={true}
+  restoreFocus={false}
   role="none"
   show={true}
   style={
@@ -1426,7 +1426,7 @@ exports[`components/FilePreviewModal should match snapshot, loaded with footer 1
   onExited={[MockFunction]}
   onHide={[Function]}
   renderBackdrop={[Function]}
-  restoreFocus={true}
+  restoreFocus={false}
   role="none"
   show={true}
   style={
@@ -1583,7 +1583,7 @@ exports[`components/FilePreviewModal should match snapshot, loaded with image 1`
   onExited={[MockFunction]}
   onHide={[Function]}
   renderBackdrop={[Function]}
-  restoreFocus={true}
+  restoreFocus={false}
   role="none"
   show={true}
   style={
@@ -1740,7 +1740,7 @@ exports[`components/FilePreviewModal should match snapshot, loaded with other fi
   onExited={[MockFunction]}
   onHide={[Function]}
   renderBackdrop={[Function]}
-  restoreFocus={true}
+  restoreFocus={false}
   role="none"
   show={true}
   style={

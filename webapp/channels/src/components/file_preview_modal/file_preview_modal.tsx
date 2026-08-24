@@ -90,8 +90,12 @@ export default class FilePreviewModal extends React.PureComponent<Props, State> 
         pluginFilePreviewComponents: [],
     };
 
+    private lastFocusedElement: HTMLElement | null = null;
+
     constructor(props: Props) {
         super(props);
+
+        this.lastFocusedElement = document.activeElement as HTMLElement;
 
         this.state = {
             toolbarZoom: 'A',
@@ -142,6 +146,10 @@ export default class FilePreviewModal extends React.PureComponent<Props, State> 
 
     componentWillUnmount() {
         document.removeEventListener('keyup', this.handleKeyPress);
+
+        if (this.lastFocusedElement && document.body.contains(this.lastFocusedElement)) {
+            this.lastFocusedElement.focus({preventScroll: true});
+        }
     }
 
     static getDerivedStateFromProps(props: Props, state: State) {
@@ -427,6 +435,7 @@ export default class FilePreviewModal extends React.PureComponent<Props, State> 
                 animation={true}
                 backdrop={false}
                 role='none'
+                restoreFocus={false}
                 style={{paddingLeft: 0}}
                 aria-labelledby='viewImageModalLabel'
             >

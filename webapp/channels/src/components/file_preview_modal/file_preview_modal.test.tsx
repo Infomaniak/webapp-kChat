@@ -143,6 +143,38 @@ describe('components/FilePreviewModal', () => {
         expect(wrapper.state('show')).toBe(false);
     });
 
+    test('should restore focus without scrolling on unmount', () => {
+        const mockFocus = jest.fn();
+        const mockElement = {focus: mockFocus} as unknown as HTMLElement;
+        jest.spyOn(document, 'activeElement', 'get').mockReturnValue(mockElement);
+        jest.spyOn(document.body, 'contains').mockReturnValue(true);
+
+        const wrapper = shallow<FilePreviewModal>(<FilePreviewModal {...baseProps}/>);
+        wrapper.setState({loaded: [true]});
+
+        wrapper.unmount();
+
+        expect(mockFocus).toHaveBeenCalledWith({preventScroll: true});
+
+        jest.restoreAllMocks();
+    });
+
+    test('should not restore focus if element was removed from DOM', () => {
+        const mockFocus = jest.fn();
+        const mockElement = {focus: mockFocus} as unknown as HTMLElement;
+        jest.spyOn(document, 'activeElement', 'get').mockReturnValue(mockElement);
+        jest.spyOn(document.body, 'contains').mockReturnValue(false);
+
+        const wrapper = shallow<FilePreviewModal>(<FilePreviewModal {...baseProps}/>);
+        wrapper.setState({loaded: [true]});
+
+        wrapper.unmount();
+
+        expect(mockFocus).not.toHaveBeenCalled();
+
+        jest.restoreAllMocks();
+    });
+
     test('should match snapshot for external file', () => {
         const fileInfos = [
             TestHelper.getFileInfoMock({extension: 'png'}),
