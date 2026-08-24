@@ -133,7 +133,23 @@ install:deps:
     <<: *cache-definition
     policy: pull-push
   script:
-    - yarn --immutable --silent
+    - |
+      LOCK_HASH=$(sha256sum yarn.lock | cut -d' ' -f1)
+      CACHE_HASH=$(cat node_modules/.cache-hash 2>/dev/null || echo "none")
+      if [ "$LOCK_HASH" = "$CACHE_HASH" ] && [ -n "$CACHE_HASH" ] && [ "$CACHE_HASH" != "none" ]; then
+        echo "Cache hit — yarn.lock unchanged, skipping yarn install"
+        touch .cache-hit
+      else
+        yarn --immutable --silent
+        echo "$LOCK_HASH" > node_modules/.cache-hash
+      fi
+  after_script:
+    - |
+      # These paths must match &cache-definition above. On cache hit, removing them
+      # before the upload step causes the runner to skip cache upload (zero files found).
+      if [ -f .cache-hit ]; then
+        rm -rf node_modules webapp/channels/node_modules webapp/platform/types/node_modules webapp/platform/client/node_modules webapp/platform/components/node_modules webapp/platform/mattermost-redux/node_modules webapp/platform/eslint-plugin/node_modules e2e-tests/cypress/node_modules e2e-tests/playwright/node_modules .yarn/cache
+      fi
   artifacts:
     expire_in: 1 day
 
