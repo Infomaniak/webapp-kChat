@@ -389,18 +389,20 @@ const AdvancedTextEditor = ({
 
     const handleSubmitWithErrorHandling = useCallback(async (submittingDraft?: PostDraft, schedulingInfo?: SchedulingInfoInput, options?: CreatePostOptions): Promise<boolean> => {
         const success = await handleSubmit(submittingDraft, schedulingInfo, options);
-        if (success && !errorClass) {
+        if (success && !errorClass && !isInEditMode) {
             const messageStatusElement = messageStatusRef.current;
-            const messageStatusInnerText = messageStatusElement?.textContent;
-            if (messageStatusInnerText === 'Message Sent') {
-                messageStatusElement!.textContent = 'Message Sent &nbsp;';
-            } else {
-                messageStatusElement!.textContent = 'Message Sent';
+            if (messageStatusElement) {
+                const messageStatusInnerText = messageStatusElement.textContent;
+                if (messageStatusInnerText === 'Message Sent') {
+                    messageStatusElement.textContent = 'Message Sent \u00A0';
+                } else {
+                    messageStatusElement.textContent = 'Message Sent';
+                }
             }
         }
 
         return success;
-    }, [errorClass, handleSubmit]);
+    }, [errorClass, handleSubmit, isInEditMode]);
 
     const handleCancel = useCallback(() => {
         handleDraftChange({
