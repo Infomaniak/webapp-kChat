@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type {MessageAttachment} from '@mattermost/types/message_attachments';
 import type {Post, PostOrderBlock} from '@mattermost/types/posts';
 
 import {
@@ -513,6 +514,86 @@ describe('posts', () => {
                 post2: {id: 'post2', channel_id: 'channel1'},
                 post3: {id: 'post3', channel_id: 'channel2'},
             });
+        });
+    });
+
+    describe('preserving poll isVoted flags on post_edited', () => {
+        const pollId = 'poll-123';
+        const makePollPost = (isVoted?: boolean) => TestHelper.getPostMock({
+            id: 'post1',
+            update_at: 100,
+            props: {
+                attachments: [{
+                    actions: [{
+                        id: 'action1',
+                        name: 'Option 1',
+                        integration: {context: {'poll-id': pollId}},
+                        isVoted,
+                    }, {
+                        id: 'action2',
+                        name: 'Option 2',
+                        integration: {context: {'poll-id': pollId}},
+                    }],
+                }],
+            },
+        });
+
+        const getActions = (post: Post) => (post.props.attachments as MessageAttachment[])[0].actions!;
+
+        it('should preserve isVoted flags when receiving an updated post from the server', () => {
+            const state = deepFreeze({
+                post1: makePollPost(true),
+            });
+
+            const updatedPost = TestHelper.getPostMock({
+                id: 'post1',
+                update_at: 200,
+                props: {
+                    attachments: [{
+                        actions: [{
+                            id: 'action1',
+                            name: 'Option 1',
+                            integration: {context: {'poll-id': pollId}},
+                        }, {
+                            id: 'action2',
+                            name: 'Option 2',
+                            integration: {context: {'poll-id': pollId}},
+                        }],
+                    }],
+                },
+            });
+
+            const nextState = reducers.handlePosts(state, {
+                type: PostTypes.RECEIVED_POST,
+                data: updatedPost,
+            });
+
+            expect(getActions(nextState.post1)[0].isVoted).toBe(true);
+            expect(getActions(nextState.post1)[1].isVoted).toBeUndefined();
+        });
+
+        it('should recompute isVoted from voted_answers on IK_RECEIVED_POLL_METADATA (vote switch)', () => {
+            const state = deepFreeze({
+                post1: makePollPost(true),
+            });
+
+            const nextState = reducers.handlePosts(state, {
+                type: PostTypes.IK_RECEIVED_POLL_METADATA,
+                data: {
+                    postId: 'post1',
+                    metadata: {
+                        poll_id: pollId,
+                        user_id: 'user1',
+                        voted_answers: ['Option 2'],
+                        setting_progress: false,
+                        setting_public_add_option: false,
+                        can_manage_poll: false,
+                    },
+                },
+            });
+
+            expect(getActions(nextState.post1)[0].isVoted).toBe(false);
+            expect(getActions(nextState.post1)[1].isVoted).toBe(true);
         });
     });
 });

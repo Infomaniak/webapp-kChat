@@ -59,7 +59,7 @@ type Props = {
     actions: {
         doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string) => Promise<ActionResult>;
         openModal: <P>(modalData: ModalData<P>) => void;
-        fetchMetadataIfPostIsPoll: (postId: string) => void;
+        fetchMetadataIfPostIsPoll: (postId: string) => Promise<ActionResult>;
         saveFileToKDrive: (fileId: string, fileName: string) => void;
     };
 
@@ -100,8 +100,8 @@ export default class MessageAttachment extends React.PureComponent<Props, State>
         this.mounted = false;
     }
 
-    fetchPollMetadata() {
-        this.props.actions.fetchMetadataIfPostIsPoll(this.props.postId);
+    fetchPollMetadata(): Promise<ActionResult> {
+        return Promise.resolve(this.props.actions.fetchMetadataIfPostIsPoll(this.props.postId));
     }
 
     handleKDriveSave = async (fileId: string, fileName: string) => {
@@ -215,6 +215,10 @@ export default class MessageAttachment extends React.PureComponent<Props, State>
 
         this.props.actions.doPostActionWithCookie(this.props.postId, actionId, actionCookie).then(() => {
             this.handleCustomActions(actionOptions);
+            this.fetchPollMetadata().catch((error) => {
+                // eslint-disable-next-line no-console
+                console.error('Failed to fetch poll metadata after vote action', error);
+            });
             if (actionExecutingMessage) {
                 this.setState({actionExecuting: false, actionExecutingMessage: null});
             }

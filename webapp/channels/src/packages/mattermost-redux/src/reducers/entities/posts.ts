@@ -387,6 +387,30 @@ function handlePostReceived(nextState: any, post: Post, nestedPermalinkLevel?: n
         post.is_following = currentState[post.id].is_following;
     }
 
+    const existingPost = currentState[post.id];
+    if (existingPost?.props?.attachments && post.props?.attachments) {
+        const existingVotedIds = new Set<string>();
+        for (const att of existingPost.props.attachments as MessageAttachment[]) {
+            if (att.actions) {
+                for (const a of att.actions) {
+                    if (a.isVoted) {
+                        existingVotedIds.add(a.id);
+                    }
+                }
+            }
+        }
+        if (existingVotedIds.size > 0) {
+            const incomingAttachments = post.props.attachments as MessageAttachment[];
+            post.props.attachments = incomingAttachments.map((att) => ({
+                ...att,
+                actions: att.actions?.map((a) => ({
+                    ...a,
+                    isVoted: existingVotedIds.has(a.id) || a.isVoted,
+                })),
+            }));
+        }
+    }
+
     if (post.delete_at > 0) {
         // We've received a deleted post, so mark the post as deleted if we already have it
         if (currentState[post.id]) {

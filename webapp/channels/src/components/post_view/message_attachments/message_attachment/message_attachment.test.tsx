@@ -36,7 +36,7 @@ describe('components/post_view/MessageAttachment', () => {
         actions: {
             doPostActionWithCookie: jest.fn(),
             openModal: jest.fn(),
-            fetchMetadataIfPostIsPoll: jest.fn(),
+            fetchMetadataIfPostIsPoll: jest.fn(() => Promise.resolve({data: true})),
             saveFileToKDrive: jest.fn(),
         },
         imagesMetadata: {
