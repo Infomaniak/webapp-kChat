@@ -10,15 +10,18 @@ import type {Props} from 'components/pdf_preview';
 
 import {TestHelper} from 'utils/test_helper';
 
-jest.mock('pdfjs-dist', () => ({
-    getDocument: () => Promise.resolve({
-        numPages: 3,
-        getPage: (i: number) => Promise.resolve({
-            pageIndex: i,
-            getContext: (s: string) => Promise.resolve({s}),
-        }),
-    }),
-}));
+jest.mock('pdfjs-dist/legacy/build/pdf.mjs', () => {
+    return {
+        getDocument: jest.fn(() => ({
+            promise: Promise.resolve({
+                numPages: 3,
+                getPage: jest.fn(),
+                destroy: jest.fn(),
+            }),
+            destroy: jest.fn(),
+        })),
+    };
+});
 
 describe('component/PDFPreview', () => {
     const requiredProps: Props = {
@@ -74,5 +77,34 @@ describe('component/PDFPreview', () => {
         wrapper.instance().onDocumentLoad(pdf);
         expect(wrapper.state('pdf')).toEqual(pdf);
         expect(wrapper.state('numPages')).toEqual(pdf.numPages);
+    });
+
+    test('should destroy previous pdf on unmount if loaded', async () => {
+        const wrapper = shallow<PDFPreview>(
+            <PDFPreview {...requiredProps}/>,
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        wrapper.update();
+
+        const instance = wrapper.instance();
+        const pdf = instance.prevPdf!;
+
+        wrapper.unmount();
+
+        expect(pdf.destroy).toHaveBeenCalled();
+    });
+
+    test('should abort loading task on unmount if pdf not yet loaded', () => {
+        const wrapper = shallow<PDFPreview>(
+            <PDFPreview {...requiredProps}/>,
+        );
+
+        const instance = wrapper.instance();
+        const loadingTask = instance.pdfLoadingTask!;
+
+        wrapper.unmount();
+
+        expect(loadingTask.destroy).toHaveBeenCalled();
     });
 });

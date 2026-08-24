@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import debounce from 'lodash/debounce';
-import type {PDFDocumentProxy, PDFPageProxy} from 'pdfjs-dist';
+import type {PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy} from 'pdfjs-dist';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import 'pdfjs-dist/build/pdf.worker.min.mjs';
 import type {RenderParameters} from 'pdfjs-dist/types/src/display/api';
@@ -45,10 +45,13 @@ type State = {
 }
 
 export default class PDFPreview extends React.PureComponent<Props, State> {
+    public pdfLoadingTask: PDFDocumentLoadingTask | null = null;
+    public prevPdf: PDFDocumentProxy | null = null;
     public pdfPagesRendered: Record<number, boolean>;
     public container: React.RefObject<HTMLDivElement>;
     public parentNode: HTMLElement|null = null;
     public pdfCanvasRef: {[key: string]: React.RefObject<HTMLCanvasElement>} = {};
+    private isMounted: boolean = false;
 
     constructor(props: Props) {
         super(props);
@@ -68,6 +71,7 @@ export default class PDFPreview extends React.PureComponent<Props, State> {
     }
 
     componentDidMount() {
+        this.isMounted = true;
         this.getPdfDocument();
         if (this.container.current) {
             this.parentNode = this.container.current.parentElement;
@@ -76,8 +80,16 @@ export default class PDFPreview extends React.PureComponent<Props, State> {
     }
 
     componentWillUnmount() {
+        this.isMounted = false;
         if (this.parentNode) {
             this.parentNode.removeEventListener('scroll', this.handleScroll);
+        }
+        if (this.prevPdf) {
+            this.prevPdf.destroy();
+            this.prevPdf = null;
+        } else if (this.pdfLoadingTask) {
+            this.pdfLoadingTask.destroy();
+            this.pdfLoadingTask = null;
         }
     }
 
@@ -98,6 +110,13 @@ export default class PDFPreview extends React.PureComponent<Props, State> {
 
     componentDidUpdate(prevProps: Props, prevState: State) {
         if (this.props.fileUrl !== prevProps.fileUrl) {
+            if (this.prevPdf) {
+                this.prevPdf.destroy();
+                this.prevPdf = null;
+            } else if (this.pdfLoadingTask) {
+                this.pdfLoadingTask.destroy();
+                this.pdfLoadingTask = null;
+            }
             this.getPdfDocument();
             this.pdfPagesRendered = {};
         }
@@ -168,13 +187,21 @@ export default class PDFPreview extends React.PureComponent<Props, State> {
 
     getPdfDocument = async () => {
         try {
-            const pdf = await pdfjsLib.getDocument({
+            this.pdfLoadingTask = pdfjsLib.getDocument({
                 url: this.props.fileUrl,
                 cMapUrl: getSiteURL() + '/static/cmaps/',
                 cMapPacked: true,
-            }).promise;
+            });
+            const pdf = await this.pdfLoadingTask.promise;
+            if (!this.isMounted) {
+                return;
+            }
+            this.prevPdf = pdf;
             this.onDocumentLoad(pdf);
         } catch (err) {
+            if (!this.isMounted) {
+                return;
+            }
             this.onDocumentLoadError(err);
         }
     };
