@@ -369,6 +369,9 @@ function profilesInChannel(state: UsersState['profilesInChannel'] = {}, action: 
     case UserTypes.RECEIVED_PROFILES_LIST_IN_CHANNEL:
         return profileListToSet(state, action);
 
+    case UserTypes.RECEIVED_PROFILES_LIST_IN_CHANNEL_AND_REPLACE:
+        return profileListToSet(state, action, true);
+
     case UserTypes.RECEIVED_PROFILES_IN_CHANNEL:
         return profilesToSet(state, action);
 

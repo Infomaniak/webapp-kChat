@@ -127,6 +127,59 @@ describe('Reducers.users', () => {
             expect(newState.profilesInChannel).toEqual(expectedState.profilesInChannel);
         });
 
+        it('UserTypes.RECEIVED_PROFILES_LIST_IN_CHANNEL_AND_REPLACE, no existing profiles', () => {
+            const state = {
+                profilesInChannel: {},
+            };
+            const action = {
+                type: UserTypes.RECEIVED_PROFILES_LIST_IN_CHANNEL_AND_REPLACE,
+                id: 'id',
+                data: [
+                    {
+                        id: 'user_id',
+                    },
+                    {
+                        id: 'user_id_2',
+                    },
+                ],
+            };
+            const expectedState = {
+                profilesInChannel: {
+                    id: new Set().add('user_id').add('user_id_2'),
+                },
+            };
+
+            const newState = reducer(state as ReducerState, action);
+            expect(newState.profilesInChannel).toEqual(expectedState.profilesInChannel);
+        });
+
+        it('UserTypes.RECEIVED_PROFILES_LIST_IN_CHANNEL_AND_REPLACE, existing profiles', () => {
+            const state = {
+                profilesInChannel: {
+                    id: new Set().add('old_user_id'),
+                    other_id: new Set().add('other_user_id'),
+                },
+            };
+            const action = {
+                type: UserTypes.RECEIVED_PROFILES_LIST_IN_CHANNEL_AND_REPLACE,
+                id: 'id',
+                data: [
+                    {
+                        id: 'user_a',
+                    },
+                ],
+            };
+            const expectedState = {
+                profilesInChannel: {
+                    id: new Set().add('user_a'),
+                    other_id: new Set().add('other_user_id'),
+                },
+            };
+
+            const newState = reducer(state as unknown as ReducerState, action);
+            expect(newState.profilesInChannel).toEqual(expectedState.profilesInChannel);
+        });
+
         it('UserTypes.RECEIVED_PROFILES_IN_CHANNEL, no existing profiles', () => {
             const state = {
                 profilesInChannel: {},

@@ -102,7 +102,7 @@ import {
     getRelativeTeamUrl,
 } from 'mattermost-redux/selectors/entities/teams';
 import {getNewestThreadInTeam, getThread, getThreads} from 'mattermost-redux/selectors/entities/threads';
-import {getCurrentUser, getCurrentUserId, getUser, getIsManualStatusForUserId, isCurrentUserSystemAdmin, getUserById} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUser, getCurrentUserId, getUser, getIsManualStatusForUserId, isCurrentUserSystemAdmin, getUserById, getUserIdsInChannels} from 'mattermost-redux/selectors/entities/users';
 import {isGuest} from 'mattermost-redux/utils/user_utils';
 
 import {loadChannelsForCurrentUser, loadDeletedPosts} from 'actions/channel_actions';
@@ -1332,17 +1332,22 @@ export function handleUserRemovedEvent(msg) {
         if (isGuest(currentUser.roles)) {
             dispatch(removeNotVisibleUsers());
         }
-    } else if (msg.data.channel_id === currentChannel.id) {
-        dispatch(getChannelStats(currentChannel.id));
-        dispatch({
-            type: UserTypes.RECEIVED_PROFILE_NOT_IN_CHANNEL,
-            data: {id: msg.data.channel_id, user_id: msg.data.user_id},
-        });
+    } else {
+        const profilesInChannel = getUserIdsInChannels(state);
+        if (profilesInChannel?.[msg.data.channel_id]) {
+            dispatch({
+                type: UserTypes.RECEIVED_PROFILE_NOT_IN_CHANNEL,
+                data: {id: msg.data.channel_id, user_id: msg.data.user_id},
+            });
+        }
 
-        dispatch(unloadChannelMember(msg.data.user_id, currentChannel.id));
+        if (msg.data.channel_id === currentChannel.id) {
+            dispatch(getChannelStats(currentChannel.id));
+            dispatch(unloadChannelMember(msg.data.user_id, currentChannel.id));
 
-        if (license?.IsLicensed === 'true' && license?.LDAPGroups === 'true' && config.EnableConfirmNotificationsToChannel === 'true') {
-            dispatch(getChannelMemberCountsByGroup(currentChannel.id, isTimezoneEnabled));
+            if (license?.IsLicensed === 'true' && license?.LDAPGroups === 'true' && config.EnableConfirmNotificationsToChannel === 'true') {
+                dispatch(getChannelMemberCountsByGroup(currentChannel.id, isTimezoneEnabled));
+            }
         }
     }
 

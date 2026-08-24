@@ -131,6 +131,9 @@ let mockState = {
             statuses: {
                 user: 'away',
             },
+            profilesInChannel: {
+                otherChannel: new Set(['user']),
+            },
         },
         roles: {
             roles: {
@@ -537,6 +540,40 @@ describe('handleUserRemovedEvent', () => {
 
         handleUserRemovedEvent(msg);
         expect(redirectUserToDefaultTeam).not.toHaveBeenCalled();
+    });
+
+    test('should dispatch RECEIVED_PROFILE_NOT_IN_CHANNEL when profiles are loaded for the channel', () => {
+        const expectedAction = {
+            type: 'RECEIVED_PROFILE_NOT_IN_CHANNEL',
+            data: {id: 'otherChannel', user_id: otherUserId2},
+        };
+        const msg = {
+            data: {
+                channel_id: 'otherChannel',
+                remover_id: otherUserId1,
+                user_id: otherUserId2,
+            },
+        };
+
+        handleUserRemovedEvent(msg);
+        expect(store.dispatch).toHaveBeenCalledWith(expectedAction);
+    });
+
+    test('should not dispatch RECEIVED_PROFILE_NOT_IN_CHANNEL for a channel with no loaded profiles', () => {
+        const expectedAction = {
+            type: 'RECEIVED_PROFILE_NOT_IN_CHANNEL',
+            data: {id: 'channelNoProfiles', user_id: otherUserId2},
+        };
+        const msg = {
+            data: {
+                channel_id: 'channelNoProfiles',
+                remover_id: otherUserId1,
+                user_id: otherUserId2,
+            },
+        };
+
+        handleUserRemovedEvent(msg);
+        expect(store.dispatch).not.toHaveBeenCalledWith(expectedAction);
     });
 });
 

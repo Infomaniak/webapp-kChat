@@ -388,9 +388,12 @@ export function getProfilesInChannel(channelId: string, page: number, perPage: n
             return {error};
         }
 
+        const shouldReplace = page === 0 && sort === '' && Object.keys(options).length === 0;
+        const actionType = shouldReplace ? UserTypes.RECEIVED_PROFILES_LIST_IN_CHANNEL_AND_REPLACE : UserTypes.RECEIVED_PROFILES_LIST_IN_CHANNEL;
+
         dispatch(batchActions([
             {
-                type: UserTypes.RECEIVED_PROFILES_LIST_IN_CHANNEL,
+                type: actionType,
                 data: profiles,
                 id: channelId,
             },
