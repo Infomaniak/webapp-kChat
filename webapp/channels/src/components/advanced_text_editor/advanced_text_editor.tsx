@@ -29,7 +29,6 @@ import LocalStorageStore from 'stores/local_storage_store';
 
 import PostBoxIndicator from 'components/advanced_text_editor/post_box_indicator/post_box_indicator';
 import {makeAsyncComponent} from 'components/async_load';
-import AutoHeightSwitcher from 'components/common/auto_height_switcher';
 import useDidUpdate from 'components/common/hooks/useDidUpdate';
 import DeletePostModal from 'components/delete_post_modal';
 import DndBanner from 'components/dnd_banner';
@@ -232,7 +231,6 @@ const AdvancedTextEditor = ({
     const [showPreview, setShowPreview] = useState(false);
     const [isMessageLong, setIsMessageLong] = useState(false);
     const [renderScrollbar, setRenderScrollbar] = useState(false);
-    const [keepEditorInFocus, setKeepEditorInFocus] = useState(false);
 
     const readOnlyChannel = !canPost;
 
@@ -493,11 +491,6 @@ const AdvancedTextEditor = ({
 
     const handleBlur = useCallback(() => {
         lastBlurAt.current = Date.now();
-        setKeepEditorInFocus(false);
-    }, []);
-
-    const handleFocus = useCallback(() => {
-        setKeepEditorInFocus(true);
     }, []);
 
     const handleChange = useCallback((e: React.ChangeEvent<TextboxElement>) => {
@@ -720,25 +713,24 @@ const AdvancedTextEditor = ({
                 disabled={showPreview || isVoiceDraft}
             />,
         ]),
-        rewriteControl,
         ...(pluginItems || []),
-    ].filter(Boolean), [pluginItems, priorityAdditionalControl, rewriteControl, isInEditMode, location, showPreview, isVoiceDraft]);
+    ].filter(Boolean), [pluginItems, priorityAdditionalControl, isInEditMode, location, showPreview, isVoiceDraft]);
+
+    const pinnedControls = useMemo(() => [
+        rewriteControl,
+    ].filter(Boolean), [rewriteControl]);
 
     const formattingBar = (
-        <AutoHeightSwitcher
-            showSlot={showFormattingBar ? 1 : 2}
-            slot1={(
-                <FormattingBar
-                    applyMarkdown={applyMarkdown}
-                    getCurrentMessage={getCurrentValue}
-                    getCurrentSelection={getCurrentSelection}
-                    disableControls={showPreview || draft.postType === Constants.PostTypes.VOICE}
-                    additionalControls={additionalControls}
-                    location={location}
-                />
-            )}
-            slot2={null}
-            shouldScrollIntoView={keepEditorInFocus}
+        <FormattingBar
+            applyMarkdown={applyMarkdown}
+            getCurrentMessage={getCurrentValue}
+            getCurrentSelection={getCurrentSelection}
+            disableControls={showPreview || draft.postType === Constants.PostTypes.VOICE}
+            additionalControls={additionalControls}
+            pinnedControls={pinnedControls}
+            location={location}
+            rightActionsRef={editorActionsRef}
+            showLeftControls={showFormattingBar}
         />
     );
 
@@ -841,7 +833,6 @@ const AdvancedTextEditor = ({
                                     handlePostError={handlePostError}
                                     value={messageValue}
                                     onBlur={handleBlur}
-                                    onFocus={handleFocus}
                                     emojiEnabled={enableEmojiPicker}
                                     createMessage={createMessage}
                                     channelId={channelId}

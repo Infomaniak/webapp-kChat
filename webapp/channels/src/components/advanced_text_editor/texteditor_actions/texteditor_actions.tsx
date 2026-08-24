@@ -16,6 +16,8 @@ const TexteditorActions = styled.span<TexteditorActionsProps>`
     display: flex;
     place-items: center;
     gap: 2px;
+    flex-wrap: wrap;
+    max-width: calc(100% - 14px);
 
     /* define the position based on the placement prop */
     ${({placement, isScrollbarRendered}) => (placement === 'top' ? css`

@@ -9,11 +9,17 @@ import {Locations} from 'utils/constants';
 import {renderWithContext, userEvent} from 'tests/react_testing_utils';
 
 import FormattingBar from './formatting_bar';
-import * as Hooks from './hooks';
+import {ALL_MARKDOWN_CONTROLS, useFormattingBarLayout} from './hooks';
 
-jest.mock('./hooks');
+jest.mock('./hooks', () => {
+    const actual = jest.requireActual('./hooks');
+    return {
+        ...actual,
+        useFormattingBarLayout: jest.fn(),
+    };
+});
 
-const {splitFormattingBarControls} = jest.requireActual('./hooks');
+const mockUseFormattingBarLayout = useFormattingBarLayout as jest.MockedFunction<typeof useFormattingBarLayout>;
 
 describe('FormattingBar', () => {
     const baseProps = {
@@ -24,8 +30,12 @@ describe('FormattingBar', () => {
         location: Locations.CENTER,
     };
 
-    test('should render hidden formatting button when screen size is min', () => {
-        jest.spyOn(Hooks, 'useFormattingBarControls').mockReturnValue({wideMode: 'min', ...splitFormattingBarControls('min')});
+    afterEach(() => {
+        mockUseFormattingBarLayout.mockReset();
+    });
+
+    test('should render hidden formatting button when visible count is less than total', () => {
+        mockUseFormattingBarLayout.mockReturnValue({visibleCount: 1});
 
         renderWithContext(
             <FormattingBar {...baseProps}/>,
@@ -34,8 +44,8 @@ describe('FormattingBar', () => {
         expect(screen.getByLabelText('show hidden formatting options')).toBeInTheDocument();
     });
 
-    test('should render hidden formatting button when screen size is narrow', () => {
-        jest.spyOn(Hooks, 'useFormattingBarControls').mockReturnValue({wideMode: 'narrow', ...splitFormattingBarControls('narrow')});
+    test('should render hidden formatting button when some controls are hidden', () => {
+        mockUseFormattingBarLayout.mockReturnValue({visibleCount: 5});
 
         renderWithContext(
             <FormattingBar {...baseProps}/>,
@@ -44,18 +54,8 @@ describe('FormattingBar', () => {
         expect(screen.getByLabelText('show hidden formatting options')).toBeInTheDocument();
     });
 
-    test('should render hidden formatting button when screen size is normal', () => {
-        jest.spyOn(Hooks, 'useFormattingBarControls').mockReturnValue({wideMode: 'normal', ...splitFormattingBarControls('normal')});
-
-        renderWithContext(
-            <FormattingBar {...baseProps}/>,
-        );
-
-        expect(screen.getByLabelText('show hidden formatting options')).toBeInTheDocument();
-    });
-
-    test('should not render hidden formatting button when screen size is wide', () => {
-        jest.spyOn(Hooks, 'useFormattingBarControls').mockReturnValue({wideMode: 'wide', ...splitFormattingBarControls('wide')});
+    test('should not render hidden formatting button when all controls are visible', () => {
+        mockUseFormattingBarLayout.mockReturnValue({visibleCount: ALL_MARKDOWN_CONTROLS.length});
 
         renderWithContext(
             <FormattingBar {...baseProps}/>,
@@ -65,7 +65,7 @@ describe('FormattingBar', () => {
     });
 
     test('MM-56705 should not submit form when clicking on hidden formatting button', () => {
-        jest.spyOn(Hooks, 'useFormattingBarControls').mockReturnValue({wideMode: 'narrow', ...splitFormattingBarControls('narrow')});
+        mockUseFormattingBarLayout.mockReturnValue({visibleCount: 3});
 
         const onSubmit = jest.fn();
 

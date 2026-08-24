@@ -9,16 +9,17 @@ import {useIntl} from 'react-intl';
 import {CSSTransition} from 'react-transition-group';
 import styled from 'styled-components';
 
-import type {ApplyMarkdownOptions} from 'utils/markdown/apply_markdown';
+import type {ApplyMarkdownOptions, MarkdownMode} from 'utils/markdown/apply_markdown';
 
 import FormattingIcon, {IconContainer} from './formatting_icon';
-import {useFormattingBarControls} from './hooks';
+import {ALL_MARKDOWN_CONTROLS, useFormattingBarLayout} from './hooks';
 
 export const Separator = styled.div`
     display: block;
     position: relative;
     width: 1px;
     height: 24px;
+    flex-shrink: 0;
     background: rgba(var(--center-channel-color-rgb), 0.16);
 `;
 
@@ -30,15 +31,27 @@ export const FormattingBarSpacer = styled.div`
     background: var(--center-channel-bg);
 `;
 
-const FormattingBarContainer = styled.div`
+const FormattingBarContainer = styled.div<{ $collapsed: boolean }>`
     display: flex;
-    height: 48px;
+    width: 100%;
+    height: ${(props) => {
+        return props.$collapsed ? 0 : 48;
+    }}px;
     padding-left: 7px;
     background: transparent;
     align-items: center;
     gap: 2px;
     transform-origin: top;
     transition: height 0.25s ease;
+`;
+
+const LeftControls = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
 `;
 
 const HiddenControlsContainer = styled.div`
@@ -92,44 +105,22 @@ const HiddenControlsContainer = styled.div`
 `;
 
 interface FormattingBarProps {
-
-    /**
-     * the current inputValue
-     * This is needed to apply the markdown to the correct place
-     */
     getCurrentMessage: () => string;
-
-    /**
-     * The textbox element tied to the advanced texteditor
-     * NOTE: Since the only thing we need from that is the current selection
-     *       range we should probably refactor this and only pass down the
-     *       selectionStart and selectionEnd values
-     */
     getCurrentSelection: () => {start: number; end: number};
-
-    /**
-     * the handler function that applies the markdown to the value
-     */
     applyMarkdown: (options: ApplyMarkdownOptions) => void;
-
-    /**
-     * disable formatting controls when the texteditor is in preview state
-     */
     disableControls: boolean;
-
-    /**
-     * location of the advanced text editor in the UI (center channel / RHS)
-     */
     location: string;
-
-    /**
-     * controls that enhance the message,
-     * e.g: message priority picker
-     */
     additionalControls?: React.ReactNodeArray;
+    pinnedControls?: React.ReactNodeArray;
+    rightActionsRef?: React.RefObject<HTMLDivElement>;
+    minGap?: number;
+    showLeftControls?: boolean;
 }
 
-const DEFAULT_MIN_MODE_X_COORD = 55;
+type LeftItem =
+    | {type: 'markdown'; mode: MarkdownMode; key: string}
+    | {type: 'additional'; control: React.ReactNode; key: string}
+    | {type: 'separator'; key: string};
 
 const FormattingBar = (props: FormattingBarProps): JSX.Element => {
     const {
@@ -139,10 +130,32 @@ const FormattingBar = (props: FormattingBarProps): JSX.Element => {
         disableControls,
         location,
         additionalControls,
+        pinnedControls,
+        rightActionsRef: externalRightRef,
+        minGap,
+        showLeftControls = true,
     } = props;
     const [showHiddenControls, setShowHiddenControls] = useState(false);
     const formattingBarRef = useRef<HTMLDivElement>(null);
-    const {controls, hiddenControls, wideMode} = useFormattingBarControls(formattingBarRef);
+    const internalRightRef = useRef<HTMLDivElement>(null);
+    const rightActionsRef = externalRightRef || internalRightRef;
+
+    const additionalItems = (additionalControls || []).map((control, i) => ({type: 'additional' as const, control, key: `add-${i}`}));
+    const pinnedItems = (pinnedControls || []).map((control, i) => ({type: 'additional' as const, control, key: `pin-${i}`}));
+
+    const collapsibleItems: LeftItem[] = [
+        ...ALL_MARKDOWN_CONTROLS.map((mode) => ({type: 'markdown' as const, mode, key: mode})),
+        ...(additionalItems.length > 0 ? [{type: 'separator' as const, key: 'add-sep'}] : []),
+        ...additionalItems,
+    ];
+
+    const leftItems: LeftItem[] = [
+        ...collapsibleItems,
+        ...(pinnedItems.length > 0 ? [{type: 'separator' as const, key: 'pin-sep'}] : []),
+        ...pinnedItems,
+    ];
+
+    const {visibleCount} = useFormattingBarLayout(formattingBarRef, rightActionsRef, leftItems.length, minGap);
 
     const {formatMessage} = useIntl();
     const HiddenControlsButtonAriaLabel = formatMessage({id: 'accessibility.button.hidden_controls_button', defaultMessage: 'show hidden formatting options'});
@@ -166,22 +179,15 @@ const FormattingBar = (props: FormattingBarProps): JSX.Element => {
 
     useEffect(() => {
         update?.();
-    }, [wideMode, update, showHiddenControls]);
+    }, [visibleCount, update, showHiddenControls]);
 
-    const hasHiddenControls = wideMode !== 'wide';
+    const hasHiddenControls = visibleCount < collapsibleItems.length;
 
-    /**
-     * wrapping this factory in useCallback prevents it from constantly getting a new
-     * function signature as if we would define it directly in the props of
-     * the FormattingIcon component. This should improve render-performance
-     */
-    const makeFormattingHandler = useCallback((mode) => () => {
-        // if the formatting is disabled just return without doing anything
+    const makeFormattingHandler = useCallback((mode: MarkdownMode) => () => {
         if (disableControls) {
             return;
         }
 
-        // get the current selection values and return early (doing nothing) when we don't get valid values
         const {start, end} = getCurrentSelection();
 
         if (start === null || end === null) {
@@ -197,66 +203,91 @@ const FormattingBar = (props: FormattingBarProps): JSX.Element => {
             message: value,
         });
 
-        // if hidden controls are currently open close them
         if (showHiddenControls) {
             setShowHiddenControls(!showHiddenControls);
         }
     }, [getCurrentSelection, getCurrentMessage, applyMarkdown, showHiddenControls, disableControls]);
 
-    const leftPosition = wideMode === 'min' ? (x ?? 0) + DEFAULT_MIN_MODE_X_COORD : x ?? 0;
-
     const hiddenControlsContainerStyles: React.CSSProperties = {
         position: strategy,
         top: y ?? 0,
-        left: leftPosition,
+        left: x ?? 0,
     };
 
-    const showSeparators = wideMode === 'wide';
+    const trimSeparators = (items: LeftItem[]) => {
+        let start = 0;
+        let end = items.length;
+        while (start < end && items[start].type === 'separator') {
+            start++;
+        }
+        while (end > start && items[end - 1].type === 'separator') {
+            end--;
+        }
+        return items.slice(start, end);
+    };
+
+    const pinnedCount = pinnedItems.length + (pinnedItems.length > 0 ? 1 : 0);
+    const collapsibleVisible = Math.min(collapsibleItems.length, Math.max(0, visibleCount - pinnedCount));
+    const visibleCollapsible = trimSeparators(collapsibleItems.slice(0, collapsibleVisible));
+    const hiddenCollapsible = trimSeparators(collapsibleItems.slice(collapsibleVisible));
+    const showPinned = visibleCount > 0 && pinnedItems.length > 0;
+
+    const renderLeftItem = (item: LeftItem) => {
+        if (item.type === 'separator') {
+            return <Separator key={item.key}/>;
+        }
+        if (item.type === 'additional') {
+            return <React.Fragment key={item.key}>{item.control}</React.Fragment>;
+        }
+        return (
+            <FormattingIcon
+                key={item.key}
+                mode={item.mode}
+                className='control'
+                onClick={makeFormattingHandler(item.mode)}
+                disabled={disableControls}
+            />
+        );
+    };
 
     return (
         <FormattingBarContainer
             ref={formattingBarRef}
+            $collapsed={!showLeftControls}
             data-testid='formattingBarContainer'
         >
-            {controls.map((mode) => {
-                return (
-                    <React.Fragment key={mode}>
-                        <FormattingIcon
-                            mode={mode}
-                            className='control'
-                            onClick={makeFormattingHandler(mode)}
-                            disabled={disableControls}
-                        />
-                        {mode === 'heading' && showSeparators && <Separator/>}
-                    </React.Fragment>
-                );
-            })}
+            <LeftControls>
+                {showLeftControls && (<>
+                    {visibleCollapsible.map(renderLeftItem)}
 
-            {Array.isArray(additionalControls) && additionalControls.length > 0 && (
-                <>
-                    {showSeparators && <Separator/>}
-                    {additionalControls}
-                </>
-            )}
+                    {showPinned && (
+                        <>
+                            {visibleCollapsible.length > 0 && visibleCollapsible[visibleCollapsible.length - 1].type !== 'separator' && <Separator/>}
+                            {pinnedItems.map(renderLeftItem)}
+                        </>
+                    )}
 
-            {hasHiddenControls && (
-                <>
-                    <IconContainer
-                        id={'HiddenControlsButton' + location}
-                        ref={setReference}
-                        className={classNames({active: showHiddenControls})}
-                        aria-label={HiddenControlsButtonAriaLabel}
-                        type='button'
-                        {...getClickReferenceProps()}
-                        {...getDismissReferenceProps()}
-                    >
-                        <DotsHorizontalIcon
-                            color={'currentColor'}
-                            size={18}
-                        />
-                    </IconContainer>
-                </>
-            )}
+                    {hasHiddenControls && (
+                        <>
+                            {(visibleCollapsible.length > 0 || showPinned) && <Separator/>}
+                            <IconContainer
+                                id={'HiddenControlsButton' + location}
+                                ref={setReference as React.Ref<HTMLButtonElement>}
+                                className={classNames({active: showHiddenControls})}
+                                aria-label={HiddenControlsButtonAriaLabel}
+                                type='button'
+                                {...getClickReferenceProps()}
+                                {...getDismissReferenceProps()}
+                            >
+                                <DotsHorizontalIcon
+                                    color={'currentColor'}
+                                    size={18}
+                                />
+                            </IconContainer>
+                        </>
+                    )}
+                </>)}
+            </LeftControls>
 
             <CSSTransition
                 timeout={250}
@@ -270,17 +301,7 @@ const FormattingBar = (props: FormattingBarProps): JSX.Element => {
                     {...getClickFloatingProps()}
                     {...getDismissFloatingProps()}
                 >
-                    {hiddenControls.map((mode) => {
-                        return (
-                            <FormattingIcon
-                                key={mode}
-                                mode={mode}
-                                className='control'
-                                onClick={makeFormattingHandler(mode)}
-                                disabled={disableControls}
-                            />
-                        );
-                    })}
+                    {hiddenCollapsible.map(renderLeftItem)}
                 </HiddenControlsContainer>
             </CSSTransition>
         </FormattingBarContainer>
