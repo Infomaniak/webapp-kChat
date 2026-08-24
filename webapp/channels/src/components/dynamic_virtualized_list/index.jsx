@@ -10,6 +10,7 @@ import {createElement, PureComponent} from 'react';
 import ListItem from './list_item';
 
 const atBottomMargin = 10;
+const BOTTOM_BUFFER = 100;
 
 const getItemMetadata = (props, index, listMetaData) => {
     const {itemOffsetMap, itemSizeMap} = listMetaData;
@@ -143,6 +144,8 @@ export class DynamicVirtualizedList extends PureComponent {
     _scrollByCorrection = null;
     _keepScrollPosition = false;
     _keepScrollToBottom = false;
+    _wasAtBottomBeforeResize = false;
+    _resizeScrollToBottomTimer = null;
     _mountingCorrections = 0;
     _correctedInstances = 0;
     _isPermalinkMode = false;
@@ -351,6 +354,9 @@ export class DynamicVirtualizedList extends PureComponent {
         if (this._permalinkStabilizationTimer) {
             clearTimeout(this._permalinkStabilizationTimer);
         }
+        if (this._resizeScrollToBottomTimer) {
+            clearTimeout(this._resizeScrollToBottomTimer);
+        }
     }
 
     _callOnItemsRendered = memoizeOne((overscanStartIndex, overscanStopIndex, visibleStartIndex, visibleStopIndex) =>
@@ -469,23 +475,46 @@ export class DynamicVirtualizedList extends PureComponent {
     };
 
     _heightChange = (prevHeight, prevOffset) => {
+        if (!this.props.correctScrollToBottom) {
+            return;
+        }
+
         const wasAtBottom =
             prevOffset + prevHeight >=
-            this._listMetaData.totalMeasuredSize - atBottomMargin;
+            this._listMetaData.totalMeasuredSize - BOTTOM_BUFFER;
 
         if (wasAtBottom) {
-            this.scrollToItem(0, 'end');
+            this._wasAtBottomBeforeResize = true;
+            this._scheduleResizeScrollToBottom();
         }
     };
 
     _widthChange = (prevHeight, prevOffset) => {
+        if (!this.props.correctScrollToBottom) {
+            return;
+        }
+
         const wasAtBottom =
             prevOffset + prevHeight >=
-            this._listMetaData.totalMeasuredSize - atBottomMargin;
+            this._listMetaData.totalMeasuredSize - BOTTOM_BUFFER;
 
         if (wasAtBottom) {
-            this.scrollToItem(0, 'end');
+            this._wasAtBottomBeforeResize = true;
+            this._scheduleResizeScrollToBottom();
         }
+    };
+
+    _scheduleResizeScrollToBottom = () => {
+        if (this._resizeScrollToBottomTimer) {
+            clearTimeout(this._resizeScrollToBottomTimer);
+        }
+        this._resizeScrollToBottomTimer = setTimeout(() => {
+            this._wasAtBottomBeforeResize = false;
+            this._resizeScrollToBottomTimer = null;
+            if (this.props.correctScrollToBottom) {
+                this.scrollToItem(0, 'end');
+            }
+        }, 50);
     };
 
     // Lazily create and cache item styles while scrolling,
@@ -622,11 +651,15 @@ export class DynamicVirtualizedList extends PureComponent {
             this._listMetaData.totalMeasuredSize - atBottomMargin;
 
         if (
-            (wasAtBottom || this._keepScrollToBottom) &&
+            (wasAtBottom || this._keepScrollToBottom || this._wasAtBottomBeforeResize) &&
             this.props.correctScrollToBottom
         ) {
             this._generateOffsetMeasurements();
-            this.scrollToItem(0, 'end');
+            if (this._wasAtBottomBeforeResize) {
+                this._scheduleResizeScrollToBottom();
+            } else {
+                this.scrollToItem(0, 'end');
+            }
             this.forceUpdate();
             return;
         }
