@@ -9,6 +9,7 @@ exports[`AudioVideoPreview should match snapshot without children 1`] = `
   width={640}
 >
   <source
+    onError={[Function]}
     src="/api/v4/files/file_id"
   />
 </video>

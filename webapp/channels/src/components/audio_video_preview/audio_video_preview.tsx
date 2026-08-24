@@ -20,7 +20,6 @@ type State = {
 }
 
 export default class AudioVideoPreview extends React.PureComponent<Props, State> {
-    sourceRef = React.createRef<HTMLSourceElement>();
     videoRef = React.createRef<HTMLVideoElement>();
 
     constructor(props: Props) {
@@ -33,28 +32,15 @@ export default class AudioVideoPreview extends React.PureComponent<Props, State>
 
     componentDidMount() {
         this.handleFileInfoChanged();
-
-        if (this.sourceRef.current) {
-            this.sourceRef.current.addEventListener('error', this.handleLoadError, {once: true});
-        }
     }
 
     componentDidUpdate(prevProps: Props) {
         if (this.props.fileUrl !== prevProps.fileUrl) {
             this.handleFileInfoChanged();
         }
-
-        if (this.sourceRef.current) {
-            this.sourceRef.current.addEventListener('error', this.handleLoadError, {once: true});
-        }
     }
 
     handleFileInfoChanged = () => {
-        let video = this.videoRef.current;
-        if (!video) {
-            video = document.createElement('video');
-        }
-
         this.setState({
             canPlay: true,
         });
@@ -102,8 +88,8 @@ export default class AudioVideoPreview extends React.PureComponent<Props, State>
                 height={height}
             >
                 <source
-                    ref={this.sourceRef}
                     src={this.props.fileUrl}
+                    onError={this.handleLoadError}
                 />
             </video>
         );
