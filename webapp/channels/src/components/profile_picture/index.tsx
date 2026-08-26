@@ -64,7 +64,7 @@ function ProfilePicture(props: Props) {
                             url={props.src}
                         />
                     </span>
-                    <StatusIcon status={props.status}/>
+                    <StatusIcon status={hideStatus ? undefined : props.status}/>
                 </>
             </ProfilePopover>
         );
@@ -84,10 +84,10 @@ function ProfilePicture(props: Props) {
             {props.newStatusIcon ? (
                 <StatusIconNew
                     className={props.statusClass}
-                    status={props.status}
+                    status={hideStatus ? undefined : props.status}
                 />
             ) : (
-                <StatusIcon status={props.status}/>
+                <StatusIcon status={hideStatus ? undefined : props.status}/>
             )}
         </span>
     );

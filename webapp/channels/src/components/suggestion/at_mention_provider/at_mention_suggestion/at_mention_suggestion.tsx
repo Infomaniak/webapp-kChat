@@ -137,7 +137,7 @@ export const AtMentionSuggestion = React.forwardRef<HTMLLIElement, AtMentionSugg
                         url={Utils.imageURLForUser(item.id, item.last_picture_update)}
                     />
                 </span>
-                <StatusIcon status={props.status || (item && item.status)}/>
+                <StatusIcon status={item.is_bot ? undefined : (props.status || (item && item.status))}/>
             </span>
         );
 

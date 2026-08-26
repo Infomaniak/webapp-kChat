@@ -359,6 +359,7 @@ export class ChannelInviteModal extends React.PureComponent<Props, State> {
                     <ProfilePicture
                         src={Client4.getProfilePictureUrl(option.id, option.last_picture_update)}
                         status={this.props.userStatuses[option.id]}
+                        isBot={option.is_bot}
                         size='md'
                         username={option.username}
                     />
