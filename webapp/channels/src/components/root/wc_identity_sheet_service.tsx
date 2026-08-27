@@ -24,6 +24,7 @@ export interface WcIdentitySheetElement extends HTMLElement {
     teamColor?: number;
     customTrigger?: HTMLElement;
     hideDefaultSlot: boolean;
+    project: 'kchat';
 }
 
 let showFn: ((config: TeamIdentityConfig, trigger: HTMLElement) => void) | null = null;
@@ -94,6 +95,7 @@ export function WcIdentitySheetService() {
         <div style={{position: 'absolute', left: '-9999px', pointerEvents: 'none'}}>
             <wc-identity-sheet
                 ref={sheetRef}
+                project='kchat'
                 entity-type={'team'}
                 hide-default-slot={true}
                 prevent-open-on-hover={true}

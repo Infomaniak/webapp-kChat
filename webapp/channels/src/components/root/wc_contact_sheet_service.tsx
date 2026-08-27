@@ -45,6 +45,7 @@ export interface WcContactSheetElement extends HTMLElement {
     userId: string | number | undefined;
     userMail: string | undefined;
     userName: string | undefined;
+    project: 'kchat';
 }
 
 let showFn: ((config: ContactSheetConfig, trigger: HTMLElement) => void) | null = null;
@@ -191,6 +192,7 @@ export function WcContactSheetService() {
     return (
         <div style={{position: 'absolute', left: '-9999px', pointerEvents: 'none'}}>
             <wc-contact-sheet
+                project='kchat'
                 ref={sheetRef}
                 prevent-open-on-hover={true}
                 prevent-stop-propagation={true}
