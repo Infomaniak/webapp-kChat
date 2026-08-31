@@ -29,10 +29,10 @@ const StyledChannel = styled.div`
 type Props = {
     currentChannelId: string;
     channelIds: string[];
-    pendingGuestKey: string;
+    pendingGuestId: number;
 }
 
-const CancelMultipleInvitesModal = ({currentChannelId, channelIds, pendingGuestKey}: Props) => {
+const CancelMultipleInvitesModal = ({currentChannelId, channelIds, pendingGuestId}: Props) => {
     const dispatch = useDispatch();
     const show = useSelector((state: GlobalState) => isModalOpen(state, ModalIdentifiers.CANCEL_MULTIPLE_INVITES));
     const getChannelsForIds = makeGetChannelsForIds();
@@ -43,9 +43,9 @@ const CancelMultipleInvitesModal = ({currentChannelId, channelIds, pendingGuestK
     }, [dispatch]);
 
     const handleCancelPendingGuestInvite = useCallback(() => {
-        dispatch(cancelPendingGuestInvite(currentChannelId, pendingGuestKey));
+        dispatch(cancelPendingGuestInvite(currentChannelId, pendingGuestId));
         handleClose();
-    }, [dispatch, currentChannelId, pendingGuestKey, handleClose]);
+    }, [dispatch, currentChannelId, pendingGuestId, handleClose]);
 
     const channelList = channels.map((channel) => (
         <StyledChannel key={`cancel-multiple-invites-channel-${channel.id}`}>

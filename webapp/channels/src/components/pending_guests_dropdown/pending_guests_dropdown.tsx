@@ -44,12 +44,12 @@ const PendingGuestsDropdown = ({channel, pendingGuest, index, totalUsers}: Props
                     dialogProps: {
                         currentChannelId: channel.id,
                         channelIds: pendingGuest.data.channel_ids,
-                        pendingGuestKey: pendingGuest.key,
+                        pendingGuestId: pendingGuest.id,
                     },
                 }));
                 return;
             }
-            dispatch(cancelPendingGuestInvite(channel.id, pendingGuest.key));
+            dispatch(cancelPendingGuestInvite(channel.id, pendingGuest.id));
         }
     };
 
