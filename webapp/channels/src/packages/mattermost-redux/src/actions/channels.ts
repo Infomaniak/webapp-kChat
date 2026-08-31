@@ -1561,11 +1561,11 @@ export function getChannelPendingGuests(channelId: string) {
     });
 }
 
-export function cancelPendingGuestInvite(channelId: string, invitationKey: string) {
+export function cancelPendingGuestInvite(channelId: string, invitationId: number) {
     return bindClientFunc({
         clientFunc: async () => {
-            await Client4.cancelPendingGuestInvite(invitationKey);
-            return {channelId, invitationKey};
+            await Client4.cancelPendingGuestInvite(invitationId);
+            return {channelId, invitationId};
         },
         onSuccess: ChannelTypes.CANCELED_PENDING_GUEST_INVITE,
     });

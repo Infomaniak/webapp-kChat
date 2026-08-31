@@ -1011,9 +1011,9 @@ function pendingGuests(state: Record<Channel['id'], PendingGuests> = {}, action:
         };
     }
     case ChannelTypes.CANCELED_PENDING_GUEST_INVITE: {
-        const {channelId, invitationKey} = action.data;
+        const {channelId, invitationId} = action.data;
         const channelState = {...state[channelId]};
-        const canceledInviteKey = Object.keys(channelState).find((key) => channelState[key].key === invitationKey);
+        const canceledInviteKey = Object.keys(channelState).find((key) => channelState[key].id === invitationId);
         if (canceledInviteKey) {
             Reflect.deleteProperty(channelState, canceledInviteKey);
         }

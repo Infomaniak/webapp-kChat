@@ -4834,10 +4834,10 @@ export default class Client4 {
         );
     };
 
-    cancelPendingGuestInvite = (invitationKey: string) => {
+    cancelPendingGuestInvite = (invitationId: number) => {
         return this.doFetch(
             `${this.getTeamsRoute()}/invites/email`,
-            {method: 'DELETE', body: JSON.stringify({invitation_key: invitationKey})},
+            {method: 'DELETE', body: JSON.stringify({id: invitationId})},
         );
     };
 
