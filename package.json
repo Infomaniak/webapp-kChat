@@ -33,7 +33,7 @@
       "webapp/platform/types"
     ]
   },
-  "packageManager": "yarn@4.0.1",
+  "packageManager": "yarn@4.11.0",
   "dependencies": {
     "process": "^0.11.10"
   }

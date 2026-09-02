@@ -254,5 +254,5 @@
     "check-types": "tsc -b",
     "make-emojis": "node --experimental-json-modules build/emoji/make_emojis.mjs --excluded-emoji-file excludedEmojis"
   },
-  "packageManager": "yarn@4.0.1"
+  "packageManager": "yarn@4.11.0"
 }
