@@ -8,6 +8,7 @@ import type {Moment} from 'moment-timezone';
 import moment from 'moment-timezone';
 import React, {PureComponent} from 'react';
 import type {ReactNode} from 'react';
+import {unstable_batchedUpdates} from 'react-dom';
 import {
     injectIntl,
     FormattedMessage,
@@ -66,6 +67,55 @@ const defaultRefreshIntervals = new Map<Intl.RelativeTimeFormatUnit, number /* s
     ['minute', 15],
     ['second', 1],
 ]);
+
+const MAX_CACHED_DATE_TIME_FORMATS = 200;
+
+const dateTimeFormatCache = new Map<string, Intl.DateTimeFormat>();
+
+function getCachedDateTimeFormat(locale: string, timeZone: DateTimeOptions['timeZone'], options: DateTimeOptions): Intl.DateTimeFormat {
+    const merged = {timeZone, ...options};
+    const keyTimeZone = merged.timeZone ?? `host-offset-${new Date().getTimezoneOffset()}`;
+    const key = `${locale}|${keyTimeZone}|${JSON.stringify(merged)}`;
+    let formatter = dateTimeFormatCache.get(key);
+    if (!formatter) {
+        if (dateTimeFormatCache.size >= MAX_CACHED_DATE_TIME_FORMATS) {
+            dateTimeFormatCache.clear();
+        }
+        formatter = new Intl.DateTimeFormat(locale, merged);
+        dateTimeFormatCache.set(key, formatter);
+    }
+    return formatter;
+}
+
+const tickSubscribers = new Map<number, Set<() => void>>();
+const tickTimers = new Map<number, ReturnType<typeof setInterval>>();
+
+function subscribeToTick(intervalSeconds: number, callback: () => void) {
+    let subscribers = tickSubscribers.get(intervalSeconds);
+    if (!subscribers) {
+        subscribers = new Set();
+        tickSubscribers.set(intervalSeconds, subscribers);
+        tickTimers.set(intervalSeconds, setInterval(() => {
+            unstable_batchedUpdates(() => {
+                tickSubscribers.get(intervalSeconds)?.forEach((subscriber) => subscriber());
+            });
+        }, intervalSeconds * 1000));
+    }
+    subscribers.add(callback);
+}
+
+function unsubscribeFromTick(intervalSeconds: number, callback: () => void) {
+    const subscribers = tickSubscribers.get(intervalSeconds);
+    if (!subscribers) {
+        return;
+    }
+    subscribers.delete(callback);
+    if (subscribers.size === 0) {
+        clearInterval(tickTimers.get(intervalSeconds));
+        tickTimers.delete(intervalSeconds);
+        tickSubscribers.delete(intervalSeconds);
+    }
+}
 
 type UnitDescriptor = [Intl.RelativeTimeFormatUnit, number?, boolean?];
 
@@ -183,11 +233,46 @@ class Timestamp extends PureComponent<Props, State> {
         hourCycle: 'h12',
         timeZoneName: 'short',
     };
-    nextUpdate: ReturnType<typeof setTimeout> | null = null;
+    tickIntervalSeconds: number | null = null;
     mounted = false;
+
+    private handleTick = () => {
+        if (this.mounted) {
+            this.setState({now: new Date()});
+        }
+    };
 
     componentDidMount() {
         this.mounted = true;
+        this.updateTickSubscription();
+    }
+
+    componentDidUpdate() {
+        this.updateTickSubscription();
+    }
+
+    private get parsedValue(): Date {
+        const {value = this.state.now} = this.props;
+        return value instanceof Date ? value : new Date(value);
+    }
+
+    private updateTickSubscription() {
+        const {relative} = this.getFormats(this.parsedValue);
+        const intervalSeconds = relative && relative.updateIntervalInSeconds ? relative.updateIntervalInSeconds : null;
+
+        if (intervalSeconds === this.tickIntervalSeconds) {
+            return;
+        }
+
+        if (this.tickIntervalSeconds != null) {
+            unsubscribeFromTick(this.tickIntervalSeconds, this.handleTick);
+        }
+
+        if (intervalSeconds != null) {
+            subscribeToTick(intervalSeconds, this.handleTick);
+        }
+
+        this.tickIntervalSeconds = intervalSeconds;
     }
 
     formatParts(value: Date, {relative: relFormat, date: dateFormat, time: timeFormat}: ResolvedFormats): FormattedParts {
@@ -260,10 +345,9 @@ class Timestamp extends PureComponent<Props, State> {
     formatDateTime(value: Date, format: DateTimeOptions): string {
         const {timeZone, intl: {locale}} = this.props;
 
-        // IK: Use en-GB for English to get UK date format (DD/MM/YYYY) instead of US format (MM/DD/YYYY)
         const normalizedLocale = locale === 'en' ? 'en-GB' : locale;
 
-        return (new Intl.DateTimeFormat(normalizedLocale, {timeZone, ...format})).format(value);
+        return getCachedDateTimeFormat(normalizedLocale, timeZone, format).format(value);
     }
 
     static momentTime(value: Moment, {hour, minute, hourCycle, hour12}: DateTimeOptions): string | undefined {
@@ -301,7 +385,16 @@ class Timestamp extends PureComponent<Props, State> {
         };
     }
 
+    private formatsCache: {props: Props; valueTime: number; nowTime: number; formats: ResolvedFormats} | null = null;
+
     private getFormats(value: Date): ResolvedFormats {
+        const valueTime = value.getTime();
+        const nowTime = this.state.now.getTime();
+        const cached = this.formatsCache;
+        if (cached && cached.props === this.props && cached.valueTime === valueTime && cached.nowTime === nowTime) {
+            return cached.formats;
+        }
+
         const {
             numeric,
             style,
@@ -348,7 +441,7 @@ class Timestamp extends PureComponent<Props, State> {
             hour,
             minute,
             useDate = (): ResolvedFormats['date'] => {
-                if (isSameYear(value)) {
+                if (isSameYear(value, this.state.now)) {
                     return {weekday, day, month};
                 }
 
@@ -361,14 +454,16 @@ class Timestamp extends PureComponent<Props, State> {
         const date = !relative && resolve(useDate, {value}, this.props);
         const time = resolve(useTime, {value}, this.props);
 
-        return {relative, date, time};
+        const formats = {relative, date, time};
+        this.formatsCache = {props: this.props, valueTime, nowTime, formats};
+        return formats;
     }
 
     componentWillUnmount() {
         this.mounted = false;
-        if (this.nextUpdate) {
-            clearTimeout(this.nextUpdate);
-            this.nextUpdate = null;
+        if (this.tickIntervalSeconds != null) {
+            unsubscribeFromTick(this.tickIntervalSeconds, this.handleTick);
+            this.tickIntervalSeconds = null;
         }
     }
 
@@ -378,18 +473,6 @@ class Timestamp extends PureComponent<Props, State> {
         }
 
         return null;
-    }
-
-    private maybeUpdate(relative: ResolvedFormats['relative']): ReturnType<typeof setTimeout> | null {
-        if (!relative ||
-            !relative.updateIntervalInSeconds) {
-            return null;
-        }
-        return setTimeout(() => {
-            if (this.mounted) {
-                this.setState({now: new Date()});
-            }
-        }, relative.updateIntervalInSeconds * 1000);
     }
 
     static format({relative, date, time}: FormattedParts, capitalize?: boolean): ReactNode {
@@ -423,7 +506,6 @@ class Timestamp extends PureComponent<Props, State> {
 
     render() {
         const {
-            value: unparsed = this.state.now,
             children,
             useSemanticOutput = true,
             timeZone,
@@ -431,7 +513,7 @@ class Timestamp extends PureComponent<Props, State> {
             className,
         } = this.props;
 
-        const value = unparsed instanceof Date ? unparsed : new Date(unparsed);
+        const value = this.parsedValue;
         const formats = this.getFormats(value);
         const parts = this.formatParts(value, formats);
         let formatted = Timestamp.format(parts, this.props.capitalize);
@@ -447,8 +529,6 @@ class Timestamp extends PureComponent<Props, State> {
                 </SemanticTime>
             );
         }
-
-        this.nextUpdate = this.maybeUpdate(formats.relative);
 
         if (children) {
             return resolve(children, {value, timeZone, formatted, ...parts}, formats);
