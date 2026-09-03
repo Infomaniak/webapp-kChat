@@ -3,12 +3,12 @@
 
 type TrackedItemCallback = (changedHeight: number) => void;
 type TrackedItemData = {element: Element; callback: TrackedItemCallback};
-type TrackedItemsMap = Map<string, TrackedItemData>;
 
 export class ListItemSizeObserver {
     private observer: ResizeObserver;
 
-    private trackedItems: TrackedItemsMap = new Map();
+    private trackedItems: Map<string, TrackedItemData> = new Map();
+    private elementToItemId: Map<Element, string> = new Map();
 
     private static instance: ListItemSizeObserver | null = null;
 
@@ -28,15 +28,12 @@ export class ListItemSizeObserver {
         resizeEntries.forEach((resizeEntry) => {
             const resizedElement = resizeEntry.target;
 
-            let itemData: TrackedItemData | undefined;
-            for (const [, trackedItemData] of this.trackedItems.entries()) {
-                // Reverse lookup by element to get the item's data
-                if (trackedItemData.element === resizedElement) {
-                    itemData = trackedItemData;
-                    break;
-                }
+            const itemId = this.elementToItemId.get(resizedElement);
+            if (!itemId) {
+                return;
             }
 
+            const itemData = this.trackedItems.get(itemId);
             if (!itemData) {
                 return;
             }
@@ -47,7 +44,14 @@ export class ListItemSizeObserver {
     };
 
     public observe(itemId: string, element: Element, callback: TrackedItemCallback): () => void {
+        const existing = this.trackedItems.get(itemId);
+        if (existing && existing.element !== element) {
+            this.observer.unobserve(existing.element);
+            this.elementToItemId.delete(existing.element);
+        }
+
         this.trackedItems.set(itemId, {element, callback});
+        this.elementToItemId.set(element, itemId);
         this.observer.observe(element);
 
         return () => this.unobserve(itemId);
@@ -57,7 +61,16 @@ export class ListItemSizeObserver {
         const trackedItemToUnobserve = this.trackedItems.get(itemId);
         if (trackedItemToUnobserve) {
             this.observer.unobserve(trackedItemToUnobserve.element);
+            this.elementToItemId.delete(trackedItemToUnobserve.element);
             this.trackedItems.delete(itemId);
         }
+    }
+
+    public clear(): void {
+        this.trackedItems.forEach((trackedItem) => {
+            this.observer.unobserve(trackedItem.element);
+        });
+        this.trackedItems.clear();
+        this.elementToItemId.clear();
     }
 }
