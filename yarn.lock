@@ -3400,12 +3400,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@infomaniak/ksuite-bridge@https://verdaccio.dev.infomaniak.ch/@infomaniak/ksuite-bridge/-/ksuite-bridge-0.3.15.tgz":
-  version: 0.3.15
-  resolution: "@infomaniak/ksuite-bridge@https://verdaccio.dev.infomaniak.ch/@infomaniak/ksuite-bridge/-/ksuite-bridge-0.3.15.tgz"
+"@infomaniak/ksuite-bridge@https://verdaccio.dev.infomaniak.ch/@infomaniak/ksuite-bridge/-/ksuite-bridge-0.3.17.tgz":
+  version: 0.3.17
+  resolution: "@infomaniak/ksuite-bridge@https://verdaccio.dev.infomaniak.ch/@infomaniak/ksuite-bridge/-/ksuite-bridge-0.3.17.tgz"
   dependencies:
     emittery: "npm:^1.0.1"
-  checksum: 10/35427b7766d150aebc8581bdf35e1de3a87e0ad8c7da5ef58d96d7ee7832b6595d8a69434e06f2f692d7ecf6144b6757beb3dfd314906778d6b9737d380195c8
+  checksum: 10/f1473e4daa319a2b3c01cfb61d1185c8ce3e264e6d591c053745ca58b73be7e321e308af226fb1abb3eac82900660925fcc8c2a429fd52746fbf98e44acc890b
   languageName: node
   linkType: hard
 
@@ -19163,7 +19163,7 @@ __metadata:
     "@hot-loader/react-dom": "npm:17.0.2"
     "@infomaniak/compass-components": "npm:0.17.0"
     "@infomaniak/compass-icons": "npm:0.14.0"
-    "@infomaniak/ksuite-bridge": "https://verdaccio.dev.infomaniak.ch/@infomaniak/ksuite-bridge/-/ksuite-bridge-0.3.15.tgz"
+    "@infomaniak/ksuite-bridge": "https://verdaccio.dev.infomaniak.ch/@infomaniak/ksuite-bridge/-/ksuite-bridge-0.3.17.tgz"
     "@infomaniak/marked": "npm:0.5.0"
     "@infomaniak/mattermost-client": "workspace:webapp/platform/client"
     "@infomaniak/mattermost-types": "workspace:webapp/platform/types"
