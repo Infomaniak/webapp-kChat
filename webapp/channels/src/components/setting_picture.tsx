@@ -79,12 +79,17 @@ export default class SettingPicture extends Component<Props, State> {
     componentDidUpdate(prevProps: Props) {
         if (this.props.file && prevProps.file !== this.props.file) {
             this.setPicture(this.props.file);
+        } else if (!this.props.file && prevProps.file && this.previewBlob) {
+            URL.revokeObjectURL(this.previewBlob);
+            this.previewBlob = null;
+            this.setState({image: null});
         }
     }
 
     componentWillUnmount() {
         if (this.previewBlob) {
             URL.revokeObjectURL(this.previewBlob);
+            this.previewBlob = null;
         }
 
         if (this.selectInput.current) {
@@ -143,15 +148,23 @@ export default class SettingPicture extends Component<Props, State> {
 
     setPicture = (file: File) => {
         if (file) {
-            this.previewBlob = URL.createObjectURL(file);
+            if (this.previewBlob) {
+                URL.revokeObjectURL(this.previewBlob);
+            }
+
+            const blobUrl = URL.createObjectURL(file);
+            this.previewBlob = blobUrl;
 
             const reader = new FileReader();
             reader.onload = (e) => {
+                if (this.previewBlob !== blobUrl) {
+                    return;
+                }
                 const orientation = FileUtils.getExifOrientation(e.target!.result! as ArrayBuffer);
                 const orientationStyles = FileUtils.getOrientationStyles(orientation);
 
                 this.setState({
-                    image: this.previewBlob,
+                    image: blobUrl,
                     orientationStyles,
                 });
             };

@@ -172,15 +172,25 @@ export default class AddBot extends React.PureComponent<Props, State> {
     updatePicture = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const pictureFile = e.target.files[0];
-            this.previewBlob = URL.createObjectURL(pictureFile);
+
+            if (this.previewBlob) {
+                URL.revokeObjectURL(this.previewBlob);
+                this.previewBlob = null;
+            }
+
+            const blobUrl = URL.createObjectURL(pictureFile);
+            this.previewBlob = blobUrl;
 
             const reader = new FileReader();
             reader.onload = (e2) => {
                 const orientation = FileUtils.getExifOrientation(e2.target?.result as ArrayBuffer);
                 const orientationStyles = FileUtils.getOrientationStyles(orientation);
 
+                if (this.previewBlob !== blobUrl) {
+                    return;
+                }
                 this.setState({
-                    image: this.previewBlob || '',
+                    image: blobUrl || '',
                     orientationStyles,
                 });
             };
@@ -188,13 +198,28 @@ export default class AddBot extends React.PureComponent<Props, State> {
             e.target.value = '';
             this.setState({pictureFile});
         } else {
+            if (this.previewBlob) {
+                URL.revokeObjectURL(this.previewBlob);
+                this.previewBlob = null;
+            }
             this.setState({pictureFile: null, image: ''});
         }
     };
 
     setDefault = () => {
+        if (this.previewBlob) {
+            URL.revokeObjectURL(this.previewBlob);
+            this.previewBlob = null;
+        }
         this.setState({pictureFile: 'default', image: BotDefaultIcon});
     };
+
+    componentWillUnmount() {
+        if (this.previewBlob) {
+            URL.revokeObjectURL(this.previewBlob);
+            this.previewBlob = null;
+        }
+    }
 
     isFile(file: File | string): file is File {
         return (file as File).size !== undefined;
