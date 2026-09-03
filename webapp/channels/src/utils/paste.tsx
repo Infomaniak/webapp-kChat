@@ -15,6 +15,8 @@ export function parseHtmlTable(html: string): HTMLTableElement | null {
     return new DOMParser().parseFromString(html, 'text/html').querySelector('table');
 }
 
+const MAX_HTML_TURNDOWN_LENGTH = 1_048_576;
+
 export function getHtmlTable(clipboardData: DataTransfer): HTMLTableElement | null {
     // Check if clipboard data has html as one of its types
     if (Array.from(clipboardData.types).indexOf('text/html') === -1) {
@@ -22,6 +24,10 @@ export function getHtmlTable(clipboardData: DataTransfer): HTMLTableElement | nu
     }
 
     const html = clipboardData.getData('text/html');
+
+    if (html.length > MAX_HTML_TURNDOWN_LENGTH) {
+        return null;
+    }
 
     if (!(/<table/i).test(html)) {
         return null;
@@ -36,7 +42,17 @@ export function getHtmlTable(clipboardData: DataTransfer): HTMLTableElement | nu
 }
 
 export function hasHtmlLink(clipboardData: DataTransfer): boolean {
-    return Array.from(clipboardData.types).includes('text/html') && (/<a/i).test(clipboardData.getData('text/html'));
+    if (!Array.from(clipboardData.types).includes('text/html')) {
+        return false;
+    }
+
+    const html = clipboardData.getData('text/html');
+
+    if (html.length > MAX_HTML_TURNDOWN_LENGTH) {
+        return false;
+    }
+
+    return (/<a/i).test(html);
 }
 
 export function isGitHubCodeBlock(tableClassName: string): boolean {
@@ -67,19 +83,23 @@ function isTableWithoutHeaderRow(table: HTMLTableElement): boolean {
 
 /**
  * Formats the given HTML clipboard data into a Markdown message.
+ * @param htmlTable Pre-parsed HTML table to avoid redundant DOMParser calls. Falls back to clipboard parsing if not provided.
  * @returns {Object} An object containing 'formattedMessage' and 'formattedMarkdown'.
  * @property {string} formattedMessage - The formatted message, including the formatted Markdown.
  * @property {string} formattedMarkdown - The resulting Markdown from the HTML clipboard data.
  */
-export function formatMarkdownMessage(clipboardData: DataTransfer, message?: string, caretPosition?: number): {formattedMessage: string; formattedMarkdown: string} {
+export function formatMarkdownMessage(clipboardData: DataTransfer, message?: string, caretPosition?: number, htmlTable?: HTMLTableElement | null): {formattedMessage: string; formattedMarkdown: string} {
     const html = clipboardData.getData('text/html');
 
-    let formattedMarkdown = turndownService.turndown(html).trim();
-
-    const table = getHtmlTable(clipboardData);
-    if (table && isTableWithoutHeaderRow(table)) {
-        const newLineLimiter = '\n';
-        formattedMarkdown = `${formattedMarkdown}${newLineLimiter}`;
+    let formattedMarkdown: string;
+    if (html.length > MAX_HTML_TURNDOWN_LENGTH) {
+        formattedMarkdown = clipboardData.getData('text/plain').trim();
+    } else {
+        formattedMarkdown = turndownService.turndown(html).trim();
+        const table = htmlTable ?? getHtmlTable(clipboardData);
+        if (table && isTableWithoutHeaderRow(table)) {
+            formattedMarkdown = `${formattedMarkdown}\n`;
+        }
     }
 
     let formattedMessage: string;
@@ -211,7 +231,7 @@ export function pasteHandler(event: ClipboardEvent, location: string, message: s
         const {formattedCodeBlock} = formatGithubCodePaste({selectionStart, selectionEnd, message, clipboardData});
         execCommandInsertText(formattedCodeBlock);
     } else {
-        const {formattedMarkdown} = formatMarkdownMessage(clipboardData, message, caretPosition);
+        const {formattedMarkdown} = formatMarkdownMessage(clipboardData, message, caretPosition, htmlTable);
         execCommandInsertText(formattedMarkdown);
     }
 }

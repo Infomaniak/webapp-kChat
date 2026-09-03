@@ -6,6 +6,7 @@ import {execCommandInsertText} from './exec_commands';
 import {
     parseHtmlTable,
     getHtmlTable,
+    hasHtmlLink,
     formatMarkdownMessage,
     formatGithubCodePaste,
     formatMarkdownLinkMessage,
@@ -98,6 +99,139 @@ describe('formatMarkdownMessage', () => {
         const markdownLink = '[link text](https://test.domain)';
 
         expect(formatMarkdownMessage(linkClipboardData).formattedMessage).toBe(markdownLink);
+    });
+
+    test('uses provided htmlTable instead of re-parsing clipboard HTML', () => {
+        const html = '<table><tr><td>test</td><td>test</td></tr><tr><td>test</td><td>test</td></tr></table>';
+        const clipboardData: any = {
+            items: [1],
+            types: ['text/html'],
+            getData: () => html,
+        };
+        const precomputedTable = parseHtmlTable(html);
+
+        expect(formatMarkdownMessage(clipboardData, '', undefined, precomputedTable).formattedMessage).toBe('| test | test |\n| --- | --- |\n| test | test |\n');
+    });
+
+    test('falls back to getHtmlTable when htmlTable param is not provided', () => {
+        expect(formatMarkdownMessage(validClipboardData).formattedMessage).toBe(`${markdownTable}\n`);
+    });
+
+    test('returns plain text when HTML exceeds 1MB without running turndown', () => {
+        const hugeHtml = '<a href="https://test.domain">' + 'x'.repeat(1_048_577) + '</a>';
+        const plainText = 'https://test.domain';
+        const clipboardData: any = {
+            items: [1],
+            types: ['text/plain', 'text/html'],
+            getData: (type: string) => {
+                if (type === 'text/plain') {
+                    return plainText;
+                }
+                return hugeHtml;
+            },
+        };
+
+        const result = formatMarkdownMessage(clipboardData);
+        expect(result.formattedMarkdown).toBe(plainText);
+        expect(result.formattedMessage).toBe(plainText);
+    });
+
+    test('returns plain text with existing message when HTML exceeds 1MB', () => {
+        const hugeHtml = '<a href="https://test.domain">' + 'x'.repeat(1_048_577) + '</a>';
+        const plainText = 'https://test.domain';
+        const clipboardData: any = {
+            items: [1],
+            types: ['text/plain', 'text/html'],
+            getData: (type: string) => {
+                if (type === 'text/plain') {
+                    return plainText;
+                }
+                return hugeHtml;
+            },
+        };
+        const existingMessage = 'hello world';
+
+        const result = formatMarkdownMessage(clipboardData, existingMessage);
+        expect(result.formattedMessage).toBe(`${existingMessage}\n\n${plainText}`);
+    });
+
+    test('inserts plain text at caret position when HTML exceeds 1MB', () => {
+        const hugeHtml = '<a href="https://test.domain">' + 'x'.repeat(1_048_577) + '</a>';
+        const plainText = 'https://test.domain';
+        const clipboardData: any = {
+            items: [1],
+            types: ['text/plain', 'text/html'],
+            getData: (type: string) => {
+                if (type === 'text/plain') {
+                    return plainText;
+                }
+                return hugeHtml;
+            },
+        };
+        const existingMessage = 'hello world';
+        const caretPosition = 5;
+
+        const result = formatMarkdownMessage(clipboardData, existingMessage, caretPosition);
+        expect(result.formattedMessage).toBe(`hello\n${plainText} world`);
+    });
+
+    test('returns empty string when HTML exceeds 1MB and no text/plain available', () => {
+        const hugeHtml = '<a href="https://test.domain">' + 'x'.repeat(1_048_577) + '</a>';
+        const clipboardData: any = {
+            items: [1],
+            types: ['text/html'],
+            getData: (type: string) => {
+                if (type === 'text/plain') {
+                    return '';
+                }
+                return hugeHtml;
+            },
+        };
+
+        const result = formatMarkdownMessage(clipboardData);
+        expect(result.formattedMarkdown).toBe('');
+        expect(result.formattedMessage).toBe('');
+    });
+
+    test('runs turndown at exactly 1MB boundary (guard is strictly greater than)', () => {
+        const padding = 'x'.repeat(1_048_576 - '<a href="https://test.domain"></a>'.length);
+        const html = `<a href="https://test.domain">${padding}</a>`;
+        expect(html.length).toBe(1_048_576);
+        const clipboardData: any = {
+            items: [1],
+            types: ['text/html'],
+            getData: () => html,
+        };
+
+        const result = formatMarkdownMessage(clipboardData);
+        expect(result.formattedMarkdown).toBe(`[${padding}](https://test.domain)`);
+        expect(result.formattedMessage).toBe(`[${padding}](https://test.domain)`);
+    });
+});
+
+describe('getHtmlTable with large HTML', () => {
+    test('returns null when HTML exceeds 1MB to avoid DOMParser freeze', () => {
+        const hugeHtml = '<table><tr><td>test</td></tr></table>' + 'x'.repeat(1_048_577);
+        const clipboardData: any = {
+            items: [1],
+            types: ['text/html'],
+            getData: () => hugeHtml,
+        };
+
+        expect(getHtmlTable(clipboardData)).toBe(null);
+    });
+});
+
+describe('hasHtmlLink with large HTML', () => {
+    test('returns false when HTML exceeds 1MB to avoid processing huge string', () => {
+        const hugeHtml = '<a href="https://test.domain">' + 'x'.repeat(1_048_577) + '</a>';
+        const clipboardData: any = {
+            items: [1],
+            types: ['text/html'],
+            getData: () => hugeHtml,
+        };
+
+        expect(hasHtmlLink(clipboardData)).toBe(false);
     });
 });
 
@@ -339,6 +473,34 @@ describe('pasteHandler', () => {
             }
         });
     }
+
+    test('skips formatting when HTML exceeds 1MB, letting browser do default paste', () => {
+        const hugeHtml = '<table><tr><td>test</td></tr></table>' + 'x'.repeat(1_048_577);
+        const clipboardData: any = {
+            items: [1],
+            types: ['text/plain', 'text/html'],
+            getData: (type: string) => {
+                if (type === 'text/plain') {
+                    return 'test';
+                }
+                return hugeHtml;
+            },
+        };
+        const event: any = {
+            target: {
+                id: 'reply_textbox',
+                selectionStart: 0,
+                selectionEnd: 0,
+            },
+            preventDefault: jest.fn(),
+            clipboardData,
+        };
+
+        pasteHandler(event, Locations.RHS_COMMENT, '', false, 0);
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(execCommandInsertText).not.toHaveBeenCalled();
+    });
 });
 
 describe('hasPlainText', () => {
