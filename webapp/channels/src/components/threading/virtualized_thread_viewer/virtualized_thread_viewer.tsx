@@ -90,8 +90,8 @@ const OFFSET_TO_SHOW_TOAST = -50;
 // we add a buffer to the scrollOffset
 const SCROLL_OFFSET_BUFFER = 5;
 
-const OVERSCAN_COUNT_FORWARD = 80;
-const OVERSCAN_COUNT_BACKWARD = 80;
+const OVERSCAN_COUNT_FORWARD = 10;
+const OVERSCAN_COUNT_BACKWARD = 10;
 
 class ThreadViewerVirtualized extends PureComponent<Props, State> {
     private mounted = false;
@@ -273,8 +273,9 @@ class ThreadViewerVirtualized extends PureComponent<Props, State> {
     };
 
     scrollToItemCorrection = (index: number, nearIndex: number) => {
-        // stop after 10 times so we won't end up in an infinite loop
-        if (this.scrollShortCircuit > 10) {
+        // stop after 30 times so we won't end up in an infinite loop
+        // each retry advances the measured region by roughly viewport + OVERSCAN_COUNT_FORWARD posts
+        if (this.scrollShortCircuit > 30) {
             return;
         }
 

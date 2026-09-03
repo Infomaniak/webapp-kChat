@@ -246,11 +246,12 @@ export class DynamicVirtualizedList extends PureComponent {
             scrollOffset,
             this._listMetaData,
         );
-        if (!offsetOfItem) {
+        if (offsetOfItem <= 0) {
             const itemSize = getItemSize(this.props, index, this._listMetaData);
             if (!itemSize && this.props.scrollToFailed) {
                 if (this.state.scrolledToInitIndex) {
                     this.props.scrollToFailed(index);
+                    return;
                 }
             }
         }

@@ -29,8 +29,8 @@ import Pluggable from 'plugins/pluggable';
 
 import LatestPostReader from './latest_post_reader';
 
-const OVERSCAN_COUNT_BACKWARD = 80;
-const OVERSCAN_COUNT_FORWARD = 80;
+const OVERSCAN_COUNT_BACKWARD = 10;
+const OVERSCAN_COUNT_FORWARD = 10;
 const HEIGHT_TRIGGER_FOR_MORE_POSTS = 1000;
 const BUFFER_TO_BE_CONSIDERED_BOTTOM = 100;
 
