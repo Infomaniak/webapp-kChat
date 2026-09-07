@@ -836,4 +836,146 @@ describe('channel view actions', () => {
             expect(response).toStrictEqual({data: {out_of_channel: [], users: []}});
         });
     });
+
+    describe('evictUnusedChannelPosts', () => {
+        beforeEach(() => {
+            PostActions.evictChannelsPosts.mockReturnValue(() => ({type: 'MOCK_EVICT'}));
+        });
+
+        const makeState = ({postsInChannel = {}, posts = {}, lastChannelViewTime = {}, channelPrefetchStatus = {}, rhsSelectedPostId = '', selectedThreadIdInTeam = {}, storage = {}} = {}) => ({
+            ...initialState,
+            entities: {
+                ...initialState.entities,
+                posts: {
+                    ...initialState.entities.posts,
+                    postsInChannel,
+                    posts,
+                },
+            },
+            storage: {
+                storage,
+            },
+            views: {
+                ...initialState.views,
+                channel: {
+                    ...initialState.views.channel,
+                    lastChannelViewTime,
+                    channelPrefetchStatus,
+                },
+                rhs: {
+                    ...initialState.views.rhs,
+                    selectedPostId: rhsSelectedPostId,
+                },
+                threads: {
+                    selectedThreadIdInTeam,
+                },
+            },
+        });
+
+        test('should evict channels outside the 5 last viewed and the current one', async () => {
+            store = mockStore(makeState({
+                postsInChannel: {old1: [], old2: [], channelid1: [], recent1: [], recent2: [], recent3: [], recent4: [], recent5: []},
+                lastChannelViewTime: {recent1: 500, recent2: 400, recent3: 300, recent4: 200, recent5: 100, old1: 50, old2: 40},
+            }));
+
+            await store.dispatch(Actions.evictUnusedChannelPosts());
+
+            expect(PostActions.evictChannelsPosts).toHaveBeenCalledWith(['old1', 'old2'], []);
+        });
+
+        test('should not evict the previous channel', async () => {
+            store = mockStore(makeState({
+                postsInChannel: {old1: [], previous: [], channelid1: [], recent1: [], recent2: [], recent3: [], recent4: [], recent5: []},
+                lastChannelViewTime: {recent1: 500, recent2: 400, recent3: 300, recent4: 200, recent5: 100, old1: 50},
+            }));
+
+            await store.dispatch(Actions.evictUnusedChannelPosts('previous'));
+
+            expect(PostActions.evictChannelsPosts).toHaveBeenCalledWith(['old1'], []);
+        });
+
+        test('should not evict channels with a prefetch in progress', async () => {
+            store = mockStore(makeState({
+                postsInChannel: {prefetching: [], old1: []},
+                channelPrefetchStatus: {prefetching: RequestStatus.STARTED},
+            }));
+
+            await store.dispatch(Actions.evictUnusedChannelPosts());
+
+            expect(PostActions.evictChannelsPosts).toHaveBeenCalledWith(['old1'], []);
+        });
+
+        test('should not evict the channel of a thread open in the RHS', async () => {
+            store = mockStore(makeState({
+                postsInChannel: {rhschannel: [], old1: []},
+                posts: {rhsPostId: {channel_id: 'rhschannel'}},
+                rhsSelectedPostId: 'rhsPostId',
+            }));
+
+            await store.dispatch(Actions.evictUnusedChannelPosts());
+
+            expect(PostActions.evictChannelsPosts).toHaveBeenCalledWith(['old1'], []);
+        });
+
+        test('should not evict the channel of a thread open in the global threads view', async () => {
+            store = mockStore(makeState({
+                postsInChannel: {threadchannel: [], old1: []},
+                posts: {threadRootId: {channel_id: 'threadchannel'}},
+                selectedThreadIdInTeam: {teamid1: 'threadRootId'},
+            }));
+
+            await store.dispatch(Actions.evictUnusedChannelPosts());
+
+            expect(PostActions.evictChannelsPosts).toHaveBeenCalledWith(['old1'], []);
+        });
+
+        test('should not evict a channel with a pending post', async () => {
+            store = mockStore(makeState({
+                postsInChannel: {sending: [], old1: []},
+                posts: {pendingId: {channel_id: 'sending', pending_post_id: 'pendingId'}},
+            }));
+
+            await store.dispatch(Actions.evictUnusedChannelPosts());
+
+            expect(PostActions.evictChannelsPosts).toHaveBeenCalledWith(['old1'], []);
+        });
+
+        test('should not evict a channel with a failed post', async () => {
+            store = mockStore(makeState({
+                postsInChannel: {failed: [], old1: []},
+                posts: {failedPostId: {channel_id: 'failed', pending_post_id: 'failedPostId', failed: true}},
+            }));
+
+            await store.dispatch(Actions.evictUnusedChannelPosts());
+
+            expect(PostActions.evictChannelsPosts).toHaveBeenCalledWith(['old1'], []);
+        });
+
+        test('should protect the root post of local comment drafts', async () => {
+            store = mockStore(makeState({
+                postsInChannel: {old1: []},
+                storage: {
+                    comment_draft_root1: {timestamp: new Date(), value: {message: 'draft message'}},
+                    comment_draft_root2: {timestamp: new Date(), value: {message: '', fileInfos: [{id: 'file1'}]}},
+                    comment_draft_root3: {timestamp: new Date(), value: {message: '', fileInfos: []}},
+                    comment_draft_root4: {timestamp: new Date(), value: {message: '', fileInfos: [], uploadsInProgress: ['upload1']}},
+                    draft_channelid1: {timestamp: new Date(), value: {message: 'channel draft'}},
+                },
+            }));
+
+            await store.dispatch(Actions.evictUnusedChannelPosts());
+
+            expect(PostActions.evictChannelsPosts).toHaveBeenCalledWith(['old1'], ['root1', 'root2', 'root4']);
+        });
+
+        test('should do nothing when no channel can be evicted', async () => {
+            store = mockStore(makeState({
+                postsInChannel: {channelid1: []},
+            }));
+
+            await store.dispatch(Actions.evictUnusedChannelPosts());
+
+            expect(PostActions.evictChannelsPosts).not.toHaveBeenCalled();
+        });
+    });
 });

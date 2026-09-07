@@ -9,6 +9,8 @@ import {
 } from 'mattermost-redux/reducers/entities/files';
 import deepFreeze from 'mattermost-redux/utils/deep_freeze';
 
+import {TestHelper} from 'utils/test_helper';
+
 describe('reducers/entities/files', () => {
     describe('files', () => {
         const testForSinglePost = (actionType: typeof PostTypes['RECEIVED_NEW_POST'] | typeof PostTypes['RECEIVED_POST']) => () => {
@@ -752,6 +754,38 @@ describe('reducers/entities/files', () => {
                     });
                 });
             });
+        });
+    });
+
+    describe('REMOVED_FILES_FOR_POSTS', () => {
+        it('should remove files and file ids of removed posts', () => {
+            const action = {
+                type: FileTypes.REMOVED_FILES_FOR_POSTS,
+                data: {
+                    postIds: ['post1'],
+                    fileIds: ['file1'],
+                },
+            };
+
+            const nextStateFiles = filesReducer({file1: TestHelper.getFileInfoMock({id: 'file1'}), file2: TestHelper.getFileInfoMock({id: 'file2'})}, action);
+            expect(Object.keys(nextStateFiles)).toEqual(['file2']);
+
+            const nextStateFileIds = fileIdsByPostIdReducer({post1: ['file1'], post2: ['file2']}, action);
+            expect(nextStateFileIds).toEqual({post2: ['file2']});
+        });
+
+        it('should do nothing without files to remove', () => {
+            const state = deepFreeze({file1: TestHelper.getFileInfoMock({id: 'file1'})});
+            const action = {
+                type: FileTypes.REMOVED_FILES_FOR_POSTS,
+                data: {
+                    postIds: [],
+                    fileIds: [],
+                },
+            };
+
+            const nextStateFiles = filesReducer(state, action);
+            expect(nextStateFiles).toBe(state);
         });
     });
 });

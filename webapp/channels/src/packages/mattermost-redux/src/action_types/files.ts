@@ -15,4 +15,6 @@ export default keyMirror({
     RECEIVED_FILE_PUBLIC_LINK: null,
 
     REMOVED_FILE: null,
+
+    REMOVED_FILES_FOR_POSTS: null,
 });

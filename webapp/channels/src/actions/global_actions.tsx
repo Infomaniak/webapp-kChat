@@ -30,6 +30,7 @@ import {calculateUnreadCount} from 'mattermost-redux/utils/channel_utils';
 
 import {handleNewPost} from 'actions/post_actions';
 import {loadProfilesForSidebar} from 'actions/user_actions';
+import {evictUnusedChannelPosts, joinChannelById} from 'actions/views/channel';
 import {clearUserCookie} from 'actions/views/cookie';
 import {close as closeLhs} from 'actions/views/lhs';
 import {closeRightHandSide, closeMenu as closeRhsMenu, updateRhsState} from 'actions/views/rhs';
@@ -56,7 +57,6 @@ import WebSocketClient from 'client/web_websocket_client';
 
 import type {ActionFuncAsync, ThunkActionFunc, GlobalState} from 'types/store';
 
-import {joinChannelById} from './views/channel';
 import {openModal} from './views/modals';
 
 const SubMenuModal = withSuspense(lazy(() => import('components/widgets/menu/menu_modals/submenu_modal/submenu_modal')));
@@ -117,6 +117,8 @@ export function emitChannelClickEvent(channel: Channel) {
             },
             setLastUnreadChannel(state, chan),
         ]));
+
+        dispatch(evictUnusedChannelPosts(currentChannelId));
 
         if (appsEnabled(state)) {
             dispatch(fetchAppBindings(chan.id));

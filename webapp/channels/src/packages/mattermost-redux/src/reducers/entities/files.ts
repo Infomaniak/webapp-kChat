@@ -66,6 +66,20 @@ export function files(state: Record<string, FileInfo> = {}, action: MMReduxActio
         return nextState;
     }
 
+    case FileTypes.REMOVED_FILES_FOR_POSTS: {
+        const {fileIds} = action.data;
+        if (!fileIds || fileIds.length === 0) {
+            return state;
+        }
+
+        const nextState = {...state};
+        fileIds.forEach((id: string) => {
+            Reflect.deleteProperty(nextState, id);
+        });
+
+        return nextState;
+    }
+
     case ChannelBookmarkTypes.RECEIVED_BOOKMARKS: {
         const bookmarks: ChannelBookmark[] = action.data.bookmarks;
 
@@ -196,6 +210,20 @@ export function fileIdsByPostId(state: Record<string, string[]> = {}, action: MM
         }
 
         return state;
+    }
+
+    case FileTypes.REMOVED_FILES_FOR_POSTS: {
+        const {postIds} = action.data;
+        if (!postIds || postIds.length === 0) {
+            return state;
+        }
+
+        const nextState = {...state};
+        postIds.forEach((id: string) => {
+            Reflect.deleteProperty(nextState, id);
+        });
+
+        return nextState;
     }
 
     case UserTypes.LOGOUT_SUCCESS:

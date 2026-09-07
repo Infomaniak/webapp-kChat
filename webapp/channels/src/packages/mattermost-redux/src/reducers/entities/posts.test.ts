@@ -4601,3 +4601,236 @@ describe('limitedViews', () => {
         expect(nextState).toEqual(initialState);
     });
 });
+
+describe('evictPosts', () => {
+    const baseState = {
+        posts: {
+            post1: TestHelper.getPostMock({id: 'post1', channel_id: 'channel1'}),
+            post2: TestHelper.getPostMock({id: 'post2', channel_id: 'channel1'}),
+            post3: TestHelper.getPostMock({id: 'post3', channel_id: 'channel2'}),
+            root1: TestHelper.getPostMock({id: 'root1', channel_id: 'channel2'}),
+            root2: TestHelper.getPostMock({id: 'root2', channel_id: 'channel1'}),
+        },
+        postsInChannel: {
+            channel1: [{order: ['post1', 'post2'], recent: true}],
+            channel2: [{order: ['post3', 'root1'], recent: true}],
+        },
+        postsInThread: {
+            root1: ['post3'],
+            root2: ['post1'],
+        },
+        reactions: {
+            post1: {userid1: {post_id: 'post1', user_id: 'userid1', emoji_name: 'smile'}},
+            post2: {userid1: {post_id: 'post2', user_id: 'userid1', emoji_name: 'smile'}},
+            post3: {userid1: {post_id: 'post3', user_id: 'userid1', emoji_name: 'smile'}},
+        },
+        acknowledgements: {
+            post1: {userid1: 123},
+            post2: {userid1: 123},
+        },
+        openGraph: {
+            post1: {'http://example1.com': {title: 'title1'}},
+            post2: {'http://example2.com': {title: 'title2'}},
+        },
+    };
+
+    const evictAction = (channelIds: string[], protectedPostIds: string[] = []) => ({
+        type: PostTypes.EVICT_CHANNELS_POSTS,
+        data: {channelIds, protectedPostIds},
+    });
+
+    it('should evict chunks, unreferenced posts and their related state of evicted channels', () => {
+        const state = deepFreeze(baseState);
+
+        const nextState = reducers.evictPosts(state, evictAction(['channel1']));
+
+        expect(nextState.postsInChannel).toEqual({
+            channel2: [{order: ['post3', 'root1'], recent: true}],
+        });
+        expect(nextState.posts).toEqual({
+            post3: state.posts.post3,
+            root1: state.posts.root1,
+        });
+        expect(nextState.reactions).toEqual({
+            post3: state.reactions.post3,
+        });
+        expect(nextState.acknowledgements).toEqual({});
+        expect(nextState.openGraph).toEqual({});
+    });
+
+    it('should keep posts referenced by remaining chunks and postsInThread', () => {
+        const state = deepFreeze({
+            ...baseState,
+            posts: {
+                ...baseState.posts,
+                post2: TestHelper.getPostMock({id: 'post2', channel_id: 'channel1'}),
+            },
+            postsInChannel: {
+                ...baseState.postsInChannel,
+                channel2: [{order: ['post3', 'root1', 'post2'], recent: true}],
+            },
+            postsInThread: {
+                root1: ['post2'],
+            },
+        });
+
+        const nextState = reducers.evictPosts(state, evictAction(['channel1']));
+
+        expect(nextState.posts?.post2).toBe(state.posts.post2);
+    });
+
+    it('should keep protected posts of evicted channels and their related state', () => {
+        const state = deepFreeze(baseState);
+
+        const nextState = reducers.evictPosts(state, evictAction(['channel1'], ['post2']));
+
+        expect(nextState.postsInChannel).toEqual({
+            channel2: [{order: ['post3', 'root1'], recent: true}],
+        });
+        expect(nextState.posts).toEqual({
+            post2: state.posts.post2,
+            post3: state.posts.post3,
+            root1: state.posts.root1,
+        });
+        expect(nextState.reactions).toEqual({
+            post2: state.reactions.post2,
+            post3: state.reactions.post3,
+        });
+        expect(nextState.openGraph).toEqual({
+            post2: state.openGraph.post2,
+        });
+    });
+
+    it('should remove postsInThread entries whose root post belongs to an evicted channel', () => {
+        const state = deepFreeze(baseState);
+
+        const nextState = reducers.evictPosts(state, evictAction(['channel1']));
+
+        expect(nextState.postsInThread).toEqual({
+            root1: ['post3'],
+        });
+    });
+
+    it('should keep postsInThread entries with unknown root posts', () => {
+        const state = deepFreeze({
+            ...baseState,
+            postsInThread: {
+                unknownRoot: ['post2'],
+            },
+        });
+
+        const nextState = reducers.evictPosts(state, evictAction(['channel1']));
+
+        expect(nextState.postsInThread).toEqual({
+            unknownRoot: ['post2'],
+        });
+    });
+
+    it('should keep posts referenced by kept postsInThread entries even in evicted channels', () => {
+        const state = deepFreeze({
+            ...baseState,
+            postsInThread: {
+                root1: ['post2'],
+            },
+        });
+
+        const nextState = reducers.evictPosts(state, evictAction(['channel1']));
+
+        expect(nextState.posts?.post2).toBe(state.posts.post2);
+    });
+
+    it('should keep permalink embed targets of kept posts', () => {
+        const state = deepFreeze({
+            posts: {
+                post3: TestHelper.getPostMock({
+                    id: 'post3',
+                    channel_id: 'channel2',
+                    metadata: {embeds: [{type: 'permalink', url: 'http://permalink.com', data: {post_id: 'post1'}}]} as Post['metadata'],
+                }),
+                post1: TestHelper.getPostMock({id: 'post1', channel_id: 'channel1'}),
+            },
+            postsInChannel: {
+                channel2: [{order: ['post3'], recent: true}],
+            },
+            postsInThread: {},
+        });
+
+        const nextState = reducers.evictPosts(state, evictAction(['channel1']));
+
+        expect(nextState.posts).toEqual({
+            post1: state.posts.post1,
+            post3: state.posts.post3,
+        });
+    });
+
+    it('should keep followed thread roots even if their channel is evicted', () => {
+        const state = deepFreeze(baseState);
+
+        const nextState = reducers.evictPosts(state, evictAction(['channel1'], ['root2']));
+
+        expect(nextState.posts?.root2).toBe(state.posts.root2);
+    });
+
+    it('should keep postsInThread entries of protected roots and their replies', () => {
+        const state = deepFreeze({
+            ...baseState,
+            posts: {
+                ...baseState.posts,
+                reply1: TestHelper.getPostMock({id: 'reply1', channel_id: 'channel1', root_id: 'root2'}),
+            },
+            postsInThread: {
+                ...baseState.postsInThread,
+                root2: ['post1', 'reply1'],
+            },
+        });
+
+        const nextState = reducers.evictPosts(state, evictAction(['channel1'], ['root2']));
+
+        expect(nextState.posts).toEqual({
+            post1: state.posts.post1,
+            post3: state.posts.post3,
+            root1: state.posts.root1,
+            root2: state.posts.root2,
+            reply1: state.posts.reply1,
+        });
+        expect(nextState.postsInThread).toEqual({
+            root1: ['post3'],
+            root2: ['post1', 'reply1'],
+        });
+    });
+
+    it('should be idempotent for already evicted channels', () => {
+        const state = deepFreeze(baseState);
+
+        const firstState = reducers.evictPosts(state, evictAction(['channel1']));
+        const secondState = reducers.evictPosts(firstState, evictAction(['channel1']));
+
+        expect(secondState).toBe(firstState);
+    });
+
+    it('should return the same state when nothing is evicted', () => {
+        const state = deepFreeze({
+            posts: baseState.posts,
+            postsInChannel: baseState.postsInChannel,
+            postsInThread: baseState.postsInThread,
+        });
+
+        const nextState = reducers.evictPosts(state, evictAction(['unknownchannel']));
+
+        expect(nextState).toBe(state);
+    });
+
+    it('should be handled by the default reducer', () => {
+        const state = deepFreeze(baseState);
+
+        const nextState = reducers.default(state, evictAction(['channel1']));
+
+        expect(nextState.postsInChannel).toEqual({
+            channel2: [{order: ['post3', 'root1'], recent: true}],
+        });
+        expect(nextState.posts).toEqual({
+            post3: state.posts.post3,
+            root1: state.posts.root1,
+        });
+    });
+});

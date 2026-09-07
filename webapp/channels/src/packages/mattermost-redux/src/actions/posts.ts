@@ -1310,6 +1310,69 @@ export function moveHistoryIndexForward(index: string): ActionFuncAsync {
     };
 }
 
+export function evictChannelsPosts(channelIds: string[], protectedPostIds: string[] = []): ActionFuncAsync {
+    return async (dispatch, getState) => {
+        const state = getState();
+        if (channelIds.length === 0) {
+            return {data: true};
+        }
+
+        const protectedIds = new Set(protectedPostIds);
+        for (const postId of state.entities.posts.pendingPostIds) {
+            protectedIds.add(postId);
+        }
+        for (const postId of state.entities.search.results) {
+            protectedIds.add(postId);
+        }
+        for (const postId of state.entities.search.flagged) {
+            protectedIds.add(postId);
+        }
+        for (const pinnedPosts of Object.values(state.entities.search.pinned)) {
+            for (const postId of pinnedPosts) {
+                protectedIds.add(postId);
+            }
+        }
+        if (state.entities.posts.currentFocusedPostId) {
+            protectedIds.add(state.entities.posts.currentFocusedPostId);
+        }
+        for (const threadId of Object.keys(state.entities.threads.threads)) {
+            protectedIds.add(threadId);
+        }
+
+        dispatch({
+            type: PostTypes.EVICT_CHANNELS_POSTS,
+            data: {channelIds, protectedPostIds: Array.from(protectedIds)},
+        });
+
+        const prevPosts = state.entities.posts.posts;
+        const nextPosts = getState().entities.posts.posts;
+        const removedPostIds: string[] = [];
+        const removedFileIds = new Set<string>();
+        for (const [postId, post] of Object.entries(prevPosts)) {
+            if (nextPosts[postId]) {
+                continue;
+            }
+
+            removedPostIds.push(postId);
+            for (const fileId of post.file_ids ?? []) {
+                removedFileIds.add(fileId);
+            }
+            for (const fileId of state.entities.files.fileIdsByPostId[postId] ?? []) {
+                removedFileIds.add(fileId);
+            }
+        }
+
+        if (removedPostIds.length > 0) {
+            dispatch({
+                type: FileTypes.REMOVED_FILES_FOR_POSTS,
+                data: {postIds: removedPostIds, fileIds: Array.from(removedFileIds)},
+            });
+        }
+
+        return {data: true};
+    };
+}
+
 /**
  * Ensures thread-replies in channels correctly follow CRT:ON/OFF
  */

@@ -51,7 +51,7 @@ import {loadProfilesAndReloadChannelMembers} from 'actions/user_actions';
 import {openModal} from 'actions/views/modals';
 import {markThreadAsRead} from 'actions/views/threads';
 import {getLastViewedChannelName} from 'selectors/local_storage';
-import {getSelectedPostId} from 'selectors/rhs';
+import {getSelectedPostCardId, getSelectedPostId} from 'selectors/rhs';
 import {getLastPostsApiTimeForChannel} from 'selectors/views/channel';
 import {getSelectedThreadIdInCurrentTeam} from 'selectors/views/threads';
 import {getSocketStatus} from 'selectors/views/websocket';
@@ -61,7 +61,7 @@ import IkLeaveChannelGroupBlockedModal from 'components/ik_leave_channel_group_b
 import IkLeaveChannelModal from 'components/ik_leave_channel_modal';
 
 import {getHistory} from 'utils/browser_history';
-import {Constants, ActionTypes, EventTypes, PostRequestTypes, ModalIdentifiers} from 'utils/constants';
+import {Constants, ActionTypes, EventTypes, PostRequestTypes, ModalIdentifiers, StoragePrefixes} from 'utils/constants';
 import {logTimestamp, getUserIdFromChannelName, localizeMessage} from 'utils/utils';
 
 import type {ActionFuncAsync, ThunkActionFunc} from 'types/store';
@@ -518,6 +518,70 @@ export function prefetchChannelPosts(channelId: string, jitter?: number): Action
 
         const recentPost = getPost(state, recentPostIdInChannel);
         return dispatch(syncPostsInChannel(channelId, recentPost.create_at, true));
+    };
+}
+
+const MAX_RECENTLY_VIEWED_CHANNELS_KEPT = 5;
+
+export function evictUnusedChannelPosts(previousChannelId?: string): ActionFuncAsync {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const currentChannelId = getCurrentChannelId(state);
+        if (!currentChannelId) {
+            return {data: true};
+        }
+
+        const channelViewState = state.views.channel;
+        const keepChannelIds = new Set([currentChannelId]);
+        if (previousChannelId) {
+            keepChannelIds.add(previousChannelId);
+        }
+
+        const recentChannelIds = Object.entries(channelViewState.lastChannelViewTime).
+            sort(([, timeA], [, timeB]) => timeB - timeA).
+            slice(0, MAX_RECENTLY_VIEWED_CHANNELS_KEPT).
+            map(([channelId]) => channelId);
+        for (const channelId of recentChannelIds) {
+            keepChannelIds.add(channelId);
+        }
+
+        for (const [channelId, status] of Object.entries(channelViewState.channelPrefetchStatus)) {
+            if (status === RequestStatus.STARTED) {
+                keepChannelIds.add(channelId);
+            }
+        }
+
+        const posts = state.entities.posts.posts;
+        const selectedPostIds = [getSelectedPostId(state), getSelectedPostCardId(state), getSelectedThreadIdInCurrentTeam(state)].
+            filter((postId): postId is string => Boolean(postId));
+        for (const postId of selectedPostIds) {
+            const channelId = posts[postId]?.channel_id;
+            if (channelId) {
+                keepChannelIds.add(channelId);
+            }
+        }
+
+        const protectedPostIds: string[] = [];
+        const storage = state.storage?.storage ?? {};
+        for (const [key, item] of Object.entries(storage)) {
+            if (key.startsWith(StoragePrefixes.COMMENT_DRAFT) && (item?.value?.message || item?.value?.fileInfos?.length > 0 || item?.value?.uploadsInProgress?.length > 0)) {
+                protectedPostIds.push(key.substring(StoragePrefixes.COMMENT_DRAFT.length));
+            }
+        }
+
+        const candidateChannelIds = new Set(Object.keys(state.entities.posts.postsInChannel));
+        for (const post of Object.values(posts)) {
+            if (post.pending_post_id) {
+                keepChannelIds.add(post.channel_id);
+            }
+            candidateChannelIds.add(post.channel_id);
+        }
+        const channelIds = Array.from(candidateChannelIds).filter((channelId) => !keepChannelIds.has(channelId));
+        if (channelIds.length === 0) {
+            return {data: true};
+        }
+
+        return dispatch(PostActions.evictChannelsPosts(channelIds, protectedPostIds));
     };
 }
 

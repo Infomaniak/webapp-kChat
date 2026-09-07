@@ -1648,7 +1648,154 @@ export function limitedViews(
     }
 }
 
+export function evictPosts(state: Partial<PostsState>, action: MMReduxAction): Partial<PostsState> {
+    const {channelIds, protectedPostIds} = action.data as {channelIds: string[]; protectedPostIds: string[]};
+    const evictedChannels = new Set(channelIds);
+
+    const keep = new Set(protectedPostIds);
+
+    let nextPostsInChannel = state.postsInChannel;
+    let chunksEvicted = false;
+    for (const channelId of channelIds) {
+        if (!nextPostsInChannel?.[channelId]) {
+            continue;
+        }
+
+        if (!chunksEvicted) {
+            nextPostsInChannel = {...nextPostsInChannel};
+            chunksEvicted = true;
+        }
+
+        Reflect.deleteProperty(nextPostsInChannel, channelId);
+    }
+
+    for (const blocks of Object.values(nextPostsInChannel ?? {})) {
+        for (const block of blocks) {
+            for (const postId of block.order) {
+                keep.add(postId);
+            }
+        }
+    }
+
+    let nextPostsInThread = state.postsInThread;
+    let threadsEvicted = false;
+    const keptThreadEntries: Array<[string, string[]]> = [];
+
+    const expandKeepWithPermalinkTargets = () => {
+        for (const postId of keep) {
+            for (const embed of state.posts?.[postId]?.metadata?.embeds ?? []) {
+                if (embed.type !== 'permalink' || !embed.data) {
+                    continue;
+                }
+
+                if ('post_id' in embed.data && embed.data.post_id) {
+                    keep.add(embed.data.post_id);
+                }
+
+                if ('post' in embed.data && embed.data.post) {
+                    keep.add(embed.data.post.id);
+                }
+            }
+        }
+    };
+
+    expandKeepWithPermalinkTargets();
+
+    for (const [rootId, replyIds] of Object.entries(state.postsInThread ?? {})) {
+        const rootPost = state.posts?.[rootId];
+        if (rootPost && evictedChannels.has(rootPost.channel_id) && !keep.has(rootId)) {
+            threadsEvicted = true;
+            continue;
+        }
+
+        keptThreadEntries.push([rootId, replyIds]);
+        keep.add(rootId);
+        for (const replyId of replyIds) {
+            keep.add(replyId);
+        }
+    }
+
+    if (threadsEvicted) {
+        nextPostsInThread = Object.fromEntries(keptThreadEntries) as RelationOneToMany<Post, Post>;
+    }
+
+    expandKeepWithPermalinkTargets();
+
+    const removedPostIds: string[] = [];
+    for (const [postId, post] of Object.entries(state.posts ?? {})) {
+        if (evictedChannels.has(post.channel_id) && !keep.has(postId)) {
+            removedPostIds.push(postId);
+        }
+    }
+
+    let nextPosts = state.posts;
+    if (removedPostIds.length > 0) {
+        nextPosts = {...state.posts};
+        for (const postId of removedPostIds) {
+            Reflect.deleteProperty(nextPosts, postId);
+        }
+    }
+
+    if (!chunksEvicted && !threadsEvicted && removedPostIds.length === 0) {
+        return state;
+    }
+
+    let nextReactions = state.reactions;
+    let nextAcknowledgements = state.acknowledgements;
+    let nextOpenGraph = state.openGraph;
+    if (removedPostIds.length > 0) {
+        const removedPostIdSet = new Set(removedPostIds);
+        const prune = (map: Record<string, unknown> | undefined) => {
+            if (!map) {
+                return map;
+            }
+
+            let changed = false;
+            const next: Record<string, unknown> = {};
+            for (const [postId, value] of Object.entries(map)) {
+                if (removedPostIdSet.has(postId)) {
+                    changed = true;
+                    continue;
+                }
+                next[postId] = value;
+            }
+
+            return changed ? next : map;
+        };
+
+        nextReactions = prune(state.reactions) as PostsState['reactions'];
+        nextAcknowledgements = prune(state.acknowledgements) as PostsState['acknowledgements'];
+        nextOpenGraph = prune(state.openGraph) as PostsState['openGraph'];
+        const nextPostsReplies = prune(state.postsReplies) as PostsState['postsReplies'];
+
+        return {
+            ...state,
+            posts: nextPosts,
+            postsInChannel: nextPostsInChannel,
+            postsInThread: nextPostsInThread,
+            reactions: nextReactions,
+            acknowledgements: nextAcknowledgements,
+            openGraph: nextOpenGraph,
+            postsReplies: nextPostsReplies,
+        };
+    }
+
+    return {
+        ...state,
+        posts: nextPosts,
+        postsInChannel: nextPostsInChannel,
+        postsInThread: nextPostsInThread,
+        reactions: nextReactions,
+        acknowledgements: nextAcknowledgements,
+        openGraph: nextOpenGraph,
+    };
+}
+
 export default function reducer(state: Partial<PostsState> = {}, action: MMReduxAction) {
+    if (action.type === PostTypes.EVICT_CHANNELS_POSTS) {
+        return evictPosts(state, action);
+    }
+
     const nextPosts = handlePosts(state.posts, action);
     const nextPostsInChannel = postsInChannel(state.postsInChannel, action, state.posts!, nextPosts);
 
