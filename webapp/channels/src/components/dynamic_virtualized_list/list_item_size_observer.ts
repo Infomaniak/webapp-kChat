@@ -2,13 +2,11 @@
 // See LICENSE.txt for license information.
 
 type TrackedItemCallback = (changedHeight: number) => void;
-type TrackedItemData = {element: Element; callback: TrackedItemCallback};
 
 export class ListItemSizeObserver {
     private observer: ResizeObserver;
 
-    private trackedItems: Map<string, TrackedItemData> = new Map();
-    private elementToItemId: Map<Element, string> = new Map();
+    private trackedElements: Map<Element, TrackedItemCallback> = new Map();
 
     private static instance: ListItemSizeObserver | null = null;
 
@@ -26,51 +24,25 @@ export class ListItemSizeObserver {
 
     private handleResizeObserver = (resizeEntries: ResizeObserverEntry[]) => {
         resizeEntries.forEach((resizeEntry) => {
-            const resizedElement = resizeEntry.target;
-
-            const itemId = this.elementToItemId.get(resizedElement);
-            if (!itemId) {
+            const callback = this.trackedElements.get(resizeEntry.target);
+            if (!callback) {
                 return;
             }
 
-            const itemData = this.trackedItems.get(itemId);
-            if (!itemData) {
-                return;
-            }
-
-            const changedHeight = Math.ceil(resizeEntry.borderBoxSize[0].blockSize);
-            itemData.callback(changedHeight);
+            callback(Math.ceil(resizeEntry.borderBoxSize[0].blockSize));
         });
     };
 
-    public observe(itemId: string, element: Element, callback: TrackedItemCallback): () => void {
-        const existing = this.trackedItems.get(itemId);
-        if (existing && existing.element !== element) {
-            this.observer.unobserve(existing.element);
-            this.elementToItemId.delete(existing.element);
-        }
-
-        this.trackedItems.set(itemId, {element, callback});
-        this.elementToItemId.set(element, itemId);
+    public observe(element: Element, callback: TrackedItemCallback): () => void {
+        this.trackedElements.set(element, callback);
         this.observer.observe(element);
 
-        return () => this.unobserve(itemId);
+        return () => this.unobserve(element);
     }
 
-    private unobserve(itemId: string): void {
-        const trackedItemToUnobserve = this.trackedItems.get(itemId);
-        if (trackedItemToUnobserve) {
-            this.observer.unobserve(trackedItemToUnobserve.element);
-            this.elementToItemId.delete(trackedItemToUnobserve.element);
-            this.trackedItems.delete(itemId);
+    private unobserve(element: Element): void {
+        if (this.trackedElements.delete(element)) {
+            this.observer.unobserve(element);
         }
-    }
-
-    public clear(): void {
-        this.trackedItems.forEach((trackedItem) => {
-            this.observer.unobserve(trackedItem.element);
-        });
-        this.trackedItems.clear();
-        this.elementToItemId.clear();
     }
 }

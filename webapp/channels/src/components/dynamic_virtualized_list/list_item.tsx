@@ -66,7 +66,7 @@ const ListItem = (props: Props) => {
 
         // We add the observer here to a row
         if (rowRef.current) {
-            cleanupSizeObserver = listItemSizeObserver.observe(props.itemId, rowRef.current, itemRowSizeObserverCallback);
+            cleanupSizeObserver = listItemSizeObserver.observe(rowRef.current, itemRowSizeObserverCallback);
         }
 
         return () => {

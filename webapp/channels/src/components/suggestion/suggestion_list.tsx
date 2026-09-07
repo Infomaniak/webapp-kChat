@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import cloneDeep from 'lodash/cloneDeep';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {FormattedMessage} from 'react-intl';
@@ -47,6 +46,7 @@ export default class SuggestionList extends React.PureComponent<Props> {
     contentRef: React.RefObject<HTMLUListElement>;
     wrapperRef: React.RefObject<HTMLDivElement>;
     itemRefs: Map<string, any>;
+    itemRefCallbacks: Map<string, (ref: any) => void>;
     currentLabel: string | null;
     currentItem: any;
     maxHeight: number;
@@ -57,6 +57,7 @@ export default class SuggestionList extends React.PureComponent<Props> {
         this.contentRef = React.createRef();
         this.wrapperRef = React.createRef();
         this.itemRefs = new Map();
+        this.itemRefCallbacks = new Map();
         this.currentLabel = '';
         this.currentItem = {};
         this.maxHeight = 0;
@@ -69,6 +70,10 @@ export default class SuggestionList extends React.PureComponent<Props> {
     componentDidUpdate(prevProps: Props) {
         if (this.props.selection !== prevProps.selection && this.props.selection) {
             this.scrollToItem(this.props.selection);
+        }
+
+        if (this.props.terms !== prevProps.terms) {
+            this.pruneItemRefCallbacks();
         }
 
         if (!isEmptyObject(this.currentItem)) {
@@ -139,6 +144,30 @@ export default class SuggestionList extends React.PureComponent<Props> {
 
     getContent = () => {
         return this.contentRef.current;
+    };
+
+    getItemRef = (term: string) => {
+        let itemRefCallback = this.itemRefCallbacks.get(term);
+        if (!itemRefCallback) {
+            itemRefCallback = (ref: any) => {
+                if (ref) {
+                    this.itemRefs.set(term, ref);
+                } else {
+                    this.itemRefs.delete(term);
+                }
+            };
+            this.itemRefCallbacks.set(term, itemRefCallback);
+        }
+        return itemRefCallback;
+    };
+
+    pruneItemRefCallbacks = () => {
+        const currentTerms = new Set(this.props.terms);
+        for (const term of this.itemRefCallbacks.keys()) {
+            if (!currentTerms.has(term)) {
+                this.itemRefCallbacks.delete(term);
+            }
+        }
     };
 
     scrollToItem = (term: string) => {
@@ -244,10 +273,8 @@ export default class SuggestionList extends React.PureComponent<Props> {
             return null;
         }
 
-        const clonedItems = cloneDeep(this.props.items);
-
         const items = [];
-        if (clonedItems.length === 0) {
+        if (this.props.items.length === 0) {
             if (!this.props.renderNoResults) {
                 return null;
             }
@@ -279,7 +306,7 @@ export default class SuggestionList extends React.PureComponent<Props> {
             items.push(
                 <Component
                     key={term}
-                    ref={(ref: any) => this.itemRefs.set(term, ref)}
+                    ref={this.getItemRef(term)}
                     item={this.props.items[i]}
                     term={term}
                     matchedPretext={this.props.matchedPretext[i]}
