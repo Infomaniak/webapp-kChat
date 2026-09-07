@@ -172,9 +172,9 @@ function PostComponent(props: Props) {
         return undefined;
     }, [shouldHighlight]);
 
-    const handleA11yActivateEvent = () => setA11y(true);
-    const handleA11yDeactivateEvent = () => setA11y(false);
-    const handleAlt = (e: KeyboardEvent) => setAlt(e.altKey);
+    const handleA11yActivateEvent = useCallback(() => setA11y(true), []);
+    const handleA11yDeactivateEvent = useCallback(() => setA11y(false), []);
+    const handleAlt = useCallback((e: KeyboardEvent) => setAlt(e.altKey), []);
 
     const handleA11yKeyboardFocus = useCallback((e: KeyboardEvent) => {
         if (!hasReceivedA11yFocus && shouldHighlight && isKeyPressed(e, Constants.KeyCodes.TAB) && e.shiftKey) {
@@ -201,21 +201,20 @@ function PostComponent(props: Props) {
     }, [a11yActive]);
 
     useEffect(() => {
-        let removeEventListener: (type: string, listener: EventListener) => void;
+        const node = postRef.current;
 
-        if (postRef.current) {
-            postRef.current.addEventListener(A11yCustomEventTypes.ACTIVATE, handleA11yActivateEvent);
-            postRef.current.addEventListener(A11yCustomEventTypes.DEACTIVATE, handleA11yDeactivateEvent);
-            removeEventListener = postRef.current.removeEventListener;
+        if (!node) {
+            return undefined;
         }
 
+        node.addEventListener(A11yCustomEventTypes.ACTIVATE, handleA11yActivateEvent);
+        node.addEventListener(A11yCustomEventTypes.DEACTIVATE, handleA11yDeactivateEvent);
+
         return () => {
-            if (removeEventListener) {
-                removeEventListener(A11yCustomEventTypes.ACTIVATE, handleA11yActivateEvent);
-                removeEventListener(A11yCustomEventTypes.DEACTIVATE, handleA11yDeactivateEvent);
-            }
+            node.removeEventListener(A11yCustomEventTypes.ACTIVATE, handleA11yActivateEvent);
+            node.removeEventListener(A11yCustomEventTypes.DEACTIVATE, handleA11yDeactivateEvent);
         };
-    }, []);
+    }, [handleA11yActivateEvent, handleA11yDeactivateEvent]);
 
     useEffect(() => {
         if (hover) {
@@ -227,15 +226,19 @@ function PostComponent(props: Props) {
             document.removeEventListener('keydown', handleAlt);
             document.removeEventListener('keyup', handleAlt);
         };
-    }, [hover]);
+    }, [handleAlt, hover]);
 
     useEffect(() => {
+        if (!shouldHighlight) {
+            return undefined;
+        }
+
         document.addEventListener('keyup', handleA11yKeyboardFocus);
 
         return () => {
             document.removeEventListener('keyup', handleA11yKeyboardFocus);
         };
-    }, [handleA11yKeyboardFocus]);
+    }, [handleA11yKeyboardFocus, shouldHighlight]);
 
     const hasSameRoot = (props: Props) => {
         if (props.isFirstReply) {
