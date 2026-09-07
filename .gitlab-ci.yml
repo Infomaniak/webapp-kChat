@@ -373,6 +373,7 @@ release:front:
     - apk add --no-cache minio-client=${MINIO_CLIENT_VERSION}
     - mcli alias set $S3_BUCKET $S3_HOST $S3_KEY $S3_PASSWORD --api s3v4
   script:
+    - rm -f dist/*.map
     - mcli cp --recursive dist/ $S3_BUCKET/$S3_BUCKET/kchat/$ENVIRONMENT_NAME
   artifacts:
     expire_in: 1 day

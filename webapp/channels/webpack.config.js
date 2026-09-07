@@ -14,9 +14,7 @@ const LiveReloadPlugin = require('webpack-livereload-plugin');
 const packageJson = require('./package.json');
 
 const NPM_TARGET = process.env.npm_lifecycle_event;
-const GIT_RELEASE = JSON.stringify(childProcess.execSync('git describe --tags --abbrev=0').toString());
-const IS_CANARY = GIT_RELEASE.includes('-next');
-const IS_PREPROD = GIT_RELEASE.includes('-rc');
+const GIT_RELEASE = JSON.stringify(childProcess.execSync('git describe --tags --abbrev=0').toString().trim());
 
 // list of known code editors that set an environment variable.
 const knownCodeEditors = ['VSCODE_CWD', 'INSIDE_EMACS'];
@@ -194,7 +192,7 @@ var config = {
             process: 'process/browser.js',
         }),
         new webpack.DefinePlugin({
-            COMMIT_HASH: JSON.stringify(childProcess.execSync('git rev-parse HEAD || echo dev').toString()),
+            COMMIT_HASH: JSON.stringify(childProcess.execSync('git rev-parse HEAD || echo dev').toString().trim()),
             GIT_RELEASE,
         }),
         new MiniCssExtractPlugin({
