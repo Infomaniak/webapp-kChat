@@ -74,6 +74,7 @@ describe('PostList', () => {
             const row = shallow(wrapper.instance().renderRow({
                 data: postListIds,
                 itemId: 'd',
+                index: 3,
                 style: {},
             }));
 
@@ -85,6 +86,7 @@ describe('PostList', () => {
             const row = shallow(wrapper.instance().renderRow({
                 data: postListIds,
                 itemId: 'b',
+                index: 1,
                 style: {},
             }));
 
@@ -102,6 +104,7 @@ describe('PostList', () => {
             let row = shallow(wrapper.instance().renderRow({
                 data: postListIds,
                 itemId: 'c',
+                index: 2,
                 style: {},
             }));
             expect(row.find(PostListRow).prop('shouldHighlight')).toEqual(false);
@@ -109,6 +112,7 @@ describe('PostList', () => {
             row = shallow(wrapper.instance().renderRow({
                 data: postListIds,
                 itemId: 'b',
+                index: 1,
                 style: {},
             }));
             expect(row.find(PostListRow).prop('shouldHighlight')).toEqual(true);
@@ -495,12 +499,14 @@ describe('PostList', () => {
             const post3Row = shallow(instance.renderRow({
                 data: postListIdsForClassNames,
                 itemId: 'post3',
+                index: 2,
                 style: {},
             }));
 
             const post5Row = shallow(instance.renderRow({
                 data: postListIdsForClassNames,
                 itemId: 'post5',
+                index: 6,
                 style: {},
             }));
 
@@ -527,6 +533,7 @@ describe('PostList', () => {
             const row = shallow(wrapper.instance().renderRow({
                 data: props.postListIds,
                 itemId: 'post4',
+                index: 4,
                 style: {},
             }));
 
@@ -552,6 +559,7 @@ describe('PostList', () => {
             const row = shallow(wrapper.instance().renderRow({
                 data: props.postListIds,
                 itemId: 'post2',
+                index: 1,
                 style: {},
             }));
 

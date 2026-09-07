@@ -329,8 +329,7 @@ class ThreadViewerVirtualized extends PureComponent<Props, State> {
         }
     };
 
-    renderRow = ({data, itemId, style}: {data: any; itemId: any; style: any}) => {
-        const index = data.indexOf(itemId);
+    renderRow = ({data, itemId, index, style}: {data: any; itemId: any; index: number; style: any}) => {
         let className = '';
         let a11yIndex = 0;
         const basePaddingClass = 'post-row__padding';

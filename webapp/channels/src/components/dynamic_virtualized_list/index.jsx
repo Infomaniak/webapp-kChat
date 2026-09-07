@@ -70,15 +70,20 @@ const getOffsetForIndexAndAlignment = (
 };
 
 const findNearestItem = (props, listMetaData, high, low, scrollOffset) => {
+    const {itemOffsetMap, itemSizeMap} = listMetaData;
+    const {itemData} = props;
+
     let index = low;
-    while (low <= high) {
-        var currentOffset = getItemMetadata(props, low, listMetaData).offset;
+    let current = low;
+    while (current <= high) {
+        const id = itemData[current];
+        const currentOffset = itemSizeMap[id] ? (itemOffsetMap[id] || 0) : 0;
         if (scrollOffset - currentOffset <= 0) {
-            index = low;
+            index = current;
         }
 
         // eslint-disable-next-line no-param-reassign
-        low++;
+        current++;
     }
     return index;
 };
@@ -90,7 +95,7 @@ const getStartIndexForOffset = (props, offset, listMetaData) => {
     // If we've already positioned and measured past this point,
     // Use a binary search to find the closets cell.
     if (offset <= totalMeasuredSize) {
-        return findNearestItem(props, listMetaData, itemData.length, 0, offset);
+        return findNearestItem(props, listMetaData, itemData.length - 1, 0, offset);
     }
 
     // Otherwise render a new batch of items starting from where 0.
@@ -139,6 +144,9 @@ export class DynamicVirtualizedList extends PureComponent {
     };
 
     _itemStyleCache = {};
+    _placeholderCache = {};
+    _indexMap = new Map();
+    _indexMapFor = null;
     _outerRef;
     _scrollCorrectionInProgress = false;
     _scrollByCorrection = null;
@@ -317,6 +325,8 @@ export class DynamicVirtualizedList extends PureComponent {
 
         this._commitHook();
         if (prevProps.itemData !== this.props.itemData) {
+            this._indexMapFor = null;
+            this._getIndexMap();
             this._dataChange();
         }
 
@@ -518,6 +528,27 @@ export class DynamicVirtualizedList extends PureComponent {
         }, 50);
     };
 
+    _getIndexMap = () => {
+        if (this._indexMapFor !== this.props.itemData) {
+            const {itemData} = this.props;
+            const map = new Map();
+            for (let i = 0; i < itemData.length; i++) {
+                map.set(itemData[i], i);
+            }
+            this._indexMap = map;
+            this._indexMapFor = itemData;
+            for (const id of Object.keys(this._placeholderCache)) {
+                if (!map.has(id)) {
+                    delete this._placeholderCache[id];
+                    delete this._itemStyleCache[id];
+                    delete this._listMetaData.itemSizeMap[id];
+                    delete this._listMetaData.itemOffsetMap[id];
+                }
+            }
+        }
+        return this._indexMap;
+    };
+
     // Lazily create and cache item styles while scrolling,
     // So that pure component sCU will prevent re-renders.
     // We maintain this cache, and pass a style prop rather than index,
@@ -538,6 +569,7 @@ export class DynamicVirtualizedList extends PureComponent {
                 width: '100%',
             };
             itemStyleCache[itemData[index]] = style;
+            delete this._placeholderCache[itemData[index]];
         }
 
         return style;
@@ -606,9 +638,11 @@ export class DynamicVirtualizedList extends PureComponent {
     _generateOffsetMeasurements = () => {
         const {itemOffsetMap, itemSizeMap} = this._listMetaData;
         const {itemData} = this.props;
+        const changedIds = [];
         this._listMetaData.totalMeasuredSize = 0;
 
         for (let i = itemData.length - 1; i >= 0; i--) {
+            const id = itemData[i];
             const prevOffset = itemOffsetMap[itemData[i + 1]] || 0;
 
             // In some browsers (e.g. Firefox) fast scrolling may skip rows.
@@ -617,18 +651,24 @@ export class DynamicVirtualizedList extends PureComponent {
             // Slow scrolling back over these skipped rows will adjust their sizes.
             const prevSize = itemSizeMap[itemData[i + 1]] || 0;
 
-            itemOffsetMap[itemData[i]] = prevOffset + prevSize;
-            this._listMetaData.totalMeasuredSize += itemSizeMap[itemData[i]] || 0;
+            const newOffset = prevOffset + prevSize;
+            if (itemOffsetMap[id] !== newOffset) {
+                itemOffsetMap[id] = newOffset;
+                changedIds.push(id);
+            }
+            this._listMetaData.totalMeasuredSize += itemSizeMap[id] || 0;
+        }
 
-            // Reset cached style to clear stale position.
-            delete this._itemStyleCache[itemData[i]];
+        for (let i = 0; i < changedIds.length; i++) {
+            delete this._itemStyleCache[changedIds[i]];
+            delete this._placeholderCache[changedIds[i]];
         }
     };
 
     _handleNewMeasurements = (key, newSize, forceScrollCorrection) => {
         const {itemSizeMap} = this._listMetaData;
         const {itemData} = this.props;
-        const index = itemData.findIndex((item) => item === key);
+        const index = this._getIndexMap().get(key) ?? -1;
 
         // In some browsers (e.g. Firefox) fast scrolling may skip rows.
         // In this case, our assumptions about last measured indices may be incorrect.
@@ -640,6 +680,9 @@ export class DynamicVirtualizedList extends PureComponent {
         }
 
         itemSizeMap[key] = newSize;
+
+        delete this._itemStyleCache[key];
+        delete this._placeholderCache[key];
 
         if (!this.state.scrolledToInitIndex) {
             this._generateOffsetMeasurements();
@@ -743,10 +786,12 @@ export class DynamicVirtualizedList extends PureComponent {
         if (props.itemData[index] === itemId) {
             return;
         }
-        const doesItemExist = props.itemData.includes(itemId);
+        const doesItemExist = this._getIndexMap().has(itemId);
         if (!doesItemExist) {
             delete this._listMetaData.itemSizeMap[itemId];
             delete this._listMetaData.itemOffsetMap[itemId];
+            delete this._itemStyleCache[itemId];
+            delete this._placeholderCache[itemId];
             const element = this._outerRef;
 
             const atBottom =
@@ -853,6 +898,7 @@ export class DynamicVirtualizedList extends PureComponent {
                     const item = createElement(this.props.children, {
                         data: this.props.itemData,
                         itemId,
+                        index,
                     });
 
                     // Always wrap children in a ItemRow to detect changes in size.
@@ -869,12 +915,15 @@ export class DynamicVirtualizedList extends PureComponent {
                         }),
                     );
                 } else {
-                    items.push(
-                        createElement('div', {
+                    let placeholder = this._placeholderCache[itemId];
+                    if (!placeholder) {
+                        placeholder = createElement('div', {
                             key: itemId,
                             style,
-                        }),
-                    );
+                        });
+                        this._placeholderCache[itemId] = placeholder;
+                    }
+                    items.push(placeholder);
                 }
             }
         }
