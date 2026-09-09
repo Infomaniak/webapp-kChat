@@ -17,12 +17,12 @@ export interface WcIdentitySheetElement extends HTMLElement {
     open(options?: {mode: 'click' | 'hover'}): Promise<void>;
     close(options?: {animated?: boolean}): Promise<void>;
     entityType: string;
-    entityId?: number;
+    entityId?: string | number | null;
     accountId?: number;
-    displayName?: string;
+    displayName?: string | null;
     teamIcon?: string;
     teamColor?: number;
-    customTrigger?: HTMLElement;
+    customTrigger?: HTMLElement | null;
     hideDefaultSlot: boolean;
     project: 'kchat';
 }
@@ -100,7 +100,6 @@ export function WcIdentitySheetService() {
                 hide-default-slot={true}
                 prevent-open-on-hover={true}
                 prevent-stop-propagation={true}
-                size={'md'}
             />
         </div>
     );

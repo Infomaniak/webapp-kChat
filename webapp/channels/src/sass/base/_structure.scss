@@ -355,7 +355,7 @@ img {
 }
 
 // Hide all children except triggers when web component is not defined
-wc-contact-sheet:not(:defined) > *:not([slot="trigger"]) {
+wc-identity-sheet:not(:defined) > *:not([slot="trigger"]) {
     display: none;
 }
 

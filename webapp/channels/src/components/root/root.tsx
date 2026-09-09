@@ -54,9 +54,9 @@ import {LLMBotPost} from 'plugins/ai/components/llmbot_post';
 import LuxonController from './luxon_controller';
 import RootProvider from './root_provider';
 import RootRedirect from './root_redirect';
-import {WcContactSheetService} from './wc_contact_sheet_service';
 import {WcIdentitySheetService} from './wc_identity_sheet_service';
 import {WcKsuiteUpgradeModal} from './wc_ksuite_upgrade_modal';
+import {WcUserIdentitySheetService} from './wc_user_identity_sheet_service';
 import WithTitleObserver from './with_title_observer';
 
 import {checkIKTokenExpiresSoon, checkIKTokenIsExpired, clearLocalStorageToken, getChallengeAndRedirectToLogin, isDefaultAuthServer, refreshIKToken, storeTokenResponse} from '../login/utils';
@@ -629,7 +629,7 @@ export default class Root extends React.PureComponent<Props, State> {
                 <MobileViewWatcher/>
                 <LuxonController/>
                 <WcKsuiteUpgradeModal/>
-                <WcContactSheetService/>
+                <WcUserIdentitySheetService/>
                 <WcIdentitySheetService/>
                 <Switch>
                     <Route

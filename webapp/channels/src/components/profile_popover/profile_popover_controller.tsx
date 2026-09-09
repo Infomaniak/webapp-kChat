@@ -8,11 +8,13 @@ import {useIntl} from 'react-intl';
 import {useSelector} from 'react-redux';
 
 import type {Channel} from '@mattermost/types/channels';
-import type {UserProfile} from '@mattermost/types/users';
+import type {UserCustomStatus, UserProfile} from '@mattermost/types/users';
 
 import {isGuest, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
-import {showContactSheet} from 'components/root/wc_contact_sheet_service';
+import {isCustomStatusEnabled as getIsCustomStatusEnabled, isCustomStatusExpired as getIsCustomStatusExpired, makeGetCustomStatus} from 'selectors/views/custom_status';
+
+import {showUserIdentitySheet} from 'components/root/wc_user_identity_sheet_service';
 
 import {UserStatuses} from 'utils/constants';
 
@@ -98,6 +100,19 @@ export function ProfilePopoverController(props: Props) {
     const displayedUsername = props.username || user?.username;
     const isUserGuest = user?.roles ? isGuest(user.roles) : false;
 
+    const getCustomStatus = useMemo(makeGetCustomStatus, []);
+    const latestCustomStatus = useSelector((state: GlobalState) => getCustomStatus(state, props.userId));
+    const isCustomStatusEnabled = useSelector(getIsCustomStatusEnabled);
+    const isCustomStatusExpired = useSelector((state: GlobalState) => getIsCustomStatusExpired(state, latestCustomStatus));
+
+    const customStatus = useMemo((): UserCustomStatus | undefined => {
+        const customStatusSet = Boolean(latestCustomStatus?.text || latestCustomStatus?.emoji);
+        if (!isCustomStatusEnabled || shouldDisplayMinimalPanel || props.hideStatus || !customStatusSet || isCustomStatusExpired) {
+            return undefined;
+        }
+        return latestCustomStatus;
+    }, [isCustomStatusEnabled, shouldDisplayMinimalPanel, props.hideStatus, latestCustomStatus, isCustomStatusExpired]);
+
     const badges = useMemo(() => {
         const badgeList: string[] = [];
 
@@ -136,7 +151,7 @@ export function ProfilePopoverController(props: Props) {
         if (!trigger) {
             return;
         }
-        showContactSheet({
+        showUserIdentitySheet({
             accountId: currentTeamAccountId,
             badges,
             customContent: shouldDisplayMinimalPanel ? (
@@ -149,6 +164,7 @@ export function ProfilePopoverController(props: Props) {
                     })}
                 </div>
             ) : undefined,
+            customStatus,
             hideStatus: props.hideStatus,
             isUserGuest,
             overwriteIcon: props.overwriteIcon,
