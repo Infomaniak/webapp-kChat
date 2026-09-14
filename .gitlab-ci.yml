@@ -27,7 +27,8 @@ default:
 
 variables:
   KANIKO_VERSION: "debug"
-  MINIO_CLIENT_VERSION: "RELEASE.2022-11-07T23-47-39Z"
+  ALPINE_VERSION: "3.22"
+  MINIO_CLIENT_VERSION: "0.20250521.015954-r5"
   NODE_VERSION: 20.11.1
   SENTRY_VERSION: 2.17.1
   RUBY_VERSION: 3.3.1
@@ -357,8 +358,7 @@ release:front:
   stage: release
   interruptible: false
   image:
-    name: minio/mc:${MINIO_CLIENT_VERSION}
-    entrypoint: [""]
+    name: alpine:${ALPINE_VERSION}
   tags: [shared, standard]
   needs: ["build:front"]
   rules:
@@ -370,14 +370,15 @@ release:front:
   environment:
     name: "$ENVIRONMENT_NAME"
   before_script:
-    - mc config host add $S3_BUCKET $S3_HOST $S3_KEY $S3_PASSWORD --api s3v4
+    - apk add --no-cache minio-client=${MINIO_CLIENT_VERSION}
+    - mcli alias set $S3_BUCKET $S3_HOST $S3_KEY $S3_PASSWORD --api s3v4
   script:
-    - mc cp --recursive dist/ $S3_BUCKET/$S3_BUCKET/kchat/$ENVIRONMENT_NAME
+    - mcli cp --recursive dist/ $S3_BUCKET/$S3_BUCKET/kchat/$ENVIRONMENT_NAME
   artifacts:
     expire_in: 1 day
   after_script:
-    - mc rm --recursive --force --older-than 30d $S3_BUCKET/$S3_BUCKET/kchat/staging
-    - mc rm --recursive --force --older-than 30d $S3_BUCKET/$S3_BUCKET/kchat/preprod
+    - mcli rm --recursive --force --older-than 30d $S3_BUCKET/$S3_BUCKET/kchat/staging
+    - mcli rm --recursive --force --older-than 30d $S3_BUCKET/$S3_BUCKET/kchat/preprod
 
 release:changelog:
   stage: .post
