@@ -383,7 +383,7 @@ release:front:
 release:changelog:
   stage: .post
   image: ruby:${RUBY_VERSION}
-  needs: ["release:front"]
+  needs: ["release:front", "deploy:image"]
   rules:
     - *rule-preprod
     - *rule-canary
