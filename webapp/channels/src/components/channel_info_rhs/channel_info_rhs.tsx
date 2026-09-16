@@ -38,9 +38,9 @@ export interface DMUser {
 }
 
 export interface Props {
-    channel: Channel;
+    channel?: Channel;
     channelStats: ChannelStats;
-    currentUser: UserProfile;
+    currentUser?: UserProfile;
     currentTeam: Team | undefined;
     isArchived: boolean;
     isPreview: boolean;
@@ -83,6 +83,10 @@ const ChannelInfoRhs = ({
     canManageProperties,
     actions,
 }: Props) => {
+    if (!channel || !currentUser) {
+        return null;
+    }
+
     const currentUserId = currentUser.id;
     const channelURL = getSiteURL() + '/' + currentTeam?.name + '/channels/' + channel?.name;
 

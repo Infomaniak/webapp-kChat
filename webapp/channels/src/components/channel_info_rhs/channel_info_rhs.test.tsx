@@ -52,6 +52,18 @@ describe('channel_info_rhs', () => {
     });
 
     describe('about area', () => {
+        test('should render nothing while the current channel is not loaded', () => {
+            const {container} = renderWithContext(
+                <ChannelInfoRHS
+                    {...props}
+                    channel={undefined}
+                />,
+            );
+
+            expect(container).toBeEmptyDOMElement();
+            expect(mockAboutArea).not.toHaveBeenCalled();
+        });
+
         test('should be editable', async () => {
             renderWithContext(
                 <ChannelInfoRHS
