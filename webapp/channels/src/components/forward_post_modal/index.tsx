@@ -183,6 +183,8 @@ const ForwardPostModal = ({onExited, post}: Props) => {
         setTimeout(() => setHasError(false), Constants.ANIMATION_TIMEOUT);
     };
 
+    const isForwardingRef = useRef(false);
+
     const handleSubmit = () => {
         if (postError) {
             return Promise.resolve();
@@ -192,11 +194,17 @@ const ForwardPostModal = ({onExited, post}: Props) => {
             return Promise.resolve();
         }
 
+        if (isForwardingRef.current) {
+            return Promise.resolve();
+        }
+
         const channelToForward = isPrivateConversation ? makeSelectedChannelOption(channel) : selectedChannel;
 
         if (!channelToForward) {
             return Promise.resolve();
         }
+
+        isForwardingRef.current = true;
 
         const {type, userId} = channelToForward.details;
 
@@ -234,6 +242,8 @@ const ForwardPostModal = ({onExited, post}: Props) => {
             if (result?.error) {
                 handlePostError(result.error);
             }
+        }).finally(() => {
+            isForwardingRef.current = false;
         });
     };
 
