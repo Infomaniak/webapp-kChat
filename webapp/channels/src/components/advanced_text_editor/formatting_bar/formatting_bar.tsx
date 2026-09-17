@@ -9,6 +9,7 @@ import {useIntl} from 'react-intl';
 import {CSSTransition} from 'react-transition-group';
 import styled from 'styled-components';
 
+import {horizontallyWithin} from 'utils/floating';
 import type {ApplyMarkdownOptions, MarkdownMode} from 'utils/markdown/apply_markdown';
 
 import FormattingIcon, {IconContainer} from './formatting_icon';
@@ -54,53 +55,55 @@ const LeftControls = styled.div`
     overflow: hidden;
 `;
 
-const HiddenControlsContainer = styled.div`
+const HiddenControlsContent = styled.div`
     padding: 5px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     border-radius: 4px;
     border: 1px solid rgba(var(--center-channel-color-rgb), 0.16);
     background: var(--center-channel-bg);
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 2px;
+`;
+
+const HiddenControlsContainer = styled.div`
+    max-width: 100%;
     z-index: -1;
 
-    transition: transform 250ms ease, opacity 250ms ease;
-    transform: scale(0);
-    opacity: 0;
-    display: flex;
-
-    &.scale-enter {
-        transform: scale(0);
-        opacity: 0;
-        z-index: 20;
-    }
-
-    &.scale-enter-active {
-        transform: scale(1);
-        opacity: 1;
-        z-index: 20;
-    }
-
-    &.scale-enter-done {
-        transform: scale(1);
-        opacity: 1;
-        z-index: 20;
-    }
-
-    &.scale-exit {
-        transform: scale(1);
-        opacity: 1;
-        z-index: 20;
-    }
-
+    &.scale-enter,
+    &.scale-enter-active,
+    &.scale-enter-done,
+    &.scale-exit,
     &.scale-exit-active {
-        transform: scale(0);
-        opacity: 0;
         z-index: 20;
     }
 
     &.scale-exit-done {
+        z-index: -1;
+    }
+
+    ${HiddenControlsContent} {
+        transition: transform 250ms ease, opacity 250ms ease;
         transform: scale(0);
         opacity: 0;
-        z-index: -1;
+    }
+
+    &.scale-enter ${HiddenControlsContent} {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    &.scale-enter-active ${HiddenControlsContent},
+    &.scale-enter-done ${HiddenControlsContent},
+    &.scale-exit ${HiddenControlsContent} {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    &.scale-exit-active ${HiddenControlsContent},
+    &.scale-exit-done ${HiddenControlsContent} {
+        transform: scale(0);
+        opacity: 0;
     }
 `;
 
@@ -164,7 +167,12 @@ const FormattingBar = (props: FormattingBarProps): JSX.Element => {
         open: showHiddenControls,
         onOpenChange: setShowHiddenControls,
         placement: 'top',
-        middleware: [offset({mainAxis: 4})],
+        middleware: [
+            offset({mainAxis: 4}),
+            horizontallyWithin({
+                boundary: formattingBarRef.current?.closest('#advancedTextEditorCell'),
+            }),
+        ],
     });
 
     const click = useClick(context);
@@ -301,7 +309,9 @@ const FormattingBar = (props: FormattingBarProps): JSX.Element => {
                     {...getClickFloatingProps()}
                     {...getDismissFloatingProps()}
                 >
-                    {hiddenCollapsible.map(renderLeftItem)}
+                    <HiddenControlsContent>
+                        {hiddenCollapsible.map(renderLeftItem)}
+                    </HiddenControlsContent>
                 </HiddenControlsContainer>
             </CSSTransition>
         </FormattingBarContainer>
