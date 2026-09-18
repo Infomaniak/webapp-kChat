@@ -99,6 +99,19 @@ function focusedPostId(state = '', action: MMAction) {
     }
 }
 
+function permalinkLoadFailed(state = false, action: MMAction) {
+    switch (action.type) {
+    case ActionTypes.PERMALINK_LOAD_FAILED:
+        return true;
+    case ActionTypes.RECEIVED_FOCUSED_POST:
+    case ChannelTypes.SELECT_CHANNEL:
+    case UserTypes.LOGOUT_SUCCESS:
+        return false;
+    default:
+        return state;
+    }
+}
+
 function mobileView(state = false, action: MMAction) {
     switch (action.type) {
     case ActionTypes.UPDATE_MOBILE_VIEW:
@@ -189,6 +202,7 @@ export default combineReducers({
     lastChannelViewTime,
     loadingPosts,
     focusedPostId,
+    permalinkLoadFailed,
     mobileView,
     lastUnreadChannel,
     lastGetPosts,

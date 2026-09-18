@@ -5,7 +5,7 @@ import {GeneralTypes, UserTypes, ChannelTypes} from 'mattermost-redux/action_typ
 
 import channelReducer from 'reducers/views/channel';
 
-import {ActionTypes} from 'utils/constants';
+import {ActionTypes, Constants} from 'utils/constants';
 
 describe('Reducers.channel', () => {
     const initialState = {
@@ -13,6 +13,7 @@ describe('Reducers.channel', () => {
         lastChannelViewTime: {},
         loadingPosts: {},
         focusedPostId: '',
+        permalinkLoadFailed: false,
         mobileView: false,
         lastUnreadChannel: null,
         lastGetPosts: {},
@@ -140,6 +141,80 @@ describe('Reducers.channel', () => {
             );
 
             expect(nextState).toEqual(modifiedState);
+        });
+    });
+
+    describe('permalinkLoadFailed', () => {
+        test('should set the flag on dispatch of PERMALINK_LOAD_FAILED', () => {
+            const nextState = channelReducer(
+                initialState,
+                {
+                    type: ActionTypes.PERMALINK_LOAD_FAILED,
+                },
+            );
+
+            expect(nextState).toEqual({
+                ...initialState,
+                permalinkLoadFailed: true,
+            });
+        });
+
+        test('should clear the flag on dispatch of RECEIVED_FOCUSED_POST', () => {
+            const modifiedState = {
+                ...initialState,
+                permalinkLoadFailed: true,
+            };
+
+            const nextState = channelReducer(
+                modifiedState,
+                {
+                    type: ActionTypes.RECEIVED_FOCUSED_POST,
+                    data: 'postId',
+                    channelId: 'channelId',
+                },
+            );
+
+            expect(nextState).toEqual({
+                ...initialState,
+                focusedPostId: 'postId',
+                postVisibility: {channelId: Constants.POST_CHUNK_SIZE / 2},
+            });
+        });
+
+        test('should clear the flag on dispatch of SELECT_CHANNEL', () => {
+            const modifiedState = {
+                ...initialState,
+                permalinkLoadFailed: true,
+            };
+
+            const nextState = channelReducer(
+                modifiedState,
+                {
+                    type: ChannelTypes.SELECT_CHANNEL,
+                    data: 'channelId',
+                },
+            );
+
+            expect(nextState).toEqual({
+                ...initialState,
+                postVisibility: {channelId: Constants.POST_CHUNK_SIZE / 2},
+            });
+        });
+
+        test('should clear the flag on dispatch of LOGOUT_SUCCESS', () => {
+            const modifiedState = {
+                ...initialState,
+                permalinkLoadFailed: true,
+            };
+
+            const nextState = channelReducer(
+                modifiedState,
+                {
+                    type: UserTypes.LOGOUT_SUCCESS,
+                },
+            );
+
+            expect(nextState).toEqual(initialState);
         });
     });
 });

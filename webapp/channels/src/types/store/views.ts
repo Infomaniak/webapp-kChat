@@ -84,6 +84,7 @@ export type ViewsState = {
             [channelId: string]: boolean;
         };
         focusedPostId: string;
+        permalinkLoadFailed: boolean;
         mobileView: boolean;
         lastUnreadChannel: (Channel & {hadMentions: boolean}) | null; // Actually only an object with {id: string, hadMentions: boolean}
         lastGetPosts: {

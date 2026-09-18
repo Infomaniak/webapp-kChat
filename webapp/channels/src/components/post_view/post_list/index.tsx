@@ -62,14 +62,19 @@ function makeMapStateToProps() {
         const hasInaccessiblePosts = Boolean(limitedViews.channels[channelId]) || limitedViews.channels[channelId] === 0;
 
         const focusedPost = getPost(state, focusedPostId || '');
+        const permalinkPending = Boolean(focusedPostId) && !channelViewState.permalinkLoadFailed;
 
         if (focusedPostId && focusedPost !== undefined) {
             chunk = getPostsChunkAroundPost(state, focusedPostId, channelId);
-        } else if (unreadChunkTimeStamp && !shouldStartFromBottomWhenUnread) {
-            chunk = getUnreadPostsChunk(state, channelId, unreadChunkTimeStamp);
-        } else {
-            chunk = getRecentPostsChunkInChannel(state, channelId);
-            notRecentPostsChunk = getNotRecentPostsChunkInChannel(state, channelId);
+        }
+
+        if (!chunk && !permalinkPending) {
+            if (unreadChunkTimeStamp && !shouldStartFromBottomWhenUnread) {
+                chunk = getUnreadPostsChunk(state, channelId, unreadChunkTimeStamp);
+            } else {
+                chunk = getRecentPostsChunkInChannel(state, channelId);
+                notRecentPostsChunk = getNotRecentPostsChunkInChannel(state, channelId);
+            }
         }
 
         if (chunk) {

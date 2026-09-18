@@ -333,6 +333,7 @@ export function loadPostsAround(channelId: string, focusedPostId: string): Actio
     return async (dispatch) => {
         const {data, error} = await dispatch(PostActions.getPostsAround(channelId, focusedPostId, Posts.POST_CHUNK_SIZE / 2));
         if (error) {
+            dispatch({type: ActionTypes.PERMALINK_LOAD_FAILED});
             return {
                 error,
                 atLatestMessage: false,

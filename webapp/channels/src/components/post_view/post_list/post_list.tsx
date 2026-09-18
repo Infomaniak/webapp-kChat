@@ -232,6 +232,8 @@ export default class PostList extends React.PureComponent<Props, State> {
     componentDidUpdate(prevProps: Props) {
         if (this.props.channelId !== prevProps.channelId) {
             this.postsOnLoad(this.props.channelId);
+        } else if (this.props.focusedPostId && this.props.focusedPostId !== prevProps.focusedPostId) {
+            this.postsOnLoad(this.props.channelId);
         }
         if (this.props.latestPostNoChunkId !== prevProps.latestPostNoChunkId && this.props.latestPostNoChunkId) {
             this.loadMissingPosts();
@@ -254,7 +256,10 @@ export default class PostList extends React.PureComponent<Props, State> {
     postsOnLoad = async (channelId: string) => {
         const {focusedPostId, isFirstLoad, latestPostTimeStamp, isPrefetchingInProcess, actions} = this.props;
         if (focusedPostId) {
-            await actions.loadPostsAround(channelId, focusedPostId);
+            const {error} = await actions.loadPostsAround(channelId, focusedPostId);
+            if (error) {
+                await actions.loadLatestPosts(channelId);
+            }
         } else if (isFirstLoad) {
             if (!isPrefetchingInProcess) {
                 await actions.loadUnreads(channelId);
