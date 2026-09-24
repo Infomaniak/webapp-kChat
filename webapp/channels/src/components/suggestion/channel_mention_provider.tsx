@@ -168,8 +168,8 @@ export default class ChannelMentionProvider extends Provider {
         });
         const channelMentions = wrappedChannels.map((item) => '~' + item.channel?.name);
         resultCallback({
-            terms: channelMentions.concat([' ']),
-            items: wrappedChannels.concat([{
+            terms: wrappedChannels.length === 0 ? [] : channelMentions.concat([' ']),
+            items: wrappedChannels.length === 0 ? [] : wrappedChannels.concat([{
                 type: Constants.MENTION_MORE_CHANNELS,
                 loading: true,
             }]),
