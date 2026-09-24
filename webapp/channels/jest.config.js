@@ -9,6 +9,8 @@ const config = {
     clearMocks: true,
     globals: {
         GIT_RELEASE: '1.0.0',
+        SENTRY_RELEASE: 'webapp@1.0.0',
+        SENTRY_ENVIRONMENT: 'production',
         COMMIT_HASH: '0123456789abcdefghij1234567890abcdefghij',
     },
     fakeTimers: {

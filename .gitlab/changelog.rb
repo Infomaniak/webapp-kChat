@@ -1,11 +1,11 @@
 require_relative 'gitlab'
 
 def valid_version?(version)
-  version =~ /\A\d+\.\d+\.\d+(-next\.\d+|-rc\.\d+)?\z/
+  version =~ /\A\d+\.\d+\.\d+(-alpha\.\d+|-beta\.\d+)?\z/
 end
 
 def parse_version(version)
-  pre_release_delimiter = version.include?('-rc.') ? '-rc.' : '-next.'
+  pre_release_delimiter = version.include?('-alpha.') ? '-alpha.' : '-beta.'
   main, pre_release = version.split(pre_release_delimiter)
   parts = main.split('.').map(&:to_i)
 
@@ -25,12 +25,12 @@ def compare_versions(v1, v2)
 end
 
 def get_last_tag(current_tag)
-  is_pre_release = current_tag.include?('-next.') || current_tag.include?('-rc.')
+  is_pre_release = current_tag.include?('-alpha.') || current_tag.include?('-beta.')
   all_tags = get_all_tags.select { |tag| valid_version?(tag["name"]) }
 
   current_tag_parts = parse_version(current_tag)
   previous_tags = all_tags.select do |tag|
-    is_tag_pre_release = tag["name"].include?('-next.') || tag["name"].include?('-rc.')
+    is_tag_pre_release = tag["name"].include?('-alpha.') || tag["name"].include?('-beta.')
     next false if is_pre_release != is_tag_pre_release
     compare_versions(parse_version(tag["name"]), current_tag_parts) < 0
   end

@@ -69,15 +69,15 @@ if /\A\d+\.\d+\.\d+\z/.match?(GIT_RELEASE_TAG)
   puts "Creating release for tag #{GIT_RELEASE_TAG} for milestone #{MILESTONE}"
 end
 
-if GIT_RELEASE_TAG =~ /\A\d+\.\d+\.\d+-next\.\d+\z/
+if GIT_RELEASE_TAG =~ /\A\d+\.\d+\.\d+-beta\.\d+\z/
   puts "Processing prerelease tag: #{GIT_RELEASE_TAG}"
   changelog, merged_mrs = process_release(GIT_RELEASE_TAG)
   process_next_release(GIT_RELEASE_TAG, merged_mrs)
   create_release(GIT_RELEASE_TAG, changelog)
-  puts "Creating release for canary tag #{GIT_RELEASE_TAG} for milestone #{MILESTONE}"
+  puts "Creating release for beta tag #{GIT_RELEASE_TAG} for milestone #{MILESTONE}"
 end
 
-if GIT_RELEASE_TAG =~ /\A\d+\.\d+\.\d+-rc\.\d+\z/
+if GIT_RELEASE_TAG =~ /\A\d+\.\d+\.\d+-alpha\.\d+\z/
   puts "Processing prerelease tag: #{GIT_RELEASE_TAG}"
   changelog, merged_mrs = process_release(GIT_RELEASE_TAG)
   process_preprod_release(GIT_RELEASE_TAG, merged_mrs)
@@ -85,6 +85,6 @@ if GIT_RELEASE_TAG =~ /\A\d+\.\d+\.\d+-rc\.\d+\z/
   puts "Creating release for preprod tag #{GIT_RELEASE_TAG} for milestone #{MILESTONE}"
 end
 
-if /\A\d+\.\d+\.\d+\z/.match?(GIT_RELEASE_TAG) || GIT_RELEASE_TAG =~ /\A\d+\.\d+\.\d+-next\.\d+\z/ || GIT_RELEASE_TAG =~ /\A\d+\.\d+\.\d+-rc\.\d+\z/
+if /\A\d+\.\d+\.\d+\z/.match?(GIT_RELEASE_TAG) || GIT_RELEASE_TAG =~ /\A\d+\.\d+\.\d+-beta\.\d+\z/ || GIT_RELEASE_TAG =~ /\A\d+\.\d+\.\d+-alpha\.\d+\z/
   notify_release(changelog, GIT_RELEASE_TAG)
 end

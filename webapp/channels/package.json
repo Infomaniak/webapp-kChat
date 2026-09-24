@@ -116,6 +116,7 @@
     "@redux-devtools/extension": "3.2.3",
     "@sentry/react": "9.28.1",
     "@sentry/types": "9.28.1",
+    "@sentry/webpack-plugin": "5.4.0",
     "@stylistic/stylelint-plugin": "2.1.0",
     "@testing-library/jest-dom": "5.16.4",
     "@testing-library/react": "12.1.4",

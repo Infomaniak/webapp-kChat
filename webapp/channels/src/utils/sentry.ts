@@ -11,11 +11,12 @@ interface Args {
     SENTRY_DSN: string;
 }
 
-// Webpack global var
-declare const GIT_RELEASE: ReturnType<JSON['stringify']>;
+// Webpack global vars
+declare const SENTRY_RELEASE: string;
+declare const SENTRY_ENVIRONMENT: string;
 
 const isLocalhost = (host: string) => host.startsWith('localhost') || host.startsWith('infomaniak.local.') || host.startsWith('kchat.local.') || host.startsWith('local.') || host.startsWith('kchat.devd');
-const isCanaryOrPreprod = GIT_RELEASE.includes('-next') || GIT_RELEASE.includes('-rc');
+const isPrerelease = SENTRY_RELEASE.includes('-alpha') || SENTRY_RELEASE.includes('-beta');
 
 const bool = <T>(x: T | false | undefined | null | '' | 0): x is T => Boolean(x);
 
@@ -28,8 +29,8 @@ export default function init({SENTRY_DSN}: Args) {
     }
 
     const logIntegrations = [
-        isCanaryOrPreprod && 'bt',
-        isCanaryOrPreprod && 'replay',
+        isPrerelease && 'bt',
+        isPrerelease && 'replay',
     ].filter(bool);
 
     // eslint-disable-next-line no-console
@@ -37,12 +38,12 @@ export default function init({SENTRY_DSN}: Args) {
 
     const config: Sentry.BrowserOptions = {
         dsn: SENTRY_DSN,
-        release: GIT_RELEASE, //eslint-disable-line no-process-env
-        environment: host.split('.').splice(1).join('.'),
+        release: SENTRY_RELEASE,
+        environment: SENTRY_ENVIRONMENT,
         normalizeDepth: 5,
         integrations: [
-            isCanaryOrPreprod && Sentry.browserTracingIntegration(),
-            isCanaryOrPreprod && Sentry.replayIntegration(),
+            isPrerelease && Sentry.browserTracingIntegration(),
+            isPrerelease && Sentry.replayIntegration(),
         ].filter(bool),
         // eslint-disable-next-line no-process-env
         tracesSampleRate: parseFloat(process.env.SENTRY_PERFORMANCE_SAMPLE_RATE!),
@@ -71,7 +72,7 @@ export default function init({SENTRY_DSN}: Args) {
         ],
     };
 
-    if (isCanaryOrPreprod) {
+    if (isPrerelease) {
         config.replaysSessionSampleRate = 0.01;
         config.replaysOnErrorSampleRate = 1.0;
         // eslint-disable-next-line no-console
@@ -79,6 +80,7 @@ export default function init({SENTRY_DSN}: Args) {
     }
 
     Sentry.init(config);
+    Sentry.setTag('tenant', host);
 }
 
 export function transformStateForSentry(state: GlobalState | undefined): SentryReadyState {

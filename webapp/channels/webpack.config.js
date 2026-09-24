@@ -2,6 +2,7 @@
 const childProcess = require('child_process');
 const url = require('url');
 
+const {sentryWebpackPlugin} = require('@sentry/webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExternalTemplateRemotesPlugin = require('external-remotes-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -14,7 +15,15 @@ const LiveReloadPlugin = require('webpack-livereload-plugin');
 const packageJson = require('./package.json');
 
 const NPM_TARGET = process.env.npm_lifecycle_event;
-const GIT_RELEASE = JSON.stringify(childProcess.execSync('git describe --tags --abbrev=0').toString().trim());
+const isTagBuild = Boolean(process.env.CI_COMMIT_TAG);
+const RELEASE_RAW = process.env.CI_COMMIT_TAG || childProcess.execSync('git describe --tags --abbrev=0').toString().trim();
+const GIT_RELEASE = JSON.stringify(RELEASE_RAW);
+const SENTRY_RELEASE = JSON.stringify(`webapp@${RELEASE_RAW}`);
+const SENTRY_ENVIRONMENT = JSON.stringify(RELEASE_RAW.includes('-alpha') ? 'alpha' : RELEASE_RAW.includes('-beta') ? 'beta' : 'production');
+
+if (!process.env.SENTRY_DSN && process.env.CI === 'true') {
+    process.emitWarning('SENTRY_DSN is not set, error reporting disabled');
+}
 
 // list of known code editors that set an environment variable.
 const knownCodeEditors = ['VSCODE_CWD', 'INSIDE_EMACS'];
@@ -26,6 +35,25 @@ const targetIsDevServer = NPM_TARGET?.startsWith('dev-server');
 const targetIsEslint = NPM_TARGET?.startsWith('check') || NPM_TARGET === 'fix' || isInsideCodeEditor;
 
 const DEV = targetIsRun || targetIsStats || targetIsDevServer;
+
+const sentryWebpackPluginOptions = {
+    release: {name: `webapp@${RELEASE_RAW}`},
+    create: isTagBuild,
+    finalize: isTagBuild,
+    setCommits: isTagBuild ? {auto: true, ignoreMissing: true, shouldNotThrowOnFailure: true} : false,
+    org: 'sentry',
+    project: 'webapp',
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    url: process.env.SENTRY_URL,
+    disable: Boolean(DEV),
+    sourcemaps: {
+        disable: isTagBuild ? false : 'disable-upload',
+    },
+    telemetry: false,
+    errorHandler: (err) => {
+        process.emitWarning(`[sentryWebpackPlugin] skipped, see error ${err}`);
+    },
+};
 
 const STANDARD_EXCLUDE = [
     /node_modules/,
@@ -78,6 +106,9 @@ var kmeetConfig = {
         extensions: ['.ts', '.tsx', '.js', '.jsx'],
     },
     target: 'web',
+    plugins: [
+        sentryWebpackPlugin(sentryWebpackPluginOptions),
+    ],
 };
 
 var config = {
@@ -192,9 +223,13 @@ var config = {
             process: 'process/browser.js',
         }),
         new webpack.DefinePlugin({
+            SENTRY_DSN: JSON.stringify(process.env.SENTRY_DSN || ''),
             COMMIT_HASH: JSON.stringify(childProcess.execSync('git rev-parse HEAD || echo dev').toString().trim()),
             GIT_RELEASE,
+            SENTRY_RELEASE,
+            SENTRY_ENVIRONMENT,
         }),
+        sentryWebpackPlugin(sentryWebpackPluginOptions),
         new MiniCssExtractPlugin({
             filename: '[name].[contenthash].css',
             chunkFilename: '[name].[contenthash].css',
