@@ -19526,6 +19526,7 @@ __metadata:
     turndown: "npm:7.2.0"
     typescript: "npm:5.6.3"
     wasm-media-encoders: "npm:0.6.4"
+    wavesurfer.js: "npm:^7.12.11"
     web-vitals: "npm:4.2.4"
     webpack: "npm:5.93.0"
     webpack-bundle-analyzer: "npm:4.7.0"
@@ -26736,6 +26737,13 @@ __metadata:
     glob-to-regexp: "npm:^0.4.1"
     graceful-fs: "npm:^4.1.2"
   checksum: 10/6bd4c051d9af189a6c781c3158dcb3069f432a0c144159eeb0a44117412105c61b2b683a5c9eebc4324625e0e9b76536387d0ba354594fa6cbbdf1ef60bee4c3
+  languageName: node
+  linkType: hard
+
+"wavesurfer.js@npm:^7.12.11":
+  version: 7.12.11
+  resolution: "wavesurfer.js@npm:7.12.11"
+  checksum: 10/b5ea631c0a7615777e4dbef91f540b3b6433176caafe68f7c4d8388c8eadf5915f6f6119c6d1af67a679053f021710ccede2ec63913f84f04b39ba3a562aa302
   languageName: node
   linkType: hard
 

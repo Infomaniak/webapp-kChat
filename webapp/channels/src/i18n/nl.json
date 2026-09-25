@@ -3177,6 +3177,7 @@
   "vocals.show_more": "Meer weergeven",
   "vocals.transcript_loading": "Audio-transcriptie wordt uitgevoerd...",
   "voiceMessage.canvasFallback.recording": "Opname gestart",
+  "voiceMessage.playbackSpeed": "Afspeelsnelheid",
   "voiceMessage.preview.title": "Spraakbericht",
   "voiceMessage.recordingFailed": "Opname mislukt",
   "voiceMessage.uploadFailed.retry": "Uploaden mislukt. Klik om het opnieuw te proberen.",

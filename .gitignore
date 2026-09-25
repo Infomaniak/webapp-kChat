@@ -169,6 +169,9 @@ yarn-error.log
 .jestcache
 .env
 
+## MCP test artifacts
+.playwright-mcp/
+
 ## Notice Folders
 .notice/
 .notice-work/

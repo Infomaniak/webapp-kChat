@@ -3177,6 +3177,7 @@
   "vocals.show_more": "Näytä lisää",
   "vocals.transcript_loading": "Äänitiedoston litterointi on käynnissä...",
   "voiceMessage.canvasFallback.recording": "Tallennus aloitettu",
+  "voiceMessage.playbackSpeed": "Toistonopeus",
   "voiceMessage.preview.title": "Ääniviesti",
   "voiceMessage.recordingFailed": "Tallennus epäonnistui",
   "voiceMessage.uploadFailed.retry": "Lataus epäonnistui. Napsauta yrittääksesi uudelleen.",

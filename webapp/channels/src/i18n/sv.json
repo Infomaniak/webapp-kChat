@@ -3177,6 +3177,7 @@
   "vocals.show_more": "Visa mer",
   "vocals.transcript_loading": "Ljudtranskribering pågår...",
   "voiceMessage.canvasFallback.recording": "Inspelningen har startat",
+  "voiceMessage.playbackSpeed": "Uppspelningshastighet",
   "voiceMessage.preview.title": "Röstmeddelande",
   "voiceMessage.recordingFailed": "Inspelningen misslyckades",
   "voiceMessage.uploadFailed.retry": "Uppladdningen misslyckades. Klicka för att försöka igen.",

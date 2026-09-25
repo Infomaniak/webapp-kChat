@@ -3177,6 +3177,7 @@
   "vocals.show_more": "Εμφάνιση περισσότερων",
   "vocals.transcript_loading": "Η μεταγραφή του ήχου βρίσκεται σε εξέλιξη...",
   "voiceMessage.canvasFallback.recording": "Έναρξη εγγραφής",
+  "voiceMessage.playbackSpeed": "Ταχύτητα αναπαραγωγής",
   "voiceMessage.preview.title": "Φωνητικό μήνυμα",
   "voiceMessage.recordingFailed": "Αποτυχία εγγραφής",
   "voiceMessage.uploadFailed.retry": "Η μεταφόρτωση απέτυχε. Κάντε κλικ για να προσπαθήσετε ξανά.",

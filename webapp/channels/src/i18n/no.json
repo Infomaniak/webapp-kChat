@@ -3177,6 +3177,7 @@
   "vocals.show_more": "Vis mer",
   "vocals.transcript_loading": "Lydtranskripsjon pågår ...",
   "voiceMessage.canvasFallback.recording": "Opptaket er startet",
+  "voiceMessage.playbackSpeed": "Avspillingshastighet",
   "voiceMessage.preview.title": "Talebeskjed",
   "voiceMessage.recordingFailed": "Opptak mislyktes",
   "voiceMessage.uploadFailed.retry": "Opplastingen mislyktes. Klikk for å prøve igjen.",

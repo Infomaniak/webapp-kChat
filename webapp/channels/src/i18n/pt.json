@@ -3177,6 +3177,7 @@
   "vocals.show_more": "Mostrar mais",
   "vocals.transcript_loading": "Transcrição de áudio em andamento...",
   "voiceMessage.canvasFallback.recording": "Gravação iniciada",
+  "voiceMessage.playbackSpeed": "Velocidade de reprodução",
   "voiceMessage.preview.title": "Mensagem de voz",
   "voiceMessage.recordingFailed": "Falha ao gravar",
   "voiceMessage.uploadFailed.retry": "O envio falhou. Clique para tentar novamente.",

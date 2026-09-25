@@ -101,6 +101,7 @@
     "turndown": "7.2.0",
     "typescript": "5.6.3",
     "wasm-media-encoders": "0.6.4",
+    "wavesurfer.js": "^7.12.11",
     "web-vitals": "4.2.4",
     "zen-observable": "0.10.0"
   },

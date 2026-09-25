@@ -3177,6 +3177,7 @@
   "vocals.show_more": "Vis mere",
   "vocals.transcript_loading": "Lydtransskription er i gang...",
   "voiceMessage.canvasFallback.recording": "Optagelse startet",
+  "voiceMessage.playbackSpeed": "Afspilningshastighed",
   "voiceMessage.preview.title": "Stemmebesked",
   "voiceMessage.recordingFailed": "Optagelsen mislykkedes",
   "voiceMessage.uploadFailed.retry": "Upload mislykkedes. Klik for at prøve igen.",
