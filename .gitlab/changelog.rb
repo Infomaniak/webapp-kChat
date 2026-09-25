@@ -36,6 +36,10 @@ def get_last_tag(current_tag)
   end
 
   if previous_tags.empty?
+    previous_tags = all_tags.select { |tag| compare_versions(parse_version(tag["name"]), current_tag_parts) < 0 }
+  end
+
+  if previous_tags.empty?
     raise "No previous tags found that meet the criteria."
   else
     previous_tags.max_by { |tag| parse_version(tag["name"]) }["name"]
