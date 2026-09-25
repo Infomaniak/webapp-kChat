@@ -268,6 +268,275 @@ exports[`components/widgets/users/Avatars should fetch missing users 1`] = `
 </Memo(Avatars)>
 `;
 
+exports[`components/widgets/users/Avatars should hide deleted users when showDeleted is false 1`] = `
+<Memo(Avatars)
+  showDeleted={false}
+  size="xl"
+  userIds={
+    Array [
+      "1",
+      "6",
+      "2",
+      "3",
+      "4",
+      "5",
+    ]
+  }
+>
+  <div
+    className="Avatars Avatars___xl"
+  >
+    <UserAvatar
+      key="1"
+      size="xl"
+      style={
+        Object {
+          "background": "rgb(240, 240, 241)",
+        }
+      }
+      userId="1"
+    >
+      <ProfilePopoverController
+        src="/api/v4/users/1/image?_=1620680333191"
+        triggerComponentClass="style--none btn-round"
+        userId="1"
+      >
+        <span
+          aria-expanded={false}
+          className="profile-popover-trigger style--none btn-round"
+          onClick={[Function]}
+          onKeyDown={[Function]}
+          role="button"
+          tabIndex={0}
+        >
+          <WithTooltip
+            title="first.last1"
+          >
+            <Avatar
+              onBlur={[Function]}
+              onFocus={[Function]}
+              onKeyDown={[Function]}
+              onMouseLeave={[Function]}
+              onMouseMove={[Function]}
+              onPointerDown={[Function]}
+              onPointerEnter={[Function]}
+              size="xl"
+              style={
+                Object {
+                  "background": "rgb(240, 240, 241)",
+                }
+              }
+              tabIndex={-1}
+              url="/api/v4/users/1/image?_=1620680333191"
+              username="first.last1"
+            >
+              <img
+                alt="first.last1 profile image"
+                className="Avatar Avatar-xl"
+                loading="lazy"
+                onBlur={[Function]}
+                onError={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseMove={[Function]}
+                onPointerDown={[Function]}
+                onPointerEnter={[Function]}
+                src="/api/v4/users/1/image?_=1620680333191"
+                style={
+                  Object {
+                    "background": "rgb(240, 240, 241)",
+                  }
+                }
+                tabIndex={-1}
+              />
+            </Avatar>
+          </WithTooltip>
+        </span>
+      </ProfilePopoverController>
+    </UserAvatar>
+    <UserAvatar
+      key="2"
+      size="xl"
+      style={
+        Object {
+          "background": "rgb(240, 240, 241)",
+        }
+      }
+      userId="2"
+    >
+      <ProfilePopoverController
+        src="/api/v4/users/2/image?_=1620680333191"
+        triggerComponentClass="style--none btn-round"
+        userId="2"
+      >
+        <span
+          aria-expanded={false}
+          className="profile-popover-trigger style--none btn-round"
+          onClick={[Function]}
+          onKeyDown={[Function]}
+          role="button"
+          tabIndex={0}
+        >
+          <WithTooltip
+            title="first.last2"
+          >
+            <Avatar
+              onBlur={[Function]}
+              onFocus={[Function]}
+              onKeyDown={[Function]}
+              onMouseLeave={[Function]}
+              onMouseMove={[Function]}
+              onPointerDown={[Function]}
+              onPointerEnter={[Function]}
+              size="xl"
+              style={
+                Object {
+                  "background": "rgb(240, 240, 241)",
+                }
+              }
+              tabIndex={-1}
+              url="/api/v4/users/2/image?_=1620680333191"
+              username="first.last2"
+            >
+              <img
+                alt="first.last2 profile image"
+                className="Avatar Avatar-xl"
+                loading="lazy"
+                onBlur={[Function]}
+                onError={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseMove={[Function]}
+                onPointerDown={[Function]}
+                onPointerEnter={[Function]}
+                src="/api/v4/users/2/image?_=1620680333191"
+                style={
+                  Object {
+                    "background": "rgb(240, 240, 241)",
+                  }
+                }
+                tabIndex={-1}
+              />
+            </Avatar>
+          </WithTooltip>
+        </span>
+      </ProfilePopoverController>
+    </UserAvatar>
+    <UserAvatar
+      key="3"
+      size="xl"
+      style={
+        Object {
+          "background": "rgb(240, 240, 241)",
+        }
+      }
+      userId="3"
+    >
+      <ProfilePopoverController
+        src="/api/v4/users/3/image?_=1620680333191"
+        triggerComponentClass="style--none btn-round"
+        userId="3"
+      >
+        <span
+          aria-expanded={false}
+          className="profile-popover-trigger style--none btn-round"
+          onClick={[Function]}
+          onKeyDown={[Function]}
+          role="button"
+          tabIndex={0}
+        >
+          <WithTooltip
+            title="first.last3"
+          >
+            <Avatar
+              onBlur={[Function]}
+              onFocus={[Function]}
+              onKeyDown={[Function]}
+              onMouseLeave={[Function]}
+              onMouseMove={[Function]}
+              onPointerDown={[Function]}
+              onPointerEnter={[Function]}
+              size="xl"
+              style={
+                Object {
+                  "background": "rgb(240, 240, 241)",
+                }
+              }
+              tabIndex={-1}
+              url="/api/v4/users/3/image?_=1620680333191"
+              username="first.last3"
+            >
+              <img
+                alt="first.last3 profile image"
+                className="Avatar Avatar-xl"
+                loading="lazy"
+                onBlur={[Function]}
+                onError={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseMove={[Function]}
+                onPointerDown={[Function]}
+                onPointerEnter={[Function]}
+                src="/api/v4/users/3/image?_=1620680333191"
+                style={
+                  Object {
+                    "background": "rgb(240, 240, 241)",
+                  }
+                }
+                tabIndex={-1}
+              />
+            </Avatar>
+          </WithTooltip>
+        </span>
+      </ProfilePopoverController>
+    </UserAvatar>
+    <WithTooltip
+      title="first.last4, first.last5"
+    >
+      <Avatar
+        onBlur={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseMove={[Function]}
+        onPointerDown={[Function]}
+        onPointerEnter={[Function]}
+        size="xl"
+        style={
+          Object {
+            "background": "rgb(240, 240, 241)",
+          }
+        }
+        tabIndex={0}
+        text="+2"
+        username=""
+      >
+        <div
+          className="Avatar Avatar-xl Avatar-plain"
+          data-content="+2"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onKeyDown={[Function]}
+          onMouseLeave={[Function]}
+          onMouseMove={[Function]}
+          onPointerDown={[Function]}
+          onPointerEnter={[Function]}
+          style={
+            Object {
+              "background": "rgb(240, 240, 241)",
+            }
+          }
+          tabIndex={0}
+        />
+      </Avatar>
+    </WithTooltip>
+  </div>
+</Memo(Avatars)>
+`;
+
 exports[`components/widgets/users/Avatars should properly count overflow 1`] = `
 <Memo(Avatars)
   size="xl"

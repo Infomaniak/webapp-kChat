@@ -4,14 +4,14 @@
 import React, {memo, useMemo, useEffect} from 'react';
 import type {ComponentProps, CSSProperties} from 'react';
 import {useIntl} from 'react-intl';
-import {useSelector, useDispatch} from 'react-redux';
+import {shallowEqual, useSelector, useDispatch} from 'react-redux';
 import tinycolor from 'tinycolor2';
 
 import type {UserProfile} from '@mattermost/types/users';
 
 import {getMissingProfilesByIds} from 'mattermost-redux/actions/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getUser as selectUser, makeDisplayNameGetter} from 'mattermost-redux/selectors/entities/users';
+import {getUser as selectUser, getUsers, makeDisplayNameGetter} from 'mattermost-redux/selectors/entities/users';
 
 import ProfilePopover from 'components/profile_popover';
 import Avatar from 'components/widgets/users/avatar';
@@ -28,6 +28,7 @@ type Props = {
     totalUsers?: number;
     size?: ComponentProps<typeof Avatar>['size'];
     fetchMissingUsers?: boolean;
+    showDeleted?: boolean;
 };
 
 const OTHERS_DISPLAY_LIMIT = 99;
@@ -85,10 +86,18 @@ function Avatars({
     userIds,
     totalUsers,
     fetchMissingUsers = true,
+    showDeleted = true,
 }: Props) {
     const {formatMessage} = useIntl();
     const dispatch = useDispatch();
-    const [displayUserIds, overflowUserIds, {overflowUnnamedCount, nonDisplayCount}] = countMeta(userIds, totalUsers);
+    const ids = useSelector((state: GlobalState) => {
+        if (!showDeleted) {
+            const users = getUsers(state);
+            return userIds.filter((id) => !users[id] || users[id].delete_at === 0);
+        }
+        return userIds;
+    }, shallowEqual);
+    const [displayUserIds, overflowUserIds, {overflowUnnamedCount, nonDisplayCount}] = countMeta(ids, totalUsers);
     const overflowNames = useSelector((state: GlobalState) => {
         return overflowUserIds.map((userId) => displayNameGetter(state, true)(selectUser(state, userId))).join(', ');
     });

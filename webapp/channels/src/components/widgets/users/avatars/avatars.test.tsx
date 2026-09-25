@@ -51,6 +51,7 @@ describe('components/widgets/users/Avatars', () => {
                         first_name: 'First1',
                         last_name: 'Last1',
                         last_picture_update: 1620680333191,
+                        delete_at: 0,
 
                     },
                     2: {
@@ -60,6 +61,7 @@ describe('components/widgets/users/Avatars', () => {
                         first_name: 'First2',
                         last_name: 'Last2',
                         last_picture_update: 1620680333191,
+                        delete_at: 0,
                     },
                     3: {
                         id: '3',
@@ -68,6 +70,7 @@ describe('components/widgets/users/Avatars', () => {
                         first_name: 'First3',
                         last_name: 'Last3',
                         last_picture_update: 1620680333191,
+                        delete_at: 0,
                     },
                     4: {
                         id: '4',
@@ -76,6 +79,7 @@ describe('components/widgets/users/Avatars', () => {
                         first_name: 'First4',
                         last_name: 'Last4',
                         last_picture_update: 1620680333191,
+                        delete_at: 0,
                     },
                     5: {
                         id: '5',
@@ -84,6 +88,7 @@ describe('components/widgets/users/Avatars', () => {
                         first_name: 'First5',
                         last_name: 'Last5',
                         last_picture_update: 1620680333191,
+                        delete_at: 0,
                     },
                 },
             },
@@ -195,5 +200,55 @@ describe('components/widgets/users/Avatars', () => {
         expect(wrapper.find(Avatar).find({url: '/api/v4/users/6/image?_=0'}).exists()).toBe(true);
         expect(wrapper.find(Avatar).find({url: '/api/v4/users/7/image?_=0'}).exists()).toBe(true);
         expect(wrapper.find(WithTooltip).find({title: 'first.last2, Someone, Someone'}).exists()).toBe(true);
+    });
+
+    test('should hide deleted users when showDeleted is false', () => {
+        const deletedState = {
+            ...state,
+            entities: {
+                ...state.entities,
+                users: {
+                    ...state.entities.users,
+                    profiles: {
+                        ...state.entities.users.profiles,
+                        6: {
+                            id: '6',
+                            username: 'first.last6',
+                            nickname: 'nickname6',
+                            first_name: 'First6',
+                            last_name: 'Last6',
+                            last_picture_update: 1620680333191,
+                            delete_at: 1620680333191,
+                        },
+                    },
+                },
+            },
+        };
+        const {store, mountOptions} = mockStore(deletedState);
+
+        const wrapper = mount(
+            <Avatars
+                size='xl'
+                showDeleted={false}
+                userIds={[
+                    '1',
+                    '6',
+                    '2',
+                    '3',
+                    '4',
+                    '5',
+                ]}
+            />,
+            mountOptions,
+        );
+
+        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.find(Avatar).find({url: '/api/v4/users/6/image?_=1620680333191'}).exists()).toBe(false);
+        expect(wrapper.find(Avatar).find({url: '/api/v4/users/1/image?_=1620680333191'}).exists()).toBe(true);
+        expect(wrapper.find(Avatar).length).toBe(4);
+        expect(wrapper.find(Avatar).find({text: '+2'}).exists()).toBe(true);
+        expect(store.getActions()).toEqual([
+            {type: 'MOCK_GET_MISSING_PROFILES_BY_IDS', data: ['1', '6', '2', '3', '4', '5']},
+        ]);
     });
 });
