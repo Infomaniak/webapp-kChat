@@ -127,7 +127,7 @@ const useEditorEmojiPicker = (
             offset(useEmojiPickerOffset),
             shift(),
             horizontallyWithin({
-                boundary: document.getElementById(textboxId),
+                boundary: () => document.getElementById(textboxId),
             }),
             flip({
                 fallbackAxisSideDirection: 'end',

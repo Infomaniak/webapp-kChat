@@ -10,9 +10,13 @@ export type HorizontallyWithinOptions = {
      * An element or Rect that the floating element should be aligned with. Often, this will be the result of calling
      * document.getElementById with the ID of a parent element (like the post textbox for the emoji picker).
      *
+     * A function returning the boundary can be passed instead, so that the element is looked up when the position is
+     * computed instead of when the middleware is created. This avoids storing a DOM element in the middleware options,
+     * which floating-ui compares deeply between renders.
+     *
      * See Floating UI's documentation on detectOverflow for more details.
      */
-    boundary?: Boundary | null;
+    boundary?: Boundary | (() => Boundary | null) | null;
 }
 
 /**
@@ -26,7 +30,8 @@ export function horizontallyWithin(options: HorizontallyWithinOptions = {}) {
         name: 'horizontallyWithin',
         options,
         async fn(state: MiddlewareState) {
-            const {boundary} = options;
+            const boundaryOption = options.boundary;
+            const boundary = typeof boundaryOption === 'function' ? boundaryOption() : boundaryOption;
 
             if (!boundary) {
                 return {};
