@@ -458,7 +458,7 @@ deploy:image:
     name: gcr.io/kaniko-project/executor:${KANIKO_VERSION}
     entrypoint: [""]
   tags: [shared, standard]
-  needs: ["build:front"]
+  needs: ["build:front", "release:front"]
   rules:
     - if: *if-tag
       when: on_success
