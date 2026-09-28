@@ -19,7 +19,7 @@ const isTagBuild = Boolean(process.env.CI_COMMIT_TAG);
 const RELEASE_RAW = process.env.CI_COMMIT_TAG || childProcess.execSync('git describe --tags --abbrev=0').toString().trim();
 const GIT_RELEASE = JSON.stringify(RELEASE_RAW);
 const SENTRY_RELEASE = JSON.stringify(`webapp@${RELEASE_RAW}`);
-const SENTRY_ENVIRONMENT = JSON.stringify(RELEASE_RAW.includes('-alpha') ? 'alpha' : RELEASE_RAW.includes('-beta') ? 'beta' : 'production');
+const SENTRY_ENVIRONMENT = JSON.stringify(RELEASE_RAW.includes('-beta') ? 'beta' : RELEASE_RAW.includes('-rc') ? 'rc' : 'production');
 
 if (!process.env.SENTRY_DSN && process.env.CI === 'true') {
     process.emitWarning('SENTRY_DSN is not set, error reporting disabled');

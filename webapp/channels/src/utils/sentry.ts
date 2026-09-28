@@ -16,7 +16,7 @@ declare const SENTRY_RELEASE: string;
 declare const SENTRY_ENVIRONMENT: string;
 
 const isLocalhost = (host: string) => host.startsWith('localhost') || host.startsWith('infomaniak.local.') || host.startsWith('kchat.local.') || host.startsWith('local.') || host.startsWith('kchat.devd');
-const isPrerelease = SENTRY_RELEASE.includes('-alpha') || SENTRY_RELEASE.includes('-beta');
+const isPrerelease = SENTRY_RELEASE.includes('-beta') || SENTRY_RELEASE.includes('-rc');
 
 const bool = <T>(x: T | false | undefined | null | '' | 0): x is T => Boolean(x);
 
