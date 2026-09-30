@@ -8,7 +8,7 @@ include:
       needs:
         - deploy:image
       rules:
-        - if: $CI_COMMIT_TAG
+        - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta\\.\\d+|-rc\\.\\d+)?$/"
           allow_failure: false
           when: on_success
         - when: never
@@ -41,18 +41,22 @@ variables:
   - if: $CI_PIPELINE_SOURCE == "push"
 
 .rule-preprod: &rule-preprod
-  - if: &if-preprod "$CI_COMMIT_TAG =~ /\\-beta.*/"
+  - if: &if-preprod "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+-beta\\.\\d+$/"
     when: on_success
 
 .rule-canary: &rule-canary
-  - if: &if-canary "$CI_COMMIT_TAG =~ /\\-rc.*/"
+  - if: &if-canary "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+-rc\\.\\d+$/"
     when: on_success
     allow_failure: false
 
 .rule-prod: &rule-prod
-  - if: &if-tag "$CI_COMMIT_TAG"
+  - if: &if-prod-tag "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/"
     when: on_success
     allow_failure: false
+
+.rule-any-tag: &rule-any-tag
+  - if: &if-tag "$CI_COMMIT_TAG"
+    when: on_success
 
 .rule-prodsec: &rule-prodsec
   - if: &if-master-commit $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -106,7 +110,7 @@ workflow:
     - if: *if-canary
       variables:
         ENVIRONMENT_NAME: canary
-    - if: *if-tag
+    - if: *if-prod-tag
       variables:
         ENVIRONMENT_NAME: prod
     - if: *if-master-commit
@@ -115,6 +119,7 @@ workflow:
     - if: *if-merge-request
       variables:
         ENVIRONMENT_NAME: "staging/${CI_COMMIT_REF_SLUG}"
+    - if: *if-tag
     - when: never
 
 install:deps:
@@ -385,6 +390,11 @@ release:changelog:
   stage: .post
   image: ruby:${RUBY_VERSION}
   needs: ["release:front", "deploy:image"]
+  after_script:
+    - |
+      if [ "$CI_JOB_STATUS" = "failed" ]; then
+        wget -q --header 'Content-Type: application/json' --post-data "{\"text\": \":warning: [$CI_COMMIT_TAG] release:changelog en échec (déploiement déjà effectué, release GitLab et labels Redmine non appliqués). Pipeline : $CI_PIPELINE_URL\"}" -O /dev/null "$NOTIFY_CHANNEL" || echo "kChat notify failed"
+      fi
   rules:
     - *rule-preprod
     - *rule-canary
@@ -440,6 +450,11 @@ release:sentry:
   variables:
     SENTRY_ORG: sentry
     SENTRY_PROJECT: webapp
+  after_script:
+    - |
+      if [ "$CI_JOB_STATUS" = "failed" ]; then
+        wget -q --header 'Content-Type: application/json' --post-data "{\"text\": \":warning: [$CI_COMMIT_TAG] release:sentry en échec (déploiement déjà effectué, commits et sourcemaps Sentry manquants). Pipeline : $CI_PIPELINE_URL\"}" -O /dev/null "$NOTIFY_CHANNEL" || echo "kChat notify failed"
+      fi
   script:
     - sentry-cli releases set-commits --auto --ignore-empty --ignore-missing "webapp@${CI_COMMIT_TAG}"
     - sentry-cli releases finalize "webapp@${CI_COMMIT_TAG}"
@@ -451,6 +466,27 @@ release:sentry:
         echo "OK: $MAPS sourcemaps on release webapp@${CI_COMMIT_TAG}"
       fi
 
+release:tag-check:
+  stage: .post
+  image: alpine:${ALPINE_VERSION}
+  needs: []
+  rules:
+    - if: *if-tag
+      when: on_success
+    - when: never
+  script:
+    - |
+      if printf '%s' "$CI_COMMIT_TAG" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-beta\.[0-9]+|-rc\.[0-9]+)?$'; then
+        echo "Tag format OK: $CI_COMMIT_TAG"
+      else
+        TAG_ESC=$(printf '%s' "$CI_COMMIT_TAG" | sed 's/"/\\"/g')
+        echo "ERROR: unrecognized tag format: $CI_COMMIT_TAG (expected X.Y.Z | X.Y.Z-beta.N | X.Y.Z-rc.N), no deployment was triggered"
+        wget -q --header 'Content-Type: application/json' \
+          --post-data "{\"text\": \":warning: Tag webapp [$TAG_ESC] au format non reconnu (attendu : X.Y.Z | X.Y.Z-beta.N | X.Y.Z-rc.N), aucun déploiement déclenché. Pipeline : $CI_PIPELINE_URL\"}" \
+          -O /dev/null "$NOTIFY_CHANNEL" || echo "kChat notify failed"
+        exit 1
+      fi
+
 deploy:image:
   stage: deploy
   interruptible: false
@@ -460,8 +496,9 @@ deploy:image:
   tags: [shared, standard]
   needs: ["build:front", "release:front"]
   rules:
-    - if: *if-tag
-      when: on_success
+    - *rule-preprod
+    - *rule-canary
+    - *rule-prod
     - when: never
   before_script:
     - *script-configure-kaniko
