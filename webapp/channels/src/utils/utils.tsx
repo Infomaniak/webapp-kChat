@@ -834,9 +834,10 @@ export function getCaretXYCoordinate(textArea: HTMLTextAreaElement) {
     textArea.selectionStart = start;
     textArea.selectionEnd = end;
     textArea.focus();
+    const {left, top} = rect[0] ?? textArea.getBoundingClientRect();
     return {
-        x: Math.floor(rect[0].left - textArea.scrollLeft),
-        y: Math.floor(rect[0].top - textArea.scrollTop),
+        x: Math.floor(left - textArea.scrollLeft),
+        y: Math.floor(top - textArea.scrollTop),
     };
 }
 

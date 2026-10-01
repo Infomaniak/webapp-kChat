@@ -337,6 +337,26 @@ describe('Utils.getCaretXYCoordinate', () => {
 
         expect(coordinates.x).toEqual(10);
     });
+
+    test('getCaretXYCoordinate falls back to the textarea rect when getClientRects is empty', () => {
+        const previousCreateRange = document.createRange;
+
+        document.createRange = () => {
+            const range = new Range();
+
+            range.getClientRects = () => [] as unknown as DOMRectList;
+
+            return range;
+        };
+        textArea.scrollLeft = 0;
+        textArea.scrollTop = 0;
+
+        const coordinates = Utils.getCaretXYCoordinate(textArea);
+
+        expect(coordinates.x).toEqual(0);
+        expect(coordinates.y).toEqual(0);
+        document.createRange = previousCreateRange;
+    });
 });
 
 describe('Utils.getViewportSize', () => {
