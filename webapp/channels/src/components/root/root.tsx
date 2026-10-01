@@ -490,7 +490,12 @@ export default class Root extends React.PureComponent<Props, State> {
             // eslint-disable-next-line no-negated-condition
             if (!isDesktopApp()) {
                 const searchParams = new URLSearchParams(window.location.search);
-                localStorage.setItem('IKRedirectUri', searchParams.get('redirect_to') || `${window.location.pathname}${window.location.search}`);
+                try {
+                    localStorage.setItem('IKRedirectUri', searchParams.get('redirect_to') || `${window.location.pathname}${window.location.search}`);
+                } catch {
+                    // WEBAPP-5TG: storage may throw, the redirect below must still run
+                    console.warn('[components/root] failed to persist redirect uri'); // eslint-disable-line no-console
+                }
                 if (this.embeddedInIFrame && window.top) {
                     window.top.location.href = window.location.href;
                 } else {

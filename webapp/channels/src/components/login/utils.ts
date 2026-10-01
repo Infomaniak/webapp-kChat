@@ -106,8 +106,12 @@ export async function getChallengeAndRedirectToLogin() {
     try {
         const codeChallenge = await generateCodeChallenge(codeVerifier);
 
-        localStorage.setItem('challenge', JSON.stringify({verifier: codeVerifier, challenge: codeChallenge}));
-        localStorage.setItem('IKRedirectUri', redirectTo);
+        try {
+            localStorage.setItem('challenge', JSON.stringify({verifier: codeVerifier, challenge: codeChallenge}));
+            localStorage.setItem('IKRedirectUri', redirectTo);
+        } catch (error) {
+            console.warn('[login/utils > getChallengeAndRedirectToLogin] failed to persist login state', error);
+        }
 
         // Construct redirect URL
         const params = new URLSearchParams();
