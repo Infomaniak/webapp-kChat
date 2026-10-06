@@ -989,8 +989,15 @@ export function loadImage(
 ) {
     const request = new XMLHttpRequest();
 
+    let isSameOrigin = false;
+    try {
+        isSameOrigin = new URL(url, window.location.href).origin === window.location.origin;
+    } catch {
+        // unparseable url, fail closed
+    }
+
     request.open('GET', url, true);
-    if (isDesktopApp() && Client4.getToken()) {
+    if (isDesktopApp() && Client4.getToken() && isSameOrigin) {
         request.setRequestHeader('Authorization', `Bearer ${Client4.getToken()}`);
     }
     request.responseType = 'arraybuffer';

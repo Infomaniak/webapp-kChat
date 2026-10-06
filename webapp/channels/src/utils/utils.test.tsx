@@ -4,10 +4,12 @@
 import type {UserProfile} from '@mattermost/types/users';
 
 import {GeneralTypes} from 'mattermost-redux/action_types';
+import {Client4} from 'mattermost-redux/client';
 
 import store from 'stores/redux_store';
 
 import Constants, {ValidationErrors, AdvancedTextEditorTextboxIds} from 'utils/constants';
+import * as UserAgent from 'utils/user_agent';
 import * as Utils from 'utils/utils';
 
 import * as lineBreakHelpers from 'tests/helpers/line_break_helpers';
@@ -591,5 +593,90 @@ describe('isTextSelectedInPostOrReply', () => {
             selectionEnd: 7,
         });
         expect(Utils.isTextSelectedInPostOrReply(event)).toBe(true);
+    });
+});
+
+describe('Utils.loadImage', () => {
+    const originalXMLHttpRequest = window.XMLHttpRequest;
+
+    const xhrInstances: MockXHR[] = [];
+
+    class MockXHR {
+        open = jest.fn();
+        send = jest.fn();
+        setRequestHeader = jest.fn();
+        responseType = '';
+        onload: ((ev: ProgressEvent) => any) | null = null;
+        onprogress: ((ev: ProgressEvent) => any) | null = null;
+
+        constructor() {
+            xhrInstances.push(this);
+        }
+    }
+
+    const getLastXhr = () => xhrInstances[xhrInstances.length - 1];
+
+    const getAuthorizationHeader = () => {
+        const call = getLastXhr().setRequestHeader.mock.calls.find(([name]) => name === 'Authorization');
+        return call?.[1];
+    };
+
+    const withDesktopAppAndToken = () => {
+        jest.spyOn(UserAgent, 'isDesktopApp').mockReturnValue(true);
+        jest.spyOn(Client4, 'getToken').mockReturnValue('testtoken');
+    };
+
+    beforeAll(() => {
+        window.XMLHttpRequest = MockXHR as unknown as typeof XMLHttpRequest;
+    });
+
+    afterAll(() => {
+        window.XMLHttpRequest = originalXMLHttpRequest;
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    test('attaches Authorization header for relative same-origin url in desktop app', () => {
+        withDesktopAppAndToken();
+
+        Utils.loadImage('/api/v4/files/x', jest.fn());
+
+        expect(getAuthorizationHeader()).toEqual('Bearer testtoken');
+    });
+
+    test('attaches Authorization header for absolute same-origin url in desktop app', () => {
+        withDesktopAppAndToken();
+
+        Utils.loadImage('http://localhost:8065/api/v4/files/x', jest.fn());
+
+        expect(getAuthorizationHeader()).toEqual('Bearer testtoken');
+    });
+
+    test('does not attach Authorization header for cross-origin url in desktop app', () => {
+        withDesktopAppAndToken();
+
+        Utils.loadImage('https://evil.example.com/x.png', jest.fn());
+
+        expect(getAuthorizationHeader()).toBeUndefined();
+        expect(getLastXhr().send).toHaveBeenCalled();
+    });
+
+    test('does not attach Authorization header when not desktop app', () => {
+        jest.spyOn(UserAgent, 'isDesktopApp').mockReturnValue(false);
+        jest.spyOn(Client4, 'getToken').mockReturnValue('testtoken');
+
+        Utils.loadImage('/api/v4/files/x', jest.fn());
+
+        expect(getAuthorizationHeader()).toBeUndefined();
+    });
+
+    test('does not attach Authorization header for unparseable url in desktop app', () => {
+        withDesktopAppAndToken();
+
+        Utils.loadImage('http://localhost:99999/x.png', jest.fn());
+
+        expect(getAuthorizationHeader()).toBeUndefined();
     });
 });
