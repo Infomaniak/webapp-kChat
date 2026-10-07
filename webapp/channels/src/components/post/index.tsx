@@ -111,6 +111,9 @@ function makeMapStateToProps() {
         const enableEmojiPicker = config.EnableEmojiPicker === 'true';
         const enablePostUsernameOverride = config.EnablePostUsernameOverride === 'true';
         const channel = state.entities.channels.channels[post.channel_id];
+        if (!channel) {
+            return null;
+        }
         const isChannelMember = Boolean(state.entities.channels.myMembers[post.channel_id]);
         const shortcutReactToLastPostEmittedFrom = getShortcutReactToLastPostEmittedFrom(state);
 
