@@ -68,7 +68,7 @@ const ToggleNextModal = () => {
 
     let confirmButtonClass;
     if (!isNext) {
-        confirmButtonClass = 'btn-danger';
+        confirmButtonClass = 'btn btn-danger';
     }
 
     return (

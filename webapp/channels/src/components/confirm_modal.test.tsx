@@ -64,4 +64,32 @@ describe('ConfirmModal', () => {
 
         expect(props.onCancel).toHaveBeenCalledWith(true);
     });
+
+    test('should apply the btn base class when confirmButtonClass only has a variant', () => {
+        const props = {
+            ...baseProps,
+            confirmButtonClass: 'btn-danger',
+        };
+
+        const wrapper = shallow(<ConfirmModal {...props}/>);
+
+        expect(wrapper.find('#confirmModalButton').prop('className')).toBe('btn btn-danger');
+    });
+
+    test('should keep a complete confirmButtonClass unchanged', () => {
+        const props = {
+            ...baseProps,
+            confirmButtonClass: 'btn btn-danger',
+        };
+
+        const wrapper = shallow(<ConfirmModal {...props}/>);
+
+        expect(wrapper.find('#confirmModalButton').prop('className')).toBe('btn btn-danger');
+    });
+
+    test('should keep the default confirm button class unchanged', () => {
+        const wrapper = shallow(<ConfirmModal {...baseProps}/>);
+
+        expect(wrapper.find('#confirmModalButton').prop('className')).toBe('btn btn-primary');
+    });
 });

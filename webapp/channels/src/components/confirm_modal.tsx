@@ -167,6 +167,11 @@ export default class ConfirmModal extends React.Component<Props, State> {
             );
         }
 
+        let confirmButtonClassName = this.props.confirmButtonClass || '';
+        if (!confirmButtonClassName.split(' ').includes('btn')) {
+            confirmButtonClassName = `btn ${confirmButtonClassName}`.trim();
+        }
+
         return (
             <GenericModal
                 id={classNames('confirmModal', this.props.id)}
@@ -193,7 +198,7 @@ export default class ConfirmModal extends React.Component<Props, State> {
                         <button
                             autoFocus={true}
                             type='button'
-                            className={this.props.confirmButtonClass}
+                            className={confirmButtonClassName}
                             onClick={this.handleConfirm}
                             id='confirmModalButton'
                         >

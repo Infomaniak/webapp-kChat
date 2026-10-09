@@ -60,7 +60,7 @@ const OverrideDraftModal = ({message, onConfirm, onExited}: Props) => {
             title={title}
             message={content}
             confirmButtonText={confirmButtonText}
-            confirmButtonClass='btn-danger'
+            confirmButtonClass='btn btn-danger'
             onConfirm={onConfirm}
             onExited={onExited}
         />
