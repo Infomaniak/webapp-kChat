@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as Sentry from '@sentry/react';
+import type {ErrorEvent} from '@sentry/types';
 import cloneDeep from 'lodash/cloneDeep';
 
 import type {GlobalState} from 'types/store';
@@ -19,6 +20,19 @@ const isLocalhost = (host: string) => host.startsWith('localhost') || host.start
 const isPrerelease = SENTRY_RELEASE.includes('-beta') || SENTRY_RELEASE.includes('-rc');
 
 const bool = <T>(x: T | false | undefined | null | '' | 0): x is T => Boolean(x);
+
+const WEB_COMPONENTS_HOST = 'web-components.storage.infomaniak.com';
+const WEB_COMPONENTS_FILENAME = /module-[a-z-]+\/build\//i;
+
+export const isWebComponentsEvent = (event: ErrorEvent): boolean => {
+    const frames = event.exception?.values?.[0]?.stacktrace?.frames;
+    if (!frames?.length) {
+        return false;
+    }
+
+    const origin = frames[frames.length - 1];
+    return Boolean(origin.filename?.includes(WEB_COMPONENTS_HOST) || WEB_COMPONENTS_FILENAME.test(origin.filename ?? ''));
+};
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export default function init({SENTRY_DSN}: Args) {
@@ -41,6 +55,13 @@ export default function init({SENTRY_DSN}: Args) {
         release: SENTRY_RELEASE,
         environment: SENTRY_ENVIRONMENT,
         normalizeDepth: 5,
+        beforeSend: (event) => {
+            if (isWebComponentsEvent(event)) {
+                event.tags = {...event.tags, source: 'web-components'};
+            }
+
+            return event;
+        },
         integrations: [
             isPrerelease && Sentry.browserTracingIntegration(),
             isPrerelease && Sentry.replayIntegration(),
