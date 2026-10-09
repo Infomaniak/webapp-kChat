@@ -20,7 +20,7 @@
 
 -->
 
-## Ticket liée
+## Ticket lié
 
 /assign me  
 /reviewer @boris.trombert @aurelien.sberro @eliott.scherrer
