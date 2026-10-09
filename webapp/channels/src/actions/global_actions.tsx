@@ -478,7 +478,7 @@ export async function redirectDesktopUserToDefaultTeam() {
     const activeTeams = teams.filter((team) => team.delete_at === 0);
 
     const orderPreference = getTeamsOrderPreference(state);
-    const orderedTeams = filterAndSortTeamsByDisplayName(activeTeams, locale, orderPreference.value);
+    const orderedTeams = filterAndSortTeamsByDisplayName(activeTeams, locale, orderPreference?.value);
     const newCurrentTeam = orderedTeams[0];
 
     if (newCurrentTeam) {

@@ -149,19 +149,19 @@ export const getTeamsOrderPreference = createSelector(
     'getTeamsOrderPreference',
     getMyPreferences,
     (state) => state.entities.teams.currentTeamId,
-    (myPreferences, currentTeamId) => {
-        // Prefer the user's current team-specific theme over the user's current global theme
-        let themePreference;
+    (myPreferences, currentTeamId): PreferenceType | undefined => {
+        // Prefer the user's current team-specific order over the user's current global order
+        let teamsOrderPreference: PreferenceType | undefined;
 
         if (currentTeamId) {
-            themePreference = myPreferences[getPreferenceKey(Preferences.CATEGORY_TEAMS_ORDER, currentTeamId)];
+            teamsOrderPreference = myPreferences[getPreferenceKey(Preferences.CATEGORY_TEAMS_ORDER, currentTeamId)];
         }
 
-        if (!themePreference) {
-            themePreference = myPreferences[getPreferenceKey(Preferences.CATEGORY_TEAMS_ORDER, '')];
+        if (!teamsOrderPreference) {
+            teamsOrderPreference = myPreferences[getPreferenceKey(Preferences.CATEGORY_TEAMS_ORDER, '')];
         }
 
-        return themePreference;
+        return teamsOrderPreference;
     },
 );
 
