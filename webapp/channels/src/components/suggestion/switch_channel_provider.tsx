@@ -530,7 +530,7 @@ export default class SwitchChannelProvider extends Provider {
         try {
             usersFromServer = await usersAsync;
             const channelsResponse = await channelsAsync;
-            channelsFromServer = (channelsResponse as ActionResult).data;
+            channelsFromServer = (channelsResponse as ActionResult).data || [];
         } catch (err) {
             this.store.dispatch(logError(err));
             return;
