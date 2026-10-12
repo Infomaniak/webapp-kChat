@@ -177,3 +177,15 @@ yarn-error.log
 .notice-work/
 .aider*
 .env
+
+# fallow generated artifacts (manifests, cache)
+.fallow/
+
+# fallow agent install writes these per-developer (run it locally, keep them out)
+.agents/skills/fallow/
+.agents/skills/fallow-setup/
+.pi/mcp.json
+opencode.json
+.claude/settings.json
+.codex/hooks.json
+CLAUDE.md

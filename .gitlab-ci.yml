@@ -13,6 +13,8 @@ include:
           when: on_success
         - when: never
 
+  - remote: 'https://raw.githubusercontent.com/fallow-rs/fallow/aaaec796f5449810b9ecf82ed7e62b775d4d1ef3/ci/gitlab-ci.yml'
+
 stages:
   - install
   - build_packages
@@ -26,6 +28,9 @@ default:
   interruptible: true
 
 variables:
+  # The fallow template sets GIT_DEPTH 0 pipeline-wide; restore a shallow
+  # default for all other jobs. Fallow jobs override it back to full history.
+  GIT_DEPTH: "50"
   KANIKO_VERSION: "debug"
   ALPINE_VERSION: "3.22"
   MINIO_CLIENT_VERSION: "0.20250521.015954-r5"
@@ -511,3 +516,22 @@ deploy:image:
       --destination ${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG}
   artifacts:
     expire_in: 1 day
+
+# -------------------------------------------------------------------------
+# Fallow: dead-code gate
+# Quarantine-first policy: the baseline in fallow-baselines/ holds the
+# inherited backlog; MRs only ever fail for newly introduced dead code.
+# Template pinned to the v3.32.0 tag commit (immutable SHA), included
+# remotely per the fallow docs.
+# -------------------------------------------------------------------------
+fallow-mr:
+  extends: .fallow
+  stage: quality
+  image: node:22-alpine
+  tags: [shared, standard]
+  variables:
+    GIT_DEPTH: "0"
+    FALLOW_VERSION: "3.32.0"
+    FALLOW_COMMAND: "audit"
+  rules:
+    - *rule-merge-request

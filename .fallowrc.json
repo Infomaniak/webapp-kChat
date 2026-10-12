@@ -1,0 +1,44 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "minimumVersion": "3.32.0",
+  "ignorePatterns": [
+    ".worktrees/**"
+  ],
+  "production": {
+    "deadCode": true,
+    "health": false,
+    "dupes": false
+  },
+  "rules": {
+    "unused-files": "warn",
+    "unused-exports": "warn",
+    "unused-types": "off",
+    "unused-class-members": "off",
+    "circular-dependencies": "warn"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.test.*",
+        "**/*.spec.*"
+      ],
+      "rules": {
+        "unused-exports": "off"
+      }
+    }
+  ],
+  "audit": {
+    "gate": "new-only",
+    "deadCodeBaseline": "fallow-baselines/dead-code.json"
+  },
+  "flags": {
+    "sdkPatterns": [
+      {
+        "function": "getFeatureFlagValue",
+        "nameArg": 1,
+        "provider": "InHouse"
+      }
+    ],
+    "configObjectHeuristics": true
+  }
+}
