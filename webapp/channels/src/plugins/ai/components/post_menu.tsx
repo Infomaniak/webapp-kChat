@@ -25,6 +25,7 @@ type Props = {
 
 const PostMenu = (props: Props) => {
     const post = props.post;
+    const isThreadReply = props.location === 'RHS_COMMENT';
 
     const user = useSelector((state: GlobalState) => getUser(state, post.user_id));
     const isBot = Boolean(user && user.is_bot);
@@ -33,7 +34,7 @@ const PostMenu = (props: Props) => {
     const summarize = useSummarize();
     const translate = useTranslate();
 
-    if (isBot || props.location === 'RHS_COMMENT') {
+    if (isBot || (isThreadReply && !postTranslationEnabled)) {
         return null;
     }
 
@@ -42,15 +43,17 @@ const PostMenu = (props: Props) => {
             icon={<IconEuria/>}
             dropdownMenu={StyledDropdownMenu}
         >
-            <DropdownMenuItem onClick={() => summarize(post.id)}>
-                <span className='icon'><IconThreadSummarization/></span>
-                <div className=''>
-                    <FormattedMessage
-                        id='ai.summarizeThread'
-                        defaultMessage='Summarize'
-                    />
-                </div>
-            </DropdownMenuItem>
+            {!isThreadReply &&
+                <DropdownMenuItem onClick={() => summarize(post.id)}>
+                    <span className='icon'><IconThreadSummarization/></span>
+                    <div className=''>
+                        <FormattedMessage
+                            id='ai.summarizeThread'
+                            defaultMessage='Summarize'
+                        />
+                    </div>
+                </DropdownMenuItem>
+            }
             {postTranslationEnabled &&
                 <DropdownMenuItem onClick={() => translate(post.id, props.location === 'RHS_ROOT')}>
                     <span className='icon'><FormatLetterCaseIcon size={18}/></span>
