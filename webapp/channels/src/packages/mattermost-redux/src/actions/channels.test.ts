@@ -2121,4 +2121,32 @@ describe('Actions.Channels', () => {
         await store.dispatch(Actions.fetchAllMyChannelMembers());
         expect(Object.keys(store.getState().entities.channels.myMembers).length).toBe(500);
     });
+
+    it('fetchAllMyTeamsChannels with a non-array JSON payload', async () => {
+        const store = configureStore();
+
+        nock(Client4.getBaseRoute()).
+            get('/users/me/channels').
+            reply(200, {unexpected: 'payload'});
+
+        const result = await store.dispatch(Actions.fetchAllMyTeamsChannels());
+
+        expect(result.error).toBeDefined();
+        expect(result.error.message).toContain('instead of an array');
+        expect(store.getState().entities.channels.channels).toEqual({});
+    });
+
+    it('fetchAllMyTeamsChannels with a non-JSON payload', async () => {
+        const store = configureStore();
+
+        nock(Client4.getBaseRoute()).
+            get('/users/me/channels').
+            reply(200, '<html>gateway</html>', {'Content-Type': 'text/html'});
+
+        const result = await store.dispatch(Actions.fetchAllMyTeamsChannels());
+
+        expect(result.error).toBeDefined();
+        expect(result.error.message).toContain('instead of an array');
+        expect(store.getState().entities.channels.channels).toEqual({});
+    });
 });

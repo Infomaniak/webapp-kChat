@@ -529,6 +529,12 @@ export function fetchAllMyTeamsChannels(): ActionFuncAsync {
             return {error};
         }
 
+        if (!Array.isArray(channels)) {
+            const error: ServerError = {message: `fetchAllMyTeamsChannels received ${typeof channels} instead of an array`};
+            dispatch(logError(error));
+            return {error};
+        }
+
         dispatch({
             type: ChannelTypes.RECEIVED_CHANNELS,
             data: channels,
