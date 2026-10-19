@@ -359,6 +359,20 @@ describe('Utils.getCaretXYCoordinate', () => {
         expect(coordinates.y).toEqual(0);
         document.createRange = previousCreateRange;
     });
+
+    test('getCaretXYCoordinate returns the default position when the textarea is empty', () => {
+        const previousValue = textArea.value;
+        const bodyChildrenBefore = document.body.childElementCount;
+        textArea.value = '';
+
+        const coordinates = Utils.getCaretXYCoordinate(textArea);
+
+        expect(coordinates.x).toEqual(0);
+        expect(coordinates.y).toEqual(0);
+        expect(document.body.childElementCount).toEqual(bodyChildrenBefore);
+
+        textArea.value = previousValue;
+    });
 });
 
 describe('Utils.getViewportSize', () => {

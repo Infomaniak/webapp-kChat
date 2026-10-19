@@ -823,14 +823,20 @@ export function getCaretXYCoordinate(textArea: HTMLTextAreaElement) {
     const start = textArea.selectionStart;
     const end = textArea.selectionEnd;
     const copy = copyTextAreaToDiv(textArea);
+    if (!copy || !copy.firstChild) {
+        copy?.remove();
+        return {x: 0, y: 0};
+    }
     const range = document.createRange();
-    range.setStart(copy!.firstChild!, start);
-    range.setEnd(copy!.firstChild!, end);
+    range.setStart(copy.firstChild, start);
+    range.setEnd(copy.firstChild, end);
     const selection = document.getSelection();
-    selection!.removeAllRanges();
-    selection!.addRange(range);
+    if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
     const rect = range.getClientRects();
-    document.body.removeChild(copy!);
+    document.body.removeChild(copy);
     textArea.selectionStart = start;
     textArea.selectionEnd = end;
     textArea.focus();
