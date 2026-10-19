@@ -464,11 +464,18 @@ release:sentry:
     - sentry-cli releases set-commits --auto --ignore-empty --ignore-missing "webapp@${CI_COMMIT_TAG}"
     - sentry-cli releases finalize "webapp@${CI_COMMIT_TAG}"
     - |
-      MAPS=$(sentry-cli releases files "webapp@${CI_COMMIT_TAG}" | grep -cE '\.map([[:space:]]|$)' || true)
+      # sourcemaps uploaded by debug IDs land in artifact bundles, invisible to sentry-cli releases files (subcommand removed in 2.42.4), so query the bundles API
+      if ! wget -T 30 -O /tmp/sentry-bundles.json --header "Authorization: Bearer $SENTRY_AUTH_TOKEN" "${SENTRY_URL%/}/api/0/projects/$SENTRY_ORG/$SENTRY_PROJECT/files/artifact-bundles/?query=webapp%40${CI_COMMIT_TAG}" 2>/tmp/sentry-wget-error.txt; then
+        cat /tmp/sentry-wget-error.txt
+        echo "NOTICE: Sentry artifact-bundles API unavailable, sourcemap check skipped"
+        exit 0
+      fi
+      RELEASE_PATTERN=$(printf '%s' "webapp@${CI_COMMIT_TAG}" | sed 's/\./\\./g')
+      MAPS=$(sed 's/{"bundleId"/\n{"bundleId"/g' /tmp/sentry-bundles.json | grep "\"release\":\"${RELEASE_PATTERN}\"" | grep -c "\"fileCount\":[1-9]" || true)
       if [ "${MAPS:-0}" -eq 0 ]; then
         echo "WARNING: 0 sourcemaps on release webapp@${CI_COMMIT_TAG}, check build:front logs for [sentryWebpackPlugin] warnings"
       else
-        echo "OK: $MAPS sourcemaps on release webapp@${CI_COMMIT_TAG}"
+        echo "OK: $MAPS sourcemap bundles on release webapp@${CI_COMMIT_TAG}"
       fi
 
 release:tag-check:
