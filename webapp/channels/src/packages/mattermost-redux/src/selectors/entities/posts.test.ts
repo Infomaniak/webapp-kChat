@@ -1438,3 +1438,90 @@ describe('makeGetProfilesForThread', () => {
         expect(getProfilesForThread(state, '1001')).toEqual([]);
     });
 });
+
+describe('makeGetThreadReplyCount', () => {
+    const getReplyCount = Selectors.makeGetThreadReplyCount();
+    const reply1 = p({id: 'reply1', root_id: 'root1', channel_id: '1', create_at: 10, user_id: 'user1'});
+    const reply2 = p({id: 'reply2', root_id: 'root1', channel_id: '1', create_at: 11, user_id: 'user1'});
+    const root = p({id: 'root1', channel_id: '1', create_at: 9, user_id: 'user1'});
+
+    const buildState = (metadataReplyCount: number, loadedReplies: Post[] = [], replyIds: string[] = loadedReplies.map((r) => r.id)) => deepFreezeAndThrowOnMutation({
+        entities: {
+            posts: {
+                posts: {
+                    root1: root,
+                    ...Object.fromEntries(loadedReplies.map((r) => [r.id, r])),
+                },
+                postsInThread: {
+                    root1: replyIds,
+                },
+            },
+            threads: {
+                threads: {
+                    root1: {
+                        id: 'root1',
+                        reply_count: metadataReplyCount,
+                        participants: [],
+                        is_following: true,
+                        last_reply_at: 0,
+                        last_viewed_at: 0,
+                        unread_replies: 0,
+                        unread_mentions: 0,
+                        post: {channel_id: '1', user_id: 'user1'},
+                    },
+                },
+            },
+        },
+    } as unknown as GlobalState);
+
+    it('should return the metadata reply count when no replies are loaded', () => {
+        expect(getReplyCount(buildState(7), root)).toBe(7);
+    });
+
+    it('should return loaded replies when they exceed the (stale) metadata count', () => {
+        const state = buildState(1, [reply1, reply2]);
+
+        expect(getReplyCount(state, root)).toBe(2);
+    });
+
+    it('should not under-report when the thread is only partially loaded', () => {
+        const state = buildState(50, [reply1, reply2]);
+
+        expect(getReplyCount(state, root)).toBe(50);
+    });
+
+    it('should exclude deleted replies from the loaded count', () => {
+        const deletedReply = p({id: 'reply1', root_id: 'root1', channel_id: '1', create_at: 10, user_id: 'user1', delete_at: 1});
+        const state = buildState(1, [deletedReply, reply2]);
+
+        expect(getReplyCount(state, root)).toBe(1);
+    });
+
+    it('should exclude replies marked as deleted in-session (state without delete_at)', () => {
+        const inSessionDeletedReply = p({id: 'reply1', root_id: 'root1', channel_id: '1', create_at: 10, user_id: 'user1', delete_at: 0, state: Posts.POST_DELETED as Post['state']});
+        const state = buildState(1, [inSessionDeletedReply, reply2]);
+
+        expect(getReplyCount(state, root)).toBe(1);
+    });
+
+    it('should fall back to the synthetic metadata count when the thread entity is missing', () => {
+        const state = deepFreezeAndThrowOnMutation({
+            entities: {
+                posts: {
+                    posts: {
+                        root1: {...root, reply_count: 4},
+                        reply1,
+                    },
+                    postsInThread: {
+                        root1: ['reply1'],
+                    },
+                },
+                threads: {
+                    threads: {},
+                },
+            },
+        } as unknown as GlobalState);
+
+        expect(getReplyCount(state, {...root, reply_count: 4})).toBe(4);
+    });
+});

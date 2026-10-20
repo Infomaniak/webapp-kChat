@@ -284,6 +284,39 @@ export function makeGetPostsForThread(): (state: GlobalState, rootId: string) =>
     );
 }
 
+function countLoadedReplies(allPosts: Record<string, Post>, replyIds: string[]): number {
+    let count = 0;
+
+    for (const replyId of replyIds) {
+        const reply = allPosts[replyId];
+        if (reply && !reply.delete_at && reply.state !== Posts.POST_DELETED) {
+            count += 1;
+        }
+    }
+
+    return count;
+}
+
+export function makeGetThreadReplyCount(): (state: GlobalState, rootPost: Post) => number {
+    return createSelector(
+        'makeGetThreadReplyCount',
+        (state: GlobalState, rootPost: Post) => rootPost,
+        (state: GlobalState) => state.entities.threads.threads,
+        (state: GlobalState) => state.entities.posts.posts,
+        (state: GlobalState) => state.entities.posts.postsInThread || {},
+        (rootPost, threads, allPosts, postsInThread) => {
+            const metadataCount = (threads[rootPost.id]?.reply_count ?? rootPost.reply_count) || 0;
+            const replyIds = postsInThread[rootPost.id];
+
+            if (!replyIds || replyIds.length === 0) {
+                return metadataCount;
+            }
+
+            return Math.max(metadataCount, countLoadedReplies(allPosts, replyIds));
+        },
+    );
+}
+
 // The selector below filters current user if it exists. Excluding currentUser is just for convenience
 export function makeGetProfilesForThread(): (state: GlobalState, rootId: string) => UserProfile[] {
     const getPostsForThread = makeGetPostsForThread();

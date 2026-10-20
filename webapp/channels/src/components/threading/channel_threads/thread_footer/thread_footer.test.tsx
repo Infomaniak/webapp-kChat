@@ -149,6 +149,61 @@ describe('components/threading/channel_threads/thread_footer', () => {
         expect(wrapper.exists('FormattedMessage[id="threading.numReplies"]')).toBe(true);
     });
 
+    test('should count loaded replies when thread metadata is stale', () => {
+        state = {
+            ...state,
+            entities: {
+                ...state.entities,
+                posts: {
+                    ...state.entities.posts,
+                    posts: {
+                        ...state.entities.posts.posts,
+                        reply1: {
+                            id: 'reply1',
+                            root_id: 'postthreadid',
+                            channel_id: 'cid',
+                            create_at: 1,
+                            update_at: 1,
+                            delete_at: 0,
+                            user_id: '1',
+                            message: 'reply one',
+                            type: '',
+                        },
+                        reply2: {
+                            id: 'reply2',
+                            root_id: 'postthreadid',
+                            channel_id: 'cid',
+                            create_at: 2,
+                            update_at: 2,
+                            delete_at: 0,
+                            user_id: '2',
+                            message: 'reply two',
+                            type: '',
+                        },
+                    },
+                    postsInThread: {postthreadid: ['reply1', 'reply2']},
+                },
+                threads: {
+                    ...state.entities.threads,
+                    threads: {
+                        ...state.entities.threads.threads,
+                        postthreadid: {...thread, reply_count: 1},
+                    },
+                },
+            },
+        };
+
+        const {mountOptions} = mockStore(state);
+        const wrapper = mount(
+            <ThreadFooter
+                {...props}
+            />,
+            mountOptions,
+        );
+
+        expect(wrapper.find('FormattedMessage[id="threading.numReplies"]').prop('values')).toMatchObject({totalReplies: 2});
+    });
+
     test('should show unread indicator', () => {
         thread.unread_replies = 2;
 

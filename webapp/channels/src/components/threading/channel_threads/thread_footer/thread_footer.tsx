@@ -11,7 +11,7 @@ import {threadIsSynthetic} from '@mattermost/types/threads';
 
 import {setThreadFollow, getThread as fetchThread} from 'mattermost-redux/actions/threads';
 import {Posts} from 'mattermost-redux/constants';
-import {getPost} from 'mattermost-redux/selectors/entities/posts';
+import {getPost, makeGetThreadReplyCount} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {makeGetThreadOrSynthetic} from 'mattermost-redux/selectors/entities/threads';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
@@ -45,6 +45,8 @@ function ThreadFooter({
     const post = useSelector((state: GlobalState) => getPost(state, threadId));
     const getThreadOrSynthetic = useMemo(makeGetThreadOrSynthetic, [post.id]);
     const thread = useSelector((state: GlobalState) => getThreadOrSynthetic(state, post));
+    const getThreadReplyCount = useMemo(makeGetThreadReplyCount, []);
+    const totalReplies = useSelector((state: GlobalState) => getThreadReplyCount(state, post));
 
     useEffect(() => {
         if (threadIsSynthetic(thread) && thread.is_following && thread.reply_count > 0) {
@@ -54,7 +56,6 @@ function ThreadFooter({
 
     const {
         participants,
-        reply_count: totalReplies = 0,
         last_reply_at: lastReplyAt,
         is_following: isFollowing = false,
         post: {
@@ -114,7 +115,7 @@ function ThreadFooter({
                 />
             ) : null}
 
-            {thread.reply_count > 0 && (
+            {totalReplies > 0 && (
                 <Button
                     onClick={handleReply}
                     className='ReplyButton separated'

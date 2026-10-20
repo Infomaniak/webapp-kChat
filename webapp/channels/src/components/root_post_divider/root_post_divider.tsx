@@ -5,8 +5,7 @@ import React, {useMemo} from 'react';
 import {FormattedMessage} from 'react-intl';
 import {useSelector} from 'react-redux';
 
-import {getPost} from 'mattermost-redux/selectors/entities/posts';
-import {makeGetThreadOrSynthetic} from 'mattermost-redux/selectors/entities/threads';
+import {getPost, makeGetThreadReplyCount} from 'mattermost-redux/selectors/entities/posts';
 
 import type {GlobalState} from 'types/store';
 
@@ -16,12 +15,9 @@ type Props = {
 
 const RootPostDivider: React.FC<Props> = ({postId}) => {
     const post = useSelector((state: GlobalState) => getPost(state, postId));
-    const getThreadOrSynthetic = useMemo(makeGetThreadOrSynthetic, []);
+    const getThreadReplyCount = useMemo(makeGetThreadReplyCount, []);
 
-    const totalReplies = useSelector((state: GlobalState) => {
-        const thread = getThreadOrSynthetic(state, post);
-        return thread.reply_count || 0;
-    });
+    const totalReplies = useSelector((state: GlobalState) => getThreadReplyCount(state, post));
 
     if (totalReplies === 0) {
         return null; // Return null if there are no replies
