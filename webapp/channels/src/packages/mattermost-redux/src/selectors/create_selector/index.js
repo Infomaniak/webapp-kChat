@@ -3,26 +3,6 @@
 
 /* eslint-disable */
 
-// Generates a RFC-4122 version 4 compliant globally unique identifier.
-export function generateId() {
-    // implementation taken from http://stackoverflow.com/a/2117523
-    let id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
-    id = id.replace(/[xy]/g, (c) => {
-        const r = Math.floor(Math.random() * 16);
-        let v;
-
-        if (c === 'x') {
-            v = r;
-        } else {
-            // eslint-disable-next-line no-mixed-operators
-            v = r & 0x3 | 0x8;
-        }
-
-        return v.toString(16);
-    });
-    return id;
-}
-
 function defaultEqualityCheck(a, b) {
     return a === b;
 }
@@ -77,20 +57,30 @@ function getDependencies(funcs) {
     return dependencies;
 }
 
-const trackedSelectors = {};
+// Prototype-less so selector names like "__proto__" become regular own keys.
+const trackedSelectors = Object.create(null);
 
 export function createSelectorCreator(memoize, ...memoizeOptions) {
     return (name, ...funcs) => {
-        const id = generateId();
         let recomputations = 0;
         let calls = 0;
         const resultFunc = funcs.pop();
         const dependencies = getDependencies(funcs);
 
+        // Keyed by name so the registry stays bounded to the number of distinct
+        // selector names instead of growing by one entry per component mount.
+        if (!trackedSelectors[name]) {
+            trackedSelectors[name] = {
+                name,
+                calls: 0,
+                recomputations: 0,
+            };
+        }
+
         const memoizedResultFunc = memoize(
             function() {
                 recomputations++;
-                trackedSelectors[id].recomputations++;
+                trackedSelectors[name].recomputations++;
 
                 // apply arguments instead of spreading for performance.
                 return resultFunc?.apply(null, arguments);
@@ -114,20 +104,13 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
         },
         () => {
             calls++;
-            trackedSelectors[id].calls++;
+            trackedSelectors[name].calls++;
         });
 
         selector.resultFunc = resultFunc;
         selector.dependencies = dependencies;
         selector.recomputations = () => recomputations;
         selector.resetRecomputations = () => recomputations = 0;
-
-        trackedSelectors[id] = {
-            id,
-            name,
-            calls: 0,
-            recomputations: 0,
-        };
 
         return selector;
     };
