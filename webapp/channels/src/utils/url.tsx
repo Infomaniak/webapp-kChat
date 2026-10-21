@@ -11,8 +11,6 @@ import * as TextFormatting from 'utils/text_formatting';
 
 import {getModule} from 'module_registry';
 
-import {unescapeHtmlEntities} from './markdown/renderer';
-
 type WindowObject = {
     location: {
         origin: string;
@@ -106,10 +104,6 @@ export function getScheme(url: string): string | null {
     const match = (/^!?([a-z0-9+.-]+):/i).exec(url);
 
     return match && match[1];
-}
-
-export function removeScheme(url: string) {
-    return url.replace(/^([a-z0-9+.-]+):\/\//i, '');
 }
 
 function formattedError(message: MessageDescriptor, intl?: IntlShape): React.ReactElement | string {
@@ -338,21 +332,4 @@ export function channelNameToUrl(channelName: string): UrlValidationCheck {
     }
 
     return {url, error: false};
-}
-
-export function parseLink(href: string, defaultSecure = location.protocol === 'https:') {
-    let outHref = href;
-
-    if (!href.startsWith('/')) {
-        const scheme = getScheme(href);
-        if (!scheme) {
-            outHref = `${defaultSecure ? 'https' : 'http'}://${outHref}`;
-        }
-    }
-
-    if (!isUrlSafe(unescapeHtmlEntities(href))) {
-        return undefined;
-    }
-
-    return outHref;
 }

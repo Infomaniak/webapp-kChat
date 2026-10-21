@@ -18,7 +18,6 @@ import ChannelPermissionGate from 'components/permissions_gates/channel_permissi
 import {Constants} from 'utils/constants';
 
 import MenuItemArchiveChannel from '../menu_items/archive_channel';
-import MenuItemChannelBookmarks from '../menu_items/channel_bookmarks_submenu';
 import MenuItemChannelSettings from '../menu_items/channel_settings_submenu';
 import MenuItemCloseChannel from '../menu_items/close_channel';
 import MenuItemGroupsMenuItems from '../menu_items/groups';
@@ -73,9 +72,6 @@ const ChannelHeaderPublicMenu = ({channel, user, isMuted, isReadonly, isDefault,
                     <MenuItemChannelSettings
                         isReadonly={isReadonly}
                         isDefault={isDefault}
-                        channel={channel}
-                    />
-                    <MenuItemChannelBookmarks
                         channel={channel}
                     />
                 </>

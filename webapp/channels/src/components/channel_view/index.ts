@@ -20,8 +20,6 @@ import {isFirstAdmin} from 'mattermost-redux/selectors/entities/users';
 
 import {goToLastViewedChannel} from 'actions/views/channel';
 
-import {getIsChannelBookmarksEnabled} from 'components/channel_bookmarks/utils';
-
 import type {GlobalState} from 'types/store';
 
 import ChannelView from './channel_view';
@@ -56,7 +54,6 @@ function mapStateToProps(state: GlobalState) {
         isFirstAdmin: isFirstAdmin(state),
         isMember,
         enableWebSocketEventScope,
-        isChannelBookmarksEnabled: getIsChannelBookmarksEnabled(state),
         missingChannelRole,
     };
 }

@@ -21,7 +21,6 @@ import {
     AppsTypes,
     CloudTypes,
     HostedCustomerTypes,
-    ChannelBookmarkTypes,
     ScheduledPostTypes,
 } from 'mattermost-redux/action_types';
 import {getStandardAnalytics} from 'mattermost-redux/actions/admin';
@@ -544,22 +543,6 @@ export function handleEvent(msg) {
 
     case SocketEvents.CHANNEL_MEMBER_UPDATED:
         handleChannelMemberUpdatedEvent(msg);
-        break;
-
-    case SocketEvents.CHANNEL_BOOKMARK_CREATED:
-        dispatch(handleChannelBookmarkCreated(msg));
-        break;
-
-    case SocketEvents.CHANNEL_BOOKMARK_UPDATED:
-        dispatch(handleChannelBookmarkUpdated(msg));
-        break;
-
-    case SocketEvents.CHANNEL_BOOKMARK_DELETED:
-        dispatch(handleChannelBookmarkDeleted(msg));
-        break;
-
-    case SocketEvents.CHANNEL_BOOKMARK_SORTED:
-        dispatch(handleChannelBookmarkSorted(msg));
         break;
 
     case SocketEvents.DIRECT_ADDED:
@@ -2289,53 +2272,6 @@ function handleHostedCustomerSignupProgressUpdated(msg) {
     return {
         type: HostedCustomerTypes.RECEIVED_SELF_HOSTED_SIGNUP_PROGRESS,
         data: msg.data.progress,
-    };
-}
-
-function handleChannelBookmarkCreated(msg) {
-    const bookmark = JSON.parse(msg.data.bookmark);
-
-    return {
-        type: ChannelBookmarkTypes.RECEIVED_BOOKMARK,
-        data: bookmark,
-    };
-}
-
-function handleChannelBookmarkUpdated(msg) {
-    return async (doDispatch) => {
-        const {updated, deleted} = JSON.parse(msg.data.bookmarks);
-
-        if (updated) {
-            doDispatch({
-                type: ChannelBookmarkTypes.RECEIVED_BOOKMARK,
-                data: updated,
-            });
-        }
-
-        if (deleted) {
-            doDispatch({
-                type: ChannelBookmarkTypes.BOOKMARK_DELETED,
-                data: deleted,
-            });
-        }
-    };
-}
-
-function handleChannelBookmarkDeleted(msg) {
-    const bookmark = JSON.parse(msg.data.bookmark);
-
-    return {
-        type: ChannelBookmarkTypes.BOOKMARK_DELETED,
-        data: bookmark,
-    };
-}
-
-function handleChannelBookmarkSorted(msg) {
-    const bookmarks = JSON.parse(msg.data.bookmarks);
-
-    return {
-        type: ChannelBookmarkTypes.RECEIVED_BOOKMARKS,
-        data: {channelId: msg.broadcast.channel_id, bookmarks},
     };
 }
 

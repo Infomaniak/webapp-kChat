@@ -4,7 +4,6 @@
 import type {AdminState} from './admin';
 import type {AppsState} from './apps';
 import type {Bot} from './bots';
-import type {ChannelBookmarksState} from './channel_bookmarks';
 import type {ChannelCategoriesState} from './channel_categories';
 import type {ChannelsState} from './channels';
 import type {CloudState, CloudUsage} from './cloud';
@@ -44,7 +43,6 @@ export type GlobalState = {
         limits: LimitsState;
         teams: TeamsState;
         channels: ChannelsState;
-        channelBookmarks: ChannelBookmarksState;
         posts: PostsState;
         threads: ThreadsState;
         bots: {

@@ -39,10 +39,6 @@ export function isMobileFileUploadsEnabled(config: Partial<ClientConfig>): boole
     return config.EnableMobileFileUpload === 'true';
 }
 
-export function isPublicLinksEnabled(config: Partial<ClientConfig>): boolean {
-    return config.EnablePublicLink === 'true';
-}
-
 export function canDownloadFiles(config: Partial<ClientConfig>): boolean {
     if (UserAgent.isMobileApp()) {
         return config.EnableMobileFileDownload === 'true';

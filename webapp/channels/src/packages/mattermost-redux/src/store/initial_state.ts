@@ -68,9 +68,6 @@ const state: GlobalState = {
             pendingGuests: {},
             guestMembersInChannel: {},
         },
-        channelBookmarks: {
-            byChannelId: {},
-        },
         posts: {
             expandedURLs: {},
             posts: {},

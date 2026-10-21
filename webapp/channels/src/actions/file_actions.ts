@@ -37,14 +37,11 @@ const quotaMessages = new Map<string, string>([
     ['user|_', 'file_upload.quota.exceeded'],
 ]);
 
-export function uploadFile({file, name, type, rootId, channelId, clientId, onProgress, onSuccess, onError, isAdmin, isPaidPlan}: UploadFile, isBookmark?: boolean): ThunkActionFunc<XMLHttpRequest> {
+export function uploadFile({file, name, type, rootId, channelId, clientId, onProgress, onSuccess, onError, isAdmin, isPaidPlan}: UploadFile): ThunkActionFunc<XMLHttpRequest> {
     return (dispatch, getState) => {
         dispatch({type: FileTypes.UPLOAD_FILES_REQUEST});
 
-        let url = Client4.getFilesRoute();
-        if (isBookmark) {
-            url += '?bookmark=true';
-        }
+        const url = Client4.getFilesRoute();
 
         const xhr = new XMLHttpRequest();
 

@@ -20,7 +20,6 @@ const ChannelHeader = makeAsyncComponent('ChannelHeader', lazy(() => import('com
 
 // IK changes : we also need to not lazy load the file upload overlay component otherwise drag and drop will not work
 // const FileUploadOverlay = makeAsyncComponent('FileUploadOverlay', lazy(() => import('components/file_upload_overlay')));
-const ChannelBookmarks = makeAsyncComponent('ChannelBookmarks', lazy(() => import('components/channel_bookmarks')));
 
 // IK changes : we choose to not lazy load the advanced create post component due to missingChannelRole being always false
 // const AdvancedCreatePost = makeAsyncComponent('AdvancedCreatePost', lazy(() => import('components/advanced_create_post')));
@@ -199,7 +198,6 @@ export default class ChannelView extends React.PureComponent<Props, State> {
                     id={DropOverlayIdCenterChannel}
                 />
                 <ChannelHeader {...this.props}/>
-                {this.props.isChannelBookmarksEnabled && <ChannelBookmarks channelId={this.props.channelId}/>}
                 <DeferredPostView
                     channelId={this.props.channelId}
                     focusedPostId={this.state.focusedPostId}
