@@ -4,6 +4,8 @@
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 
+import {cancelOverflowCheck, scheduleOverflowCheck} from './overflow_check_scheduler';
+
 export type AttachmentTextOverflowType = 'ellipsis';
 
 const MAX_POST_HEIGHT = 600;
@@ -29,7 +31,6 @@ type State = {
 export default class ShowMore extends React.PureComponent<Props, State> {
     private maxHeight: number;
     private textContainer: React.RefObject<HTMLDivElement>;
-    private overflowRef?: number;
 
     constructor(props: Props) {
         super(props);
@@ -60,9 +61,7 @@ export default class ShowMore extends React.PureComponent<Props, State> {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.handleResize);
-        if (this.overflowRef) {
-            window.cancelAnimationFrame(this.overflowRef);
-        }
+        cancelOverflowCheck(this);
     }
 
     toggleCollapse = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -100,21 +99,17 @@ export default class ShowMore extends React.PureComponent<Props, State> {
     };
 
     checkTextOverflow = () => {
-        if (this.overflowRef) {
-            window.cancelAnimationFrame(this.overflowRef);
-        }
-        this.overflowRef = window.requestAnimationFrame(() => {
-            let isOverflow = false;
-
-            if (this.textContainer.current && this.textContainer.current.scrollHeight > this.maxHeight) {
-                isOverflow = true;
-            }
-
-            if (isOverflow !== this.state.isOverflow) {
-                this.setState({
-                    isOverflow,
-                });
-            }
+        scheduleOverflowCheck(this, {
+            measure: () => {
+                return Boolean(this.textContainer.current && this.textContainer.current.scrollHeight > this.maxHeight);
+            },
+            onMeasured: (isOverflow) => {
+                if (isOverflow !== this.state.isOverflow) {
+                    this.setState({
+                        isOverflow,
+                    });
+                }
+            },
         });
     };
 
