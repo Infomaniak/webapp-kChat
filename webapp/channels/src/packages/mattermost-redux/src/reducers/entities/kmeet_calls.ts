@@ -54,7 +54,7 @@ const conferences = (state: GlobalState['entities']['kmeetCalls']['conferences']
                 registrants: {
                     ...state[action.data.channelId].registrants,
                     [action.data.userId]: {
-                        ...state[action.data.channelId].registrants[action.data.userId],
+                        ...state[action.data.channelId].registrants?.[action.data.userId],
                         status: 'approved',
                         present: true,
                     },
@@ -74,7 +74,7 @@ const conferences = (state: GlobalState['entities']['kmeetCalls']['conferences']
                 registrants: {
                     ...state[action.data.channelId].registrants,
                     [action.data.userId]: {
-                        ...state[action.data.channelId].registrants[action.data.userId],
+                        ...state[action.data.channelId].registrants?.[action.data.userId],
                         present: false,
                     },
                 },
@@ -93,7 +93,7 @@ const conferences = (state: GlobalState['entities']['kmeetCalls']['conferences']
                 registrants: {
                     ...state[action.data.channelId].registrants,
                     [action.data.userId]: {
-                        ...state[action.data.channelId].registrants[action.data.userId],
+                        ...state[action.data.channelId].registrants?.[action.data.userId],
                         status: 'denied',
                     },
                 },

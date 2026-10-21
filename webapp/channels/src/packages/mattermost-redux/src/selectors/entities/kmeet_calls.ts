@@ -16,7 +16,7 @@ export const getConferenceByChannelId = (state: GlobalState, channelId?: string)
 export const getIsAnyUserInConference = (state: GlobalState, channelId: string) => {
     const conference = state.entities.kmeetCalls.conferences[channelId];
 
-    if (!conference) {
+    if (!conference?.registrants) {
         return false;
     }
 
@@ -32,7 +32,7 @@ export const getIsCurrentUserInCall = createSelector(
 
         for (const conference of conferences) {
             if (conference) {
-                if (Boolean(conference.registrants[currentUserId]?.present) === true) {
+                if (Boolean(conference.registrants?.[currentUserId]?.present) === true) {
                     inCall = true;
                     break;
                 }
