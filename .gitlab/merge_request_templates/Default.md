@@ -1,3 +1,11 @@
+<!-- 🤖 TÂCHE IA — AVANT de créer la MR :
+Analyse la gravité des changements (diff vs branche cible) et remplace la ligne /label en fin de template par UNE seule étiquette :
+- review::quick : diff réduit (< ~50 lignes), périmètre unique, aucune logique métier (typo, i18n, config, renommage, fix trivial)
+- review::standard : feature/fix classique, diff modéré, logique métier touchée, tests à jour
+- review::complex : gros diff ou multi-composants, migration/schéma de données, sécurité, perf, architecture, API publique, risque de régression élevé
+En cas de doute entre deux niveaux, choisir le plus élevé.
+-->
+
 ## Bug / Problème
 
 #### Fonctionnel
@@ -21,6 +29,9 @@
 -->
 
 ## Ticket lié
+
+<!-- IA : remplacer la ligne ci-dessous par UNE seule étiquette : review::quick, review::standard ou review::complex -->
+/label review::standard
 
 /assign me  
 /reviewer @boris.trombert @aurelien.sberro @eliott.scherrer
