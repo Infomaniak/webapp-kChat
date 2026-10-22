@@ -250,6 +250,16 @@ check-types:typescript:
   artifacts:
     expire_in: 1 day
 
+test:ruby-scripts:
+  stage: quality
+  image: ruby:${RUBY_VERSION}
+  tags: [shared, standard]
+  rules:
+    - *rule-merge-request
+  script:
+    - ruby .gitlab/test/sentry_refs_test.rb
+    - ruby .gitlab/test/sentry_pipeline_test.rb
+
 check:react-doctor:
   stage: quality
   image: node:20
@@ -395,6 +405,10 @@ release:changelog:
   stage: .post
   image: ruby:${RUBY_VERSION}
   needs: ["release:front", "deploy:image"]
+  variables:
+    # Full git history for the changelog range + the MR join
+    # (GIT_DEPTH 50 truncated ranges > 49 commits).
+    GIT_DEPTH: "0"
   after_script:
     - |
       if [ "$CI_JOB_STATUS" = "failed" ]; then

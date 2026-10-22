@@ -30,6 +30,13 @@ En cas de doute entre deux niveaux, choisir le plus élevé.
 
 ## Ticket lié
 
+<!-- Convention "Fixes <REF>" : une ref déclenche la résolution seulement avec
+     un mot-clé de résolution (Fixes / Closes / Resolves, etc). Formats :
+     Fixes WEBAPP-XXX (short ID Sentry) ou Fixes RM-XXXXXX. Une URL nue sans
+     mot-clé = simple mention, aucune action. Multi-refs OK. -->
+
+Fixes WEBAPP-XXX
+
 <!-- IA : remplacer la ligne ci-dessous par UNE seule étiquette : review::quick, review::standard ou review::complex -->
 /label review::standard
 

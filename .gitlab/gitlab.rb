@@ -1,6 +1,8 @@
 require 'json'
 require 'net/http'
 require 'openssl'
+require 'time'
+require 'set'
 
 GITLAB_BASE_URL = ENV['GITLAB_BASE_URL']
 GITLAB_API_BASE = "#{GITLAB_BASE_URL}/api/v4"
@@ -106,14 +108,38 @@ def create_release(tag, description)
   response.code.to_i == 201
 end
 
-def get_mrs_between_tags(from_sha, to_sha)
+# Commit date read LOCALLY (git show), no API dependency. Returns nil + logs
+# when unavailable (merged_after bound disabled, full scan).
+def get_commit_created_at(sha)
+  date = `git show -s --format=%cI #{sha}`.strip
+  return nil if date.empty?
+
+  date
+rescue StandardError => e
+  puts "WARNING: local date for #{sha} unavailable (#{e.message}), merged_after disabled"
+  nil
+end
+
+def get_mrs_between_tags(from_sha, to_sha, merged_after: nil)
   commits_range = `git log --format='%H' #{from_sha}..#{to_sha}`.split("\n").to_set
   puts "#{commits_range.length} commits in range #{from_sha}..#{to_sha}"
+
+  # merged_after window (previous tag commit date, minus a 24h safety margin):
+  # pagination stops as early as possible instead of scanning 2000 MRs.
+  # The git-log filter above stays the source of truth (SHA join).
+  merged_after_param = nil
+  if merged_after
+    merged_after_param = begin
+      (Time.parse(merged_after) - 86_400).utc.iso8601
+    rescue StandardError
+      nil
+    end
+  end
 
   all_mrs = []
   page = 1
   loop do
-    uri = URI.parse("#{GITLAB_API_BASE}/projects/#{GITLAB_PROJECT_ID}/merge_requests?state=merged&target_branch=master&page=#{page}&per_page=100")
+    uri = URI.parse("#{GITLAB_API_BASE}/projects/#{GITLAB_PROJECT_ID}/merge_requests?state=merged&target_branch=master&per_page=100&page=#{page}" + (merged_after_param ? "&merged_after=#{URI.encode_www_form_component(merged_after_param)}" : ''))
     request = Net::HTTP::Get.new(uri.request_uri)
     request["PRIVATE-TOKEN"] = GITLAB_ACCESS_TOKEN
 
