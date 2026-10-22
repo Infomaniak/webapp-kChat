@@ -148,7 +148,7 @@ install:deps:
       LOCK_HASH=$(sha256sum yarn.lock | cut -d' ' -f1)
       CACHE_HASH=$(cat node_modules/.cache-hash 2>/dev/null || echo "none")
       if [ "$LOCK_HASH" = "$CACHE_HASH" ] && [ -n "$CACHE_HASH" ] && [ "$CACHE_HASH" != "none" ]; then
-        echo "Cache hit — yarn.lock unchanged, skipping yarn install"
+        echo "Cache hit: yarn.lock unchanged, skipping yarn install"
         touch .cache-hit
       else
         yarn --immutable --silent
@@ -536,9 +536,29 @@ fallow-mr:
   stage: quality
   image: node:22-alpine
   tags: [shared, standard]
+  # The entry array in .fallowrc.json defines the fallow graph roots and
+  # must stay in sync with the entry blocks of
+  # webapp/channels/webpack.config.js (app, kmeet): a new webpack entry
+  # without a matching line there gets its whole subtree reported as
+  # unused code by this job.
   variables:
     GIT_DEPTH: "0"
     FALLOW_VERSION: "3.32.0"
     FALLOW_COMMAND: "audit"
+  # Audit mode never writes the comment/review sidecars the template lists,
+  # so keep only the artifacts this command produces and silence the nine
+  # "no matching files" runner warnings on every pipeline. Re-add the
+  # template paths if FALLOW_COMMENT or FALLOW_REVIEW are ever enabled.
+  artifacts:
+    when: always
+    paths:
+      - fallow-results.json
+      - fallow-analysis-args.bin
+      - fallow-gates.env
+    reports:
+      codequality:
+        - gl-code-quality-report.json
+      dotenv: fallow-gates.env
+    expire_in: 30 days
   rules:
     - *rule-merge-request

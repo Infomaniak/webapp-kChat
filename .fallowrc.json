@@ -1,8 +1,25 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
   "minimumVersion": "3.32.0",
+  "entry": [
+    "webapp/channels/src/root.tsx",
+    "webapp/channels/src/components/kmeet_conference_iframe/index.tsx",
+    "webapp/scripts/i18n-check.js",
+    "webapp/scripts/i18n-missing.js",
+    "webapp/scripts/i18n-reorder.js"
+  ],
   "ignorePatterns": [
     ".worktrees/**"
+  ],
+  "ignoreUnresolvedImports": [
+    "./utils/variables",
+    "./utils/mixins",
+    "./utils/functions",
+    "./utils/_mixins",
+    "./utils/animations",
+    "./components/toggle",
+    "./~bootstrap/dist/css/bootstrap.css",
+    "./~font-awesome/css/font-awesome.css"
   ],
   "production": {
     "deadCode": true,
