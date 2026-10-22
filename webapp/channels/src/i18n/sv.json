@@ -514,7 +514,7 @@
   "bots.manage.edit.title": "Uppdatera",
   "bots.manage.empty": "Inga bot-konton hittade",
   "bots.manage.header": "Bot-konton",
-  "bots.manage.help1": "Använd {botAccounts} för att integrera med Mattermost via plugins eller API. Bot-konton är tillgängliga för alla på din server. {learnMore}",
+  "bots.manage.help1": "Använd {botAccounts} för att integrera med kChat via plugins eller API. Bot-konton är tillgängliga för alla på din server. {learnMore}",
   "bots.manage.search": "Sök efter bot-konton",
   "bots.managed_by": "Hanteras av ",
   "bots.token.confirm": "Ta bort",

@@ -247,7 +247,7 @@ export default class Bots extends React.PureComponent<Props, State> {
                     <>
                         <FormattedMessage
                             id='bots.manage.help1'
-                            defaultMessage='Use {botAccounts} to integrate with Mattermost through plugins or the API. Bot accounts are available to everyone on your server. {learnMore}'
+                            defaultMessage='Use {botAccounts} to integrate with kChat through plugins or the API. Bot accounts are available to everyone on your server. {learnMore}'
                             values={{
                                 botAccounts: (
                                     <FormattedMessage

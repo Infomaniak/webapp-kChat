@@ -514,7 +514,7 @@
   "bots.manage.edit.title": "Zaktualizuj",
   "bots.manage.empty": "Nie znaleziono kont botów",
   "bots.manage.header": "Konta botów",
-  "bots.manage.help1": "Użyj {botAccounts} do integracji z Mattermostem poprzez wtyczki lub API. Konta botów są dostępne dla wszystkich na Twoim serwerze. {learnMore}",
+  "bots.manage.help1": "Użyj {botAccounts} do integracji z kChat poprzez wtyczki lub API. Konta botów są dostępne dla wszystkich na Twoim serwerze. {learnMore}",
   "bots.manage.search": "Szukaj kont botów",
   "bots.managed_by": "Zarządzany przez ",
   "bots.token.confirm": "Usuń",

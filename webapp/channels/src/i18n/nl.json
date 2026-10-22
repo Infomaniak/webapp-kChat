@@ -514,7 +514,7 @@
   "bots.manage.edit.title": "Bijwerken",
   "bots.manage.empty": "Geen bot accounts gevonden",
   "bots.manage.header": "Bot-accounts",
-  "bots.manage.help1": "Gebruik {botAccounts} om te integreren met Mattermost via plugins of de API. Bot accounts zijn beschikbaar voor iedereen op jouw server. {learnMore}",
+  "bots.manage.help1": "Gebruik {botAccounts} om te integreren met kChat via plugins of de API. Bot accounts zijn beschikbaar voor iedereen op jouw server. {learnMore}",
   "bots.manage.search": "Bot Accounts Zoeken",
   "bots.managed_by": "Beheerd door ",
   "bots.token.confirm": "Verwijderen",

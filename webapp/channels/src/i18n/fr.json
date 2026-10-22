@@ -514,7 +514,7 @@
   "bots.manage.edit.title": "Mettre à jour",
   "bots.manage.empty": "Aucun compte de bot trouvé",
   "bots.manage.header": "Comptes de bot",
-  "bots.manage.help1": "Utilisez {botAccounts} pour intégrer Mattermost via des plugins ou l'API. Les comptes de bot sont disponibles pour tous les membres de votre serveur. {learnMore}",
+  "bots.manage.help1": "Utilisez {botAccounts} pour intégrer kChat via des plugins ou l'API. Les comptes de bot sont disponibles pour tous les membres de votre serveur. {learnMore}",
   "bots.manage.search": "Rechercher des comptes de bot",
   "bots.managed_by": "Géré par ",
   "bots.token.confirm": "Supprimer",
