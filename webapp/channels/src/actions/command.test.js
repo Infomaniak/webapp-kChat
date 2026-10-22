@@ -15,7 +15,7 @@ import * as Utils from 'utils/utils';
 
 import mockStore from 'tests/test_store';
 
-import {executeCommand, UserSettingsModal} from './command';
+import {executeCommand} from './command';
 
 const currentChannelId = '123';
 const currentTeamId = '321';
@@ -62,6 +62,9 @@ const initialState = {
         },
         teams: {
             currentTeamId,
+            teams: {
+                [currentTeamId]: {id: currentTeamId, product_id: 'product123'},
+            },
         },
         groups: {
             myGroups: [],
@@ -199,17 +202,17 @@ describe('executeCommand', () => {
     });
 
     describe('settings', () => {
-        test('should pass right modal params', async () => {
+        test('should dispatch the openSettings event with the current team product id', async () => {
+            const dispatchEventSpy = jest.spyOn(document, 'dispatchEvent');
+
             const result = await store.dispatch(executeCommand('/settings', {}));
-            expect(store.getActions()).toEqual([
-                {
-                    type: ActionTypes.MODAL_OPEN,
-                    dialogProps: {isContentProductSettings: true},
-                    dialogType: UserSettingsModal,
-                    modalId: 'user_settings',
-                },
-            ]);
+
+            expect(dispatchEventSpy).toHaveBeenCalledTimes(1);
+            const event = dispatchEventSpy.mock.calls[0][0];
+            expect(event.type).toBe('openSettings');
+            expect(event.detail).toEqual(['ksuite-kchat', 'ksuite-kchat-personalization', {selectedId: 'product123'}]);
             expect(result.data).toBeDefined();
+            dispatchEventSpy.mockRestore();
         });
     });
 

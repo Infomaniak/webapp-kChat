@@ -14,11 +14,13 @@ import {appsEnabled} from 'mattermost-redux/selectors/entities/apps';
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {isMarketplaceEnabled} from 'mattermost-redux/selectors/entities/general';
 import {haveICurrentTeamPermission} from 'mattermost-redux/selectors/entities/roles';
+import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 
 import * as GlobalActions from 'actions/global_actions';
 import * as PostActions from 'actions/post_actions';
 import {requestLeaveChannel} from 'actions/views/channel';
 import {openModal} from 'actions/views/modals';
+import {toggleSettings} from 'actions/views/rhs';
 
 import {withSuspense} from 'components/common/hocs/with_suspense';
 import {AppCommandParser} from 'components/suggestion/command_provider/app_command_parser/app_command_parser';
@@ -37,7 +39,6 @@ import {trackEvent} from './telemetry_actions';
 
 const KeyboardShortcutsModal = withSuspense(lazy(() => import('components/keyboard_shortcuts/keyboard_shortcuts_modal/keyboard_shortcuts_modal')));
 const MarketplaceModal = withSuspense(lazy(() => import('components/plugin_marketplace/marketplace_modal')));
-export const UserSettingsModal = withSuspense(lazy(() => import('components/user_settings/modal')));
 
 export type ExecuteCommandReturnType = {
     frontendHandled?: boolean;
@@ -98,7 +99,7 @@ export function executeCommand(message: string, args: CommandArgs): ActionFuncAs
             return {data: {frontendHandled: true}};
         }
         case '/settings':
-            dispatch(openModal({modalId: ModalIdentifiers.USER_SETTINGS, dialogType: UserSettingsModal, dialogProps: {isContentProductSettings: true}}));
+            dispatch(toggleSettings('display', getCurrentTeam(state)?.product_id));
             return {data: {frontendHandled: true}};
         case '/marketplace':
             // check if user has permissions to access the read plugins
