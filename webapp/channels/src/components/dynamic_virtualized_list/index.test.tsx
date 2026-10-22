@@ -4,7 +4,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable react/no-children-prop */
 
-import {render} from '@testing-library/react';
+import {act, render} from '@testing-library/react';
 import React from 'react';
 
 jest.mock('./list_item_size_observer', () => ({
@@ -201,5 +201,53 @@ describe('DynamicVirtualizedList', () => {
         expect(startIndex[2]).toBe(4);
         const startIndexBottom = list._getRangeToRender(400);
         expect(startIndexBottom[2]).toBe(0);
+    });
+
+    test('permalink mode stops recentering after a user scroll', () => {
+        const listRef = React.createRef<DynamicVirtualizedList>();
+        render(
+            <DynamicVirtualizedList
+                canLoadMorePosts={jest.fn()}
+                children={jest.fn(({itemId}: {itemId: string}) => <div>{itemId}</div>) as any}
+                height={300}
+                initRangeToRender={[]}
+                initScrollToIndex={() => ({index: 2, position: 'center', offset: 0})}
+                innerRef={React.createRef()}
+                itemData={itemIds}
+                onItemsRendered={jest.fn()}
+                onScroll={jest.fn()}
+                overscanCountBackward={1}
+                overscanCountForward={1}
+                ref={listRef}
+                width={300}
+            />,
+        );
+
+        const list = listRef.current!;
+        for (const id of itemIds) {
+            list._handleNewMeasurements(id, 40, false);
+        }
+        act(() => {
+            list.forceUpdate();
+        });
+        expect(list._isPermalinkMode).toBe(true);
+
+        const programmaticScrollEvent = {currentTarget: {scrollTop: 0, scrollHeight: 200}} as any;
+        act(() => {
+            list._onScrollVertical(programmaticScrollEvent);
+        });
+        expect(list._isPermalinkMode).toBe(true);
+
+        const scrollToSpy = jest.spyOn(list, 'scrollTo');
+        const userScrollEvent = {currentTarget: {scrollTop: 100, scrollHeight: 200}} as any;
+        act(() => {
+            list._onScrollVertical(userScrollEvent);
+        });
+        expect(list._isPermalinkMode).toBe(false);
+
+        act(() => {
+            list._handleNewMeasurements('e', 60, false);
+        });
+        expect(scrollToSpy).not.toHaveBeenCalled();
     });
 });

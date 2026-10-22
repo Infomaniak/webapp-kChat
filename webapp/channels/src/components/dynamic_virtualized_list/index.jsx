@@ -725,16 +725,12 @@ export class DynamicVirtualizedList extends PureComponent {
 
                 this._permalinkStabilizationTimer = setTimeout(() => {
                     if (this._heightChangesCount < 20) {
-                        this._isPermalinkMode = false;
-                        this._permalinkItemId = null;
-                        this._heightChangesCount = 0;
+                        this._exitPermalinkMode();
                     }
                 }, 2000);
 
                 if (this._heightChangesCount >= 20) {
-                    this._isPermalinkMode = false;
-                    this._permalinkItemId = null;
-                    this._heightChangesCount = 0;
+                    this._exitPermalinkMode();
                 }
 
                 return;
@@ -808,6 +804,16 @@ export class DynamicVirtualizedList extends PureComponent {
         }
     };
 
+    _exitPermalinkMode = () => {
+        this._isPermalinkMode = false;
+        this._permalinkItemId = null;
+        this._heightChangesCount = 0;
+        if (this._permalinkStabilizationTimer) {
+            clearTimeout(this._permalinkStabilizationTimer);
+            this._permalinkStabilizationTimer = null;
+        }
+    };
+
     _onScrollVertical = (event) => {
         if (!this.state.scrolledToInitIndex) {
             return;
@@ -820,6 +826,10 @@ export class DynamicVirtualizedList extends PureComponent {
                 }));
             }
             return;
+        }
+
+        if (this._isPermalinkMode && !this.state.scrollUpdateWasRequested) {
+            this._exitPermalinkMode();
         }
 
         if (scrollHeight !== this.state.scrollHeight) {
