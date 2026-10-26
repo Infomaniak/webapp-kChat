@@ -5,7 +5,9 @@ import {
     getRelativeChannelURL,
     getSiteURL,
     getSiteURLFromWindowObject,
+    isInternalURL,
     isPermalinkURL,
+    shouldOpenInNewTab,
     validateChannelUrl,
 } from 'utils/url';
 
@@ -131,6 +133,37 @@ describe('Utils.URL', () => {
             ['https://example.com/teamname-1/pl/affe2344234', false],
         ])('is permalink for %s should return %s', (url, expected) => {
             expect(isPermalinkURL(url)).toBe(expected);
+        });
+    });
+
+    describe('isInternalURL', () => {
+        const siteURL = 'https://kchat.infomaniak.com';
+        test.each([
+            ['relative path is internal', '/teamname-1/pl/affe2344234', undefined, true],
+            ['hash is internal', '#anchor', undefined, true],
+            ['full site URL is internal', `${siteURL}/teamname-1/pl/affe2344234`, siteURL, true],
+            ['protocol-relative URL is not internal', '//evil.example/attack', siteURL, false],
+            ['protocol-relative URL to local host is not internal', '//127.0.0.1:8666/attack', siteURL, false],
+            ['backslash-prefixed authority URL is not internal', '/\\evil.example/attack', siteURL, false],
+            ['tab-then-slash authority URL is not internal', '/\t/evil.example/attack', siteURL, false],
+            ['full external URL is not internal', 'https://evil.example/attack', siteURL, false],
+            ['mailto is not internal', 'mailto:someone@example.com', siteURL, false],
+            ['empty string is not internal', '', siteURL, false],
+        ])('%s', (_description, url, siteUrl, expected) => {
+            expect(isInternalURL(url, siteUrl)).toBe(expected);
+        });
+    });
+
+    describe('shouldOpenInNewTab', () => {
+        const siteURL = 'https://kchat.infomaniak.com';
+        test.each([
+            ['relative permalink opens in same view', '/teamname-1/pl/affe2344234', siteURL, false],
+            ['full site URL opens in same view', `${siteURL}/teamname-1/pl/affe2344234`, siteURL, false],
+            ['protocol-relative URL opens in new tab', '//evil.example/attack', siteURL, true],
+            ['backslash-prefixed authority URL opens in new tab', '/\\evil.example/attack', siteURL, true],
+            ['full external URL opens in new tab', 'https://evil.example/attack', siteURL, true],
+        ])('%s', (_description, url, siteUrl, expected) => {
+            expect(shouldOpenInNewTab(url, siteUrl)).toBe(expected);
         });
     });
 });

@@ -3,7 +3,7 @@
 
 import type {UserProfile} from '@mattermost/types/users';
 
-import {GeneralTypes} from 'mattermost-redux/action_types';
+import {GeneralTypes, UserTypes} from 'mattermost-redux/action_types';
 import {Client4} from 'mattermost-redux/client';
 
 import store from 'stores/redux_store';
@@ -692,5 +692,68 @@ describe('Utils.loadImage', () => {
         Utils.loadImage('http://localhost:99999/x.png', jest.fn());
 
         expect(getAuthorizationHeader()).toBeUndefined();
+    });
+});
+
+describe('Utils.handleFormattedTextClick', () => {
+    const seedCurrentUser = () => {
+        store.dispatch({
+            type: UserTypes.RECEIVED_ME,
+            data: {id: 'test-user-id', roles: 'system_user', username: 'testuser'},
+        });
+    };
+
+    const makeClickEvent = (target: Element) => ({
+        target,
+        button: 0,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: false,
+        shiftKey: false,
+        preventDefault: jest.fn(),
+        stopPropagation: jest.fn(),
+    } as unknown as React.MouseEvent);
+
+    const mountMessage = (html: string) => {
+        const container = document.createElement('div');
+        container.innerHTML = html;
+        document.body.appendChild(container);
+        return container;
+    };
+
+    test('intercepts clicks on formatted text nested inside a data-link anchor', async () => {
+        seedCurrentUser();
+        const container = mountMessage('<a href="/arbitrary/path" data-link="/arbitrary/path"><strong>bold link</strong></a>');
+        const strong = container.querySelector('strong')!;
+
+        const event = makeClickEvent(strong);
+        await Utils.handleFormattedTextClick(event);
+
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(event.stopPropagation).toHaveBeenCalled();
+        container.remove();
+    });
+
+    test('intercepts clicks directly on a data-link anchor', async () => {
+        seedCurrentUser();
+        const container = mountMessage('<a href="/arbitrary/path" data-link="/arbitrary/path">plain link</a>');
+        const anchor = container.querySelector('a')!;
+
+        const event = makeClickEvent(anchor);
+        await Utils.handleFormattedTextClick(event);
+
+        expect(event.preventDefault).toHaveBeenCalled();
+        container.remove();
+    });
+
+    test('leaves external anchors to the browser default behaviour', async () => {
+        const container = mountMessage('<a href="https://evil.example/attack" target="_blank" rel="noreferrer">external link</a>');
+        const anchor = container.querySelector('a')!;
+
+        const event = makeClickEvent(anchor);
+        await Utils.handleFormattedTextClick(event);
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        container.remove();
     });
 });

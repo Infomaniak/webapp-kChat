@@ -235,8 +235,22 @@ export function mightTriggerExternalRequest(url: string, siteURL?: string): bool
     return true;
 }
 
+const relativeReferenceBase = new URL('https://kchat.invalid');
+
 export function isInternalURL(url: string, siteURL?: string): boolean {
-    return url.startsWith(siteURL || '') || url.startsWith('/') || url.startsWith('#');
+    return url.startsWith(siteURL || '') || url.startsWith('#') || isRelativePathReference(url);
+}
+
+function isRelativePathReference(url: string): boolean {
+    if (!url.startsWith('/')) {
+        return false;
+    }
+    try {
+        const parsed = new URL(url, relativeReferenceBase);
+        return parsed.origin === relativeReferenceBase.origin;
+    } catch {
+        return false;
+    }
 }
 
 export function shouldOpenInNewTab(url: string, siteURL?: string, managedResourcePaths?: string[]): boolean {
