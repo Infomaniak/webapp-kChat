@@ -1417,7 +1417,8 @@ export function acknowledgePost(postId: string): ActionFuncAsync {
 
 export function unacknowledgePost(postId: string): ActionFuncAsync {
     return async (dispatch, getState) => {
-        const userId = getCurrentUserId(getState());
+        const state = getState();
+        const userId = getCurrentUserId(state);
 
         try {
             await Client4.unacknowledgePost(postId, userId);
@@ -1430,7 +1431,7 @@ export function unacknowledgePost(postId: string): ActionFuncAsync {
         const data = {
             post_id: postId,
             user_id: userId,
-            acknowledged_at: 0,
+            acknowledged_at: PostSelectors.getPostAcknowledgements(state, postId)?.[userId] ?? 0,
         } as PostAcknowledgement;
 
         dispatch({

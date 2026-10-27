@@ -4834,3 +4834,48 @@ describe('evictPosts', () => {
         });
     });
 });
+
+describe('acknowledgements', () => {
+    describe(`deleting an acknowledgement (${PostTypes.DELETE_ACK_POST_SUCCESS})`, () => {
+        it('should remove the user entry when the acknowledged_at matches the stored one', () => {
+            const state = deepFreeze({
+                post1: {
+                    user1: 1792767532989,
+                },
+            });
+
+            const nextState = reducers.acknowledgements(state, {
+                type: PostTypes.DELETE_ACK_POST_SUCCESS,
+                data: {
+                    post_id: 'post1',
+                    user_id: 'user1',
+                    acknowledged_at: 1792767532989,
+                },
+            });
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                post1: {},
+            });
+        });
+
+        it('should keep the entry when the state holds a newer acknowledged_at', () => {
+            const state = deepFreeze({
+                post1: {
+                    user1: 2000,
+                },
+            });
+
+            const nextState = reducers.acknowledgements(state, {
+                type: PostTypes.DELETE_ACK_POST_SUCCESS,
+                data: {
+                    post_id: 'post1',
+                    user_id: 'user1',
+                    acknowledged_at: 1000,
+                },
+            });
+
+            expect(nextState).toBe(state);
+        });
+    });
+});

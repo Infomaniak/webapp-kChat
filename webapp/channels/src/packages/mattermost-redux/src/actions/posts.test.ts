@@ -1719,3 +1719,48 @@ describe('getPostThreads', () => {
         });
     });
 });
+
+describe('unacknowledgePost', () => {
+    beforeAll(() => {
+        TestHelper.initBasic(Client4);
+    });
+
+    afterAll(() => {
+        TestHelper.tearDown();
+    });
+
+    const postId = 'postId';
+    const userId = 'currentUserId';
+    const acknowledgedAt = 1792767532989;
+    const initialState = {
+        entities: {
+            users: {
+                currentUserId: userId,
+            },
+            posts: {
+                acknowledgements: {
+                    [postId]: {
+                        [userId]: acknowledgedAt,
+                    },
+                },
+            },
+        },
+    };
+
+    it('emits the acknowledged_at currently in state so the reducer can remove it', async () => {
+        const testStore = await mockStore(initialState);
+        nock(Client4.getBaseRoute()).
+            delete(`/users/${userId}/posts/${postId}/ack`).
+            reply(200, OK_RESPONSE);
+
+        await testStore.dispatch(Actions.unacknowledgePost(postId));
+
+        const deleteAction = testStore.getActions().find((action) => action.type === PostTypes.DELETE_ACK_POST_SUCCESS);
+        expect(deleteAction).toBeTruthy();
+        expect(deleteAction.data).toEqual({
+            post_id: postId,
+            user_id: userId,
+            acknowledged_at: acknowledgedAt,
+        });
+    });
+});
