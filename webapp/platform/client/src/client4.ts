@@ -855,18 +855,6 @@ export default class Client4 {
         return profile;
     };
 
-    loginWithDesktopToken = async (token: string) => {
-        const body: any = {
-            token,
-            deviceId: '',
-        };
-
-        return this.doFetch<UserProfile>(
-            `${this.getUsersRoute()}/login/desktop_token`,
-            {method: 'post', body: JSON.stringify(body)},
-        );
-    };
-
     loginById = (id: string, password: string, token = '') => {
         const body: any = {
             id,
@@ -1243,13 +1231,6 @@ export default class Client4 {
         return this.doFetch<OAuthApp[]>(
             `${this.getUserRoute(userId)}/oauth/apps/authorized`,
             {method: 'get'},
-        );
-    };
-
-    authorizeOAuthApp = (responseType: string, clientId: string, redirectUri: string, state: string, scope: string) => {
-        return this.doFetch<void>(
-            `${this.url}/oauth/authorize`,
-            {method: 'post', body: JSON.stringify({client_id: clientId, response_type: responseType, redirect_uri: redirectUri, state, scope})},
         );
     };
 
@@ -3073,13 +3054,6 @@ export default class Client4 {
         return this.doFetch<OutgoingOAuthConnection>(
             `${this.getOutgoingOAuthConnectionsRoute()}/validate${buildQueryString({team_id: teamId})}`,
             {method: 'post', body: JSON.stringify(connection)},
-        );
-    };
-
-    getOAuthAppInfo = (appId: string) => {
-        return this.doFetch<OAuthApp>(
-            `${this.getOAuthAppRoute(appId)}/info`,
-            {method: 'get'},
         );
     };
 

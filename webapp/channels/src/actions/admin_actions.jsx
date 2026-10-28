@@ -118,28 +118,6 @@ export async function applyIPFilters(ipList, success, error) {
     }
 }
 
-/**
- * @param {string | null} clientId
- * @returns {ActionResult<OAuthApp>}
- */
-export function getOAuthAppInfo(clientId) {
-    return bindClientFunc({
-        clientFunc: Client4.getOAuthAppInfo,
-        params: [clientId],
-    });
-}
-
-/**
- * @param {*}
- * @returns {ActionResult<{redirect: string}>}
- */
-export function allowOAuth2({responseType, clientId, redirectUri, state, scope}) {
-    return bindClientFunc({
-        clientFunc: Client4.authorizeOAuthApp,
-        params: [responseType, clientId, redirectUri, state, scope],
-    });
-}
-
 export async function emailToLdap(loginId, password, token, ldapId, ldapPassword, success, error) {
     const {data, error: err} = await dispatch(UserActions.switchEmailToLdap(loginId, password, ldapId, ldapPassword, token));
     if (data && success) {
