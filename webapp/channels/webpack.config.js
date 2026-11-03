@@ -577,7 +577,7 @@ if (targetIsDevServer) {
             xfwd: true,
             ws: false,
         }],
-        port: 443,
+        port: Number(process.env.DEV_SERVER_PORT) || 443,
         devMiddleware: {
             writeToDisk: false,
         },

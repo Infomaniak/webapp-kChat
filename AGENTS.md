@@ -21,6 +21,15 @@ When performing code review via GitLab (AgentFlow):
 
 **13 locales**: `en`, `fr`, `it`, `es`, `de`, `pt`, `sv`, `pl`, `nl`, `el`, `no`, `da`, `fi` — no other languages. Translations must be natural.
 
+## Local dev server (QA)
+
+1. `yarn build:dependencies` — installs dependencies and builds the platform packages. Run it **before** starting the dev server: a server started before the builds serves a stale bundle that renders as a silent white screen.
+2. Pick a free port (the server's configured default is 443; parallel checkouts often occupy it — scan 8444–8448):
+   `for p in 8444 8445 8446 8447 8448; do nc -z 127.0.0.1 $p 2>/dev/null || { echo $p; break; }; done`
+3. `DEV_SERVER_PORT=<port> yarn dev-server:webapp` — redirect the log over the whole command (`... > /tmp/dev-server-<port>.log 2>&1`; note that `A && B > log` only logs B).
+4. Test URL: `https://infomaniak.local.preprod.dev.infomaniak.ch:<port>/`
+5. ⚠️ SSO redirects to `ksuite.preprod.dev.infomaniak.ch` and never returns to the local host. After login, navigate back to the local URL. Channel pages in a preprod session: `https://ksuite.preprod.dev.infomaniak.ch/28/kchat/infomaniak/channels/<name>`.
+
 ## MR / Redmine conventions
 
 When using the `create-mr` skill, follow these rules:

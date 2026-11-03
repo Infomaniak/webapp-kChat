@@ -189,3 +189,6 @@ opencode.json
 .claude/settings.json
 .codex/hooks.json
 CLAUDE.md
+
+# Agent local working files (plans, evidence) — never committed
+/docs/
