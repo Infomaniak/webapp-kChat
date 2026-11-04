@@ -29,6 +29,9 @@ When performing code review via GitLab (AgentFlow):
 3. `DEV_SERVER_PORT=<port> yarn dev-server:webapp` — redirect the log over the whole command (`... > /tmp/dev-server-<port>.log 2>&1`; note that `A && B > log` only logs B).
 4. Test URL: `https://infomaniak.local.preprod.dev.infomaniak.ch:<port>/`
 5. ⚠️ SSO redirects to `ksuite.preprod.dev.infomaniak.ch` and never returns to the local host. After login, navigate back to the local URL. Channel pages in a preprod session: `https://ksuite.preprod.dev.infomaniak.ch/28/kchat/infomaniak/channels/<name>`.
+6. ⚠️ TLS in the Orca embedded browser: the webpack auto-generated cert (CN=localhost, SAN mismatch) is refused even with user-keychain trust — and the Orca browser profile ignores `add-trusted-cert`. Use mkcert leaf certs (`.env/certs/`, CA already trusted) through the local devServer patch, and fall back to playwright MCP while debugging TLS.
+7. Channels: open them via the LHS or `/infomaniak/channels/<name>` — `/messages/@user` bounces to town-square until the channel is loaded in the store.
+8. Some admin APIs 403 through the preprod proxy (e.g. `POST /channels/{id}/restore`): prefer creating a fresh test channel over restoring an archived one.
 
 ## MR / Redmine conventions
 
