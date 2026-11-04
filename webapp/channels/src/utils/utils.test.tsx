@@ -8,7 +8,9 @@ import {Client4} from 'mattermost-redux/client';
 
 import store from 'stores/redux_store';
 
+import {getHistory} from 'utils/browser_history';
 import Constants, {ValidationErrors, AdvancedTextEditorTextboxIds} from 'utils/constants';
+import {mightTriggerExternalRequest} from 'utils/url';
 import * as UserAgent from 'utils/user_agent';
 import * as Utils from 'utils/utils';
 
@@ -755,5 +757,80 @@ describe('Utils.handleFormattedTextClick', () => {
 
         expect(event.preventDefault).not.toHaveBeenCalled();
         container.remove();
+    });
+});
+
+describe('Utils.handleGlobalClick', () => {
+    const seedCurrentUser = () => {
+        store.dispatch({
+            type: UserTypes.RECEIVED_ME,
+            data: {id: 'test-user-id', roles: 'system_user', username: 'testuser'},
+        });
+    };
+
+    const mountMessage = (html: string) => {
+        const container = document.createElement('div');
+        container.innerHTML = html;
+        document.body.appendChild(container);
+        return container;
+    };
+
+    test('intercepts unhandled clicks on nested formatted text, prevents the default navigation and routes in-app exactly once', async () => {
+        seedCurrentUser();
+        const container = mountMessage('<a href="/arbitrary/path" data-link="/arbitrary/path"><strong>bold link</strong></a>');
+        const strong = container.querySelector('strong')!;
+
+        const pushSpy = jest.spyOn(getHistory(), 'push');
+        const event = new MouseEvent('click', {bubbles: true, cancelable: true});
+        document.addEventListener('click', Utils.handleGlobalClick);
+        strong.dispatchEvent(event);
+        await Promise.resolve();
+        document.removeEventListener('click', Utils.handleGlobalClick);
+
+        expect(event.defaultPrevented).toBe(true);
+        expect(pushSpy).toHaveBeenCalledTimes(1);
+        expect(pushSpy).toHaveBeenCalledWith('/arbitrary/path');
+        pushSpy.mockRestore();
+        container.remove();
+    });
+
+    test('is a no-op when the click was already handled by a surface handler', async () => {
+        const pushSpy = jest.spyOn(getHistory(), 'push');
+        const event = new MouseEvent('click', {bubbles: true, cancelable: true});
+        event.preventDefault();
+        await Utils.handleGlobalClick(event as unknown as MouseEvent);
+
+        expect(pushSpy).not.toHaveBeenCalled();
+        pushSpy.mockRestore();
+    });
+
+    test.each([
+        ['middle click', {button: 1}],
+        ['ctrl click', {ctrlKey: true}],
+        ['meta click', {metaKey: true}],
+        ['alt click', {altKey: true}],
+        ['shift click', {shiftKey: true}],
+    ])('leaves %s on a data-link anchor to the browser default behaviour', async (_description, init) => {
+        seedCurrentUser();
+        const container = mountMessage('<a href="/arbitrary/path" data-link="/arbitrary/path"><strong>bold link</strong></a>');
+        const strong = container.querySelector('strong')!;
+
+        const pushSpy = jest.spyOn(getHistory(), 'push');
+        const event = new MouseEvent('click', {bubbles: true, cancelable: true, ...init});
+        document.addEventListener('click', Utils.handleGlobalClick);
+        strong.dispatchEvent(event);
+        await Promise.resolve();
+        document.removeEventListener('click', Utils.handleGlobalClick);
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(pushSpy).not.toHaveBeenCalled();
+        pushSpy.mockRestore();
+        container.remove();
+    });
+});
+
+describe('Utils.mightTriggerExternalRequest', () => {
+    test('treats relative paths as external-request candidates without a site URL', () => {
+        expect(mightTriggerExternalRequest('/teamname-1/pl/' + 'a'.repeat(26), undefined)).toBe(true);
     });
 });

@@ -7,7 +7,7 @@ import marked from 'marked';
 import EmojiMap from 'utils/emoji_map';
 import * as PostUtils from 'utils/post_utils';
 import * as TextFormatting from 'utils/text_formatting';
-import {mightTriggerExternalRequest, getScheme, isUrlSafe, shouldOpenInNewTab} from 'utils/url';
+import {getRelativePathForLink, getScheme, isUrlSafe, mightTriggerExternalRequest, shouldOpenInNewTab} from 'utils/url';
 
 import {parseImageDimensions} from './helpers';
 
@@ -181,10 +181,7 @@ export default class Renderer extends marked.Renderer {
         if (openInNewTab || !this.formattingOptions.siteURL) {
             output += ' target="_blank"';
         } else {
-            output += ` data-link="${outHref.replace(
-                this.formattingOptions.siteURL,
-                '',
-            )}"`;
+            output += ` data-link="${getRelativePathForLink(outHref, this.formattingOptions.siteURL)}"`;
         }
 
         if (title) {

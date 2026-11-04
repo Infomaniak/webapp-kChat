@@ -3,10 +3,12 @@
 
 import {
     getRelativeChannelURL,
+    getRelativePathForLink,
     getSiteURL,
     getSiteURLFromWindowObject,
     isInternalURL,
     isPermalinkURL,
+    mightTriggerExternalRequest,
     shouldOpenInNewTab,
     validateChannelUrl,
 } from 'utils/url';
@@ -147,7 +149,18 @@ describe('Utils.URL', () => {
             ['backslash-prefixed authority URL is not internal', '/\\evil.example/attack', siteURL, false],
             ['tab-then-slash authority URL is not internal', '/\t/evil.example/attack', siteURL, false],
             ['full external URL is not internal', 'https://evil.example/attack', siteURL, false],
+            ['userinfo-hostile URL is not internal', `${siteURL}@evil.example/attack`, siteURL, false],
+            ['userinfo-hostile URL with port is not internal', `${siteURL}@evil.example:8443/attack`, siteURL, false],
+            ['suffix-hosted URL is not internal', 'https://kchat.infomaniak.com.attacker.example/attack', siteURL, false],
+            ['trailing-dot host is not internal', 'https://kchat.infomaniak.com./attack', siteURL, false],
+            ['different scheme is not internal', 'http://kchat.infomaniak.com/attack', siteURL, false],
+            ['uppercase host is internal', 'https://KCHAT.INFOMANIAK.COM/teamname-1', siteURL, true],
+            ['explicit default port is internal', 'https://kchat.infomaniak.com:443/teamname-1', siteURL, true],
+            ['userinfo on site host is not internal', 'https://user@kchat.infomaniak.com/teamname-1', siteURL, false],
+            ['absolute URL without siteURL is not internal', 'https://kchat.infomaniak.com/attack', undefined, false],
             ['mailto is not internal', 'mailto:someone@example.com', siteURL, false],
+            ['force-new-tab marker URL is not internal', '!https://kchat.infomaniak.com/teamname-1', siteURL, false],
+            ['force-new-tab marker URL to external site is not internal', '!https://mattermost.com/', siteURL, false],
             ['empty string is not internal', '', siteURL, false],
         ])('%s', (_description, url, siteUrl, expected) => {
             expect(isInternalURL(url, siteUrl)).toBe(expected);
@@ -162,8 +175,44 @@ describe('Utils.URL', () => {
             ['protocol-relative URL opens in new tab', '//evil.example/attack', siteURL, true],
             ['backslash-prefixed authority URL opens in new tab', '/\\evil.example/attack', siteURL, true],
             ['full external URL opens in new tab', 'https://evil.example/attack', siteURL, true],
+            ['userinfo-hostile URL opens in new tab', `${siteURL}@evil.example/attack`, siteURL, true],
+            ['suffix-hosted URL opens in new tab', 'https://kchat.infomaniak.com.attacker.example/attack', siteURL, true],
         ])('%s', (_description, url, siteUrl, expected) => {
             expect(shouldOpenInNewTab(url, siteUrl)).toBe(expected);
+        });
+    });
+
+    describe('mightTriggerExternalRequest', () => {
+        const siteURL = 'https://kchat.infomaniak.com';
+        const permalinkId = 'a'.repeat(26);
+        test.each([
+            ['permalink on site does not trigger external request', `${siteURL}/teamname-1/pl/${permalinkId}`, siteURL, false],
+            ['relative permalink does not trigger external request', `/teamname-1/pl/${permalinkId}`, siteURL, false],
+            ['userinfo-hostile permalink triggers external request', `${siteURL}@evil.example/pl/${permalinkId}`, siteURL, true],
+            ['suffix-hosted permalink triggers external request', `https://kchat.infomaniak.com.attacker.example/pl/${permalinkId}`, siteURL, true],
+            ['non-permalink on site triggers external request', `${siteURL}/plugins/github/issue`, siteURL, true],
+            ['cross-origin URL triggers external request', 'https://evil.example/attack', siteURL, true],
+            ['invalid URL triggers external request', 'https://', siteURL, true],
+        ])('%s', (_description, url, siteUrl, expected) => {
+            expect(mightTriggerExternalRequest(url, siteUrl)).toBe(expected);
+        });
+    });
+
+    describe('getRelativePathForLink', () => {
+        const siteURL = 'https://kchat.infomaniak.com';
+        test.each([
+            ['absolute same-origin URL is made relative', `${siteURL}/teamname-1/pl/affe2344234`, siteURL, '/teamname-1/pl/affe2344234'],
+            ['uppercase host absolute URL is made relative', 'https://KCHAT.INFOMANIAK.COM/teamname-1', siteURL, '/teamname-1'],
+            ['explicit default port is made relative', 'https://kchat.infomaniak.com:443/teamname-1', siteURL, '/teamname-1'],
+            ['query and hash are preserved', `${siteURL}/teamname-1/pl/affe2344234?x=1#y`, siteURL, '/teamname-1/pl/affe2344234?x=1#y'],
+            ['relative path is returned unchanged', '/teamname-1/pl/affe2344234', siteURL, '/teamname-1/pl/affe2344234'],
+            ['hash anchor is returned unchanged', '#anchor', siteURL, '#anchor'],
+            ['cross-origin URL is returned unchanged', 'https://evil.example/attack', siteURL, 'https://evil.example/attack'],
+            ['userinfo URL is returned unchanged', `${siteURL}@evil.example/attack`, siteURL, `${siteURL}@evil.example/attack`],
+            ['sub-path site URL is stripped', 'https://host.example/kchat/teamname-1', 'https://host.example/kchat', '/teamname-1'],
+            ['sub-path site URL with trailing slash is stripped', 'https://host.example/kchat/teamname-1', 'https://host.example/kchat/', '/teamname-1'],
+        ])('%s', (_description, url, siteUrl, expected) => {
+            expect(getRelativePathForLink(url, siteUrl)).toBe(expected);
         });
     });
 });

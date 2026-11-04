@@ -226,11 +226,18 @@ export function mightTriggerExternalRequest(url: string, siteURL?: string): bool
         if (standardSiteURL[standardSiteURL.length - 1] === '/') {
             standardSiteURL = standardSiteURL.substring(0, standardSiteURL.length - 1);
         }
-        if (!url.startsWith(standardSiteURL)) {
+        try {
+            const parsedSiteURL = new URL(standardSiteURL);
+            const parsedURL = new URL(url, parsedSiteURL);
+            if (parsedURL.origin !== parsedSiteURL.origin) {
+                return true;
+            }
+            const sitePath = parsedSiteURL.pathname === '/' ? '' : parsedSiteURL.pathname;
+            const afterSiteURL = parsedURL.pathname.slice(sitePath.length) || '/';
+            return !permalinkPath.test(afterSiteURL);
+        } catch {
             return true;
         }
-        const afterSiteURL = url.substring(standardSiteURL.length);
-        return !permalinkPath.test(afterSiteURL);
     }
     return true;
 }
@@ -238,7 +245,43 @@ export function mightTriggerExternalRequest(url: string, siteURL?: string): bool
 const relativeReferenceBase = new URL('https://kchat.invalid');
 
 export function isInternalURL(url: string, siteURL?: string): boolean {
-    return url.startsWith(siteURL || '') || url.startsWith('#') || isRelativePathReference(url);
+    if (url.startsWith('#')) {
+        return true;
+    }
+    if (url.startsWith('!')) {
+        return false;
+    }
+    if (!url || !siteURL) {
+        return isRelativePathReference(url);
+    }
+    return isSameOrigin(url, siteURL) || isRelativePathReference(url);
+}
+
+function isSameOrigin(url: string, siteURL: string): boolean {
+    try {
+        const parsedURL = new URL(url, siteURL);
+        const parsedSiteURL = new URL(siteURL);
+        return !parsedURL.username && !parsedURL.password && parsedURL.origin === parsedSiteURL.origin;
+    } catch {
+        return false;
+    }
+}
+
+export function getRelativePathForLink(url: string, siteURL?: string): string {
+    if (!siteURL || url.startsWith('/') || url.startsWith('#')) {
+        return url;
+    }
+    try {
+        const parsedSiteURL = new URL(siteURL);
+        const parsedURL = new URL(url, parsedSiteURL);
+        if (!isSameOrigin(url, siteURL)) {
+            return url;
+        }
+        const sitePath = parsedSiteURL.pathname === '/' ? '' : parsedSiteURL.pathname.replace(/\/$/, '');
+        return (parsedURL.pathname.slice(sitePath.length) || '/') + parsedURL.search + parsedURL.hash;
+    } catch {
+        return url;
+    }
 }
 
 function isRelativePathReference(url: string): boolean {

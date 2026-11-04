@@ -41,6 +41,7 @@ import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTeammateNameDisplaySetting, isCollapsedThreadsEnabled} from 'mattermost-redux/selectors/entities/preferences';
 import type {Theme} from 'mattermost-redux/selectors/entities/preferences';
 import {
+    getCurrentRelativeTeamUrl,
     getTeamByName,
     getTeamMemberships,
     isTeamSameWithCurrentTeam,
@@ -1395,6 +1396,10 @@ function isChannelOrPermalink(link: string) {
 }
 
 export async function handleFormattedTextClick(e: React.MouseEvent, currentRelativeTeamUrl = '') {
+    if (e.defaultPrevented) {
+        return;
+    }
+
     const target = e.target as HTMLElement;
     const hashtagAttribute = target.closest('[data-hashtag]')?.getAttributeNode('data-hashtag') ?? null;
     const linkAttribute = target.closest('[data-link]')?.getAttributeNode('data-link') ?? null;
@@ -1412,6 +1417,9 @@ export async function handleFormattedTextClick(e: React.MouseEvent, currentRelat
 
             const state = store.getState();
             const user = getCurrentUser(state);
+            if (!user) {
+                return;
+            }
             const match = isChannelOrPermalink(linkAttribute.value);
             const crtEnabled = isCollapsedThreadsEnabled(state);
 
@@ -1494,6 +1502,14 @@ export async function handleFormattedTextClick(e: React.MouseEvent, currentRelat
         e.preventDefault();
         getHistory().push(currentRelativeTeamUrl + '/channels/' + channelMentionAttribute.value);
     }
+}
+
+export async function handleGlobalClick(e: MouseEvent) {
+    if (e.defaultPrevented) {
+        return;
+    }
+
+    await handleFormattedTextClick(e as unknown as React.MouseEvent, getCurrentRelativeTeamUrl(store.getState()));
 }
 
 export function isEmptyObject(object: any) {

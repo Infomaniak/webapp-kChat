@@ -14,7 +14,7 @@ import {AnnouncementBarTypes} from 'utils/constants';
 import sentry from 'utils/sentry';
 import {getKSuiteRedirect, isInIframe} from 'utils/url-ksuite-redirect';
 import {isDesktopApp} from 'utils/user_agent';
-import {setCSRFFromCookie} from 'utils/utils';
+import {handleGlobalClick, setCSRFFromCookie} from 'utils/utils';
 
 // Import our styles
 import './sass/styles.scss';
@@ -65,6 +65,7 @@ function preRenderSetup(onPreRenderSetupReady: () => void) {
     };
 
     setCSRFFromCookie();
+    document.addEventListener('click', handleGlobalClick);
 
     onPreRenderSetupReady();
 }

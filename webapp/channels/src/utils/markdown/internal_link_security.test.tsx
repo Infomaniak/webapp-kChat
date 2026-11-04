@@ -17,6 +17,27 @@ describe('markdown link classification security', () => {
         expect(html).not.toContain('data-link=');
     });
 
+    test('userinfo-hostile URL opens in a new tab instead of navigating the view', () => {
+        const html = renderLink('https://kchat.infomaniak.com@evil.example:8443/poc', 'Test repro token leak');
+
+        expect(html).toContain('target="_blank"');
+        expect(html).not.toContain('data-link=');
+    });
+
+    test('suffix-hosted URL opens in a new tab instead of navigating the view', () => {
+        const html = renderLink('https://kchat.infomaniak.com.attacker.example/poc', 'Test repro suffix');
+
+        expect(html).toContain('target="_blank"');
+        expect(html).not.toContain('data-link=');
+    });
+
+    test('same-origin URL with uppercase host renders a relative data-link for in-app routing', () => {
+        const html = renderLink('https://KCHAT.INFOMANIAK.COM/teamname/pl/affe2344234');
+
+        expect(html).toContain('data-link="/teamname/pl/affe2344234"');
+        expect(html).not.toContain('target="_blank"');
+    });
+
     test('backslash-prefixed authority URL opens in a new tab instead of navigating the view', () => {
         const html = renderLink('/\\attacker.example/attack');
 
