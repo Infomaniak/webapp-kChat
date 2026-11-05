@@ -132,6 +132,7 @@ install:deps:
   image: node:${NODE_VERSION}
   tags: [shared, standard]
   rules:
+    - *rule-scheduled
     - *rule-not-scheduled
     - *rule-merge-request
     - *rule-preprod
@@ -170,6 +171,7 @@ build:packages:
   tags: [shared, standard]
   needs: ["install:deps"]
   rules:
+    - *rule-scheduled
     - *rule-not-scheduled
     - *rule-merge-request
     - *rule-preprod
@@ -287,6 +289,7 @@ test:unit:
     - job: "build:packages"
       artifacts: true
   rules:
+    - *rule-scheduled
     - *rule-merge-request
     - *rule-prodsec
     - when: never
