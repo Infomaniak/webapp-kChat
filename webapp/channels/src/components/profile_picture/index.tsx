@@ -19,6 +19,7 @@ type Props = {
     isBot?: boolean;
     fromAutoResponder?: boolean;
     status?: string;
+    isAbsent?: boolean;
     fromWebhook?: boolean;
     userId?: string;
     channelId?: string;
@@ -64,7 +65,10 @@ function ProfilePicture(props: Props) {
                             url={props.src}
                         />
                     </span>
-                    <StatusIcon status={hideStatus ? undefined : props.status}/>
+                    <StatusIcon
+                        isAbsent={props.isAbsent}
+                        status={hideStatus ? undefined : props.status}
+                    />
                 </>
             </ProfilePopover>
         );
@@ -84,10 +88,14 @@ function ProfilePicture(props: Props) {
             {props.newStatusIcon ? (
                 <StatusIconNew
                     className={props.statusClass}
+                    isAbsent={props.isAbsent}
                     status={hideStatus ? undefined : props.status}
                 />
             ) : (
-                <StatusIcon status={hideStatus ? undefined : props.status}/>
+                <StatusIcon
+                    isAbsent={props.isAbsent}
+                    status={hideStatus ? undefined : props.status}
+                />
             )}
         </span>
     );

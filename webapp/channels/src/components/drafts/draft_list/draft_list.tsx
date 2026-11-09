@@ -19,10 +19,11 @@ type Props = {
     displayName: string;
     draftRemotes: Record<string, boolean>;
     status: UserStatus['status'];
+    isAbsent?: boolean;
     className?: string;
 }
 
-export default function DraftList({drafts, user, displayName, draftRemotes, status, className}: Props) {
+export default function DraftList({drafts, user, displayName, draftRemotes, status, isAbsent, className}: Props) {
     const {formatMessage} = useIntl();
 
     return (
@@ -35,6 +36,7 @@ export default function DraftList({drafts, user, displayName, draftRemotes, stat
                     isRemote={draftRemotes?.[d.key]}
                     user={user}
                     status={status}
+                    isAbsent={isAbsent}
                 />
             ))}
             {drafts.length === 0 && (

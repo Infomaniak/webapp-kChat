@@ -21,6 +21,7 @@ import * as Utils from 'utils/utils';
 type Props = {
     user: UserProfile;
     status?: string;
+    isAbsent?: boolean;
     extraInfo?: Array<string | JSX.Element>;
     actions?: Array<ConnectedComponent<any, any>>;
     actionProps?: {
@@ -130,6 +131,7 @@ export default class UserListRowWithError extends React.PureComponent<Props, Sta
                 <ProfilePicture
                     src={Client4.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update)}
                     status={status || undefined}
+                    isAbsent={status ? this.props.isAbsent : false}
                     size='md'
                 />
                 <div className='more-modal__right'>

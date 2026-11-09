@@ -1178,6 +1178,7 @@ describe('Reducers.users', () => {
             isManualStatus: {
                 [user.id]: true,
             },
+            scheduledAbsences: {},
             stats: {},
             filteredStats: {
                 total_users_count: 0,
@@ -1207,6 +1208,7 @@ describe('Reducers.users', () => {
                 team2: new Set(),
             },
             profilesWithoutTeam: new Set(),
+            scheduledAbsences: {},
             profilesInChannel: {
                 channel1: new Set(),
             },
@@ -1512,5 +1514,130 @@ describe('lastActivity', () => {
             test_user_id_3: 30,
             test_user_id_4: 4,
         });
+    });
+});
+
+describe('scheduledAbsences', () => {
+    const initialState = {} as UsersState;
+
+    test('should return the initial state', () => {
+        expect(reducer(initialState, {} as any).scheduledAbsences).toEqual({});
+        expect(reducer(undefined, {} as any).scheduledAbsences).toEqual({});
+
+        const state = deepFreezeAndThrowOnMutation({
+            scheduledAbsences: {
+                test_user_id: {start: 1000, end: 2000},
+            },
+        }) as UsersState;
+        expect(reducer(state, {} as any).scheduledAbsences).toBe(state.scheduledAbsences);
+    });
+
+    test('should store the scheduled absence', () => {
+        const action1 = {
+            type: UserTypes.RECEIVED_SCHEDULED_ABSENCES,
+            data: {
+                test_user_id: {start: 1000, end: 2000},
+            },
+        };
+        expect(reducer(initialState, action1).scheduledAbsences).toEqual({
+            test_user_id: {start: 1000, end: 2000},
+        });
+
+        const state = deepFreezeAndThrowOnMutation({
+            scheduledAbsences: {
+                test_user_id: {start: 1000, end: 2000},
+            },
+        }) as UsersState;
+        const action2 = {
+            type: UserTypes.RECEIVED_SCHEDULED_ABSENCES,
+            data: {
+                test_user_id: {start: 3000, end: 4000},
+            },
+        };
+        expect(reducer(state, action2).scheduledAbsences).toEqual({
+            test_user_id: {start: 3000, end: 4000},
+        });
+    });
+
+    test('should store the scheduled absences for multiple users', () => {
+        const action1 = {
+            type: UserTypes.RECEIVED_SCHEDULED_ABSENCES,
+            data: {
+                test_user_id: {start: 1000, end: 2000},
+                test_user_id_2: {start: 3000, end: 4000},
+            },
+        };
+        expect(reducer(initialState, action1).scheduledAbsences).toEqual({
+            test_user_id: {start: 1000, end: 2000},
+            test_user_id_2: {start: 3000, end: 4000},
+        });
+
+        const state = deepFreezeAndThrowOnMutation({
+            scheduledAbsences: {
+                test_user_id: {start: 1, end: 2},
+                test_user_id_2: {start: 3, end: 4},
+                test_user_id_4: {start: 5, end: 6},
+            },
+        }) as UsersState;
+        const action2 = {
+            type: UserTypes.RECEIVED_SCHEDULED_ABSENCES,
+            data: {
+                test_user_id: {start: 10, end: 20},
+                test_user_id_2: {start: 30, end: 40},
+                test_user_id_3: {start: 50, end: 60},
+            },
+        };
+        expect(reducer(state, action2).scheduledAbsences).toEqual({
+            test_user_id: {start: 10, end: 20},
+            test_user_id_2: {start: 30, end: 40},
+            test_user_id_3: {start: 50, end: 60},
+            test_user_id_4: {start: 5, end: 6},
+        });
+    });
+
+    test('should remove the scheduled absence when it is null', () => {
+        const state = deepFreezeAndThrowOnMutation({
+            scheduledAbsences: {
+                test_user_id: {start: 1000, end: 2000},
+                test_user_id_2: {start: 3000, end: 4000},
+            },
+        }) as UsersState;
+        const action = {
+            type: UserTypes.RECEIVED_SCHEDULED_ABSENCES,
+            data: {
+                test_user_id: null,
+            },
+        };
+        expect(reducer(state, action).scheduledAbsences).toEqual({
+            test_user_id_2: {start: 3000, end: 4000},
+        });
+    });
+
+    test('should remove the scheduled absence when the profile is no longer visible', () => {
+        const state = deepFreezeAndThrowOnMutation({
+            scheduledAbsences: {
+                test_user_id: {start: 1000, end: 2000},
+                test_user_id_2: {start: 3000, end: 4000},
+            },
+        }) as UsersState;
+        const action = {
+            type: UserTypes.PROFILE_NO_LONGER_VISIBLE,
+            data: {user_id: 'test_user_id'},
+        };
+        expect(reducer(state, action).scheduledAbsences).toEqual({
+            test_user_id_2: {start: 3000, end: 4000},
+        });
+    });
+
+    test('should clear the scheduled absences on logout', () => {
+        const state = deepFreezeAndThrowOnMutation({
+            scheduledAbsences: {
+                test_user_id: {start: 1000, end: 2000},
+            },
+        }) as UsersState;
+        const action = {
+            type: UserTypes.LOGOUT_SUCCESS,
+        };
+        expect(reducer(state, action).scheduledAbsences).toEqual({});
     });
 });

@@ -114,6 +114,18 @@
     }
 }
 
+.absence--icon {
+    fill: var(--ik-absence-indicator);
+}
+
+.online-absence--icon {
+    fill: var(--online-indicator);
+}
+
+.dnd-absence--icon {
+    fill: var(--dnd-indicator);
+}
+
 .status-selector {
     .status {
         body.enable-animations & {

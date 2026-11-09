@@ -37,7 +37,6 @@ export default function PostBoxIndicator({channelId, teammateDisplayName, locati
             }
 
             {
-
                 isScheduledPostEnabled &&
                 <ScheduledPostIndicator
                     location={location}

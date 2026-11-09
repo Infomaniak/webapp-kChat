@@ -9,6 +9,9 @@ import type {UserProfile} from '@mattermost/types/users';
 
 import {Client4} from 'mattermost-redux/client';
 import {getCurrentChannel, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
+import {getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
+
+import {hasCurrentAbsenceForUserId} from 'selectors/views/scheduled_absence';
 
 import ProfilePicture from 'components/profile_picture';
 import SharedChannelIndicator from 'components/shared_channel_indicator';
@@ -17,6 +20,8 @@ import BotTag from 'components/widgets/tag/bot_tag';
 
 import {Constants} from 'utils/constants';
 import {isEmptyObject} from 'utils/utils';
+
+import type {GlobalState} from 'types/store';
 
 import ChannelHeaderTitleDirect from './channel_header_title_direct';
 import ChannelHeaderTitleFavorite from './channel_header_title_favorite';
@@ -35,6 +40,8 @@ const ChannelHeaderTitle = ({
 }: Props) => {
     const channel = useSelector(getCurrentChannel);
     const channelMember = useSelector(getMyCurrentChannelMembership);
+    const dmUserStatus = useSelector((state: GlobalState) => (dmUser ? getStatusForUserId(state, dmUser.id) : ''));
+    const dmUserIsAbsent = useSelector((state: GlobalState) => (dmUser ? hasCurrentAbsenceForUserId(state, dmUser.id) : false));
 
     if (!channel) {
         return null;
@@ -122,7 +129,8 @@ const ChannelHeaderTitle = ({
                 <ProfilePicture
                     src={Client4.getProfilePictureUrl(dmUser.id, dmUser.last_picture_update)}
                     size='sm'
-                    status={channel.status}
+                    status={dmUser.is_bot ? '' : dmUserStatus}
+                    isAbsent={dmUser.is_bot ? false : dmUserIsAbsent}
                     username={dmUser.username}
                 />
             )}

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {CloudTypes} from 'mattermost-redux/action_types';
+import {CloudTypes, UserTypes} from 'mattermost-redux/action_types';
 import {fetchMyCategories} from 'mattermost-redux/actions/channel_categories';
 import {fetchAllMyTeamsChannels} from 'mattermost-redux/actions/channels';
 import {getCustomProfileAttributeFields} from 'mattermost-redux/actions/general';
@@ -246,6 +246,37 @@ describe('handleEvent', () => {
         handleEvent(msg);
 
         expect(store.dispatch).toHaveBeenCalled();
+    });
+});
+
+describe('handleScheduledAbsenceUpdatedEvent', () => {
+    test('should dispatch the scheduled absence', () => {
+        const absence = {start: 1000, end: 2000};
+        const msg = {
+            event: SocketEvents.SCHEDULED_ABSENCE_UPDATED,
+            data: {user_id: 'user1', scheduled_absence: absence},
+        };
+
+        handleEvent(msg);
+
+        expect(store.dispatch).toHaveBeenCalledWith({
+            type: UserTypes.RECEIVED_SCHEDULED_ABSENCES,
+            data: {user1: absence},
+        });
+    });
+
+    test('should dispatch the removal of the scheduled absence', () => {
+        const msg = {
+            event: SocketEvents.SCHEDULED_ABSENCE_UPDATED,
+            data: {user_id: 'user1', scheduled_absence: null},
+        };
+
+        handleEvent(msg);
+
+        expect(store.dispatch).toHaveBeenCalledWith({
+            type: UserTypes.RECEIVED_SCHEDULED_ABSENCES,
+            data: {user1: null},
+        });
     });
 });
 

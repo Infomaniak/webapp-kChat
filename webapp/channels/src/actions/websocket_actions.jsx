@@ -112,6 +112,7 @@ import {redirectDesktopUserToDefaultTeam, redirectUserToDefaultTeam} from 'actio
 import {handleCallFromUrl, closeRingModal, deleteConference, externalJoinCall} from 'actions/kmeet_calls';
 import {sendDesktopNotification} from 'actions/notification_actions';
 import {handleNewPost} from 'actions/post_actions';
+import {fetchTeamScheduledAbsences} from 'actions/scheduled_absence_actions';
 import * as StatusActions from 'actions/status_actions';
 import {setGlobalItem} from 'actions/storage';
 import {loadProfilesForDM, loadProfilesForGM, loadProfilesForSidebar} from 'actions/user_actions';
@@ -323,6 +324,7 @@ export async function reconnect(socketId) {
         dispatch(fetchMyCategories(currentTeamId));
         dispatch(fetchAllMyTeamsChannels());
         dispatch(fetchTeamScheduledPosts(currentTeamId, true, true));
+        dispatch(fetchTeamScheduledAbsences(currentTeamId));
         dispatch(fetchAllMyChannelMembers());
         dispatch(fetchMyCategories(currentTeamId));
         dispatch(getMyPreferences());
@@ -567,6 +569,10 @@ export function handleEvent(msg) {
 
     case SocketEvents.STATUS_CHANGED:
         dispatch(handleStatusChangedEvent(msg));
+        break;
+
+    case SocketEvents.SCHEDULED_ABSENCE_UPDATED:
+        dispatch(handleScheduledAbsenceUpdatedEvent(msg));
         break;
 
     case SocketEvents.HELLO:
@@ -1530,6 +1536,13 @@ export function handleStatusChangedEvent(msg) {
     return {
         type: UserTypes.RECEIVED_STATUSES,
         data: {[msg.data.user_id]: msg.data.status},
+    };
+}
+
+function handleScheduledAbsenceUpdatedEvent(msg) {
+    return {
+        type: UserTypes.RECEIVED_SCHEDULED_ABSENCES,
+        data: {[msg.data.user_id]: msg.data.scheduled_absence},
     };
 }
 

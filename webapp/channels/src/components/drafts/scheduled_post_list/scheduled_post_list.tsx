@@ -29,6 +29,7 @@ type Props = {
     user: UserProfile;
     displayName: string;
     status: UserStatus['status'];
+    isAbsent?: boolean;
 }
 
 export default function ScheduledPostList({
@@ -36,6 +37,7 @@ export default function ScheduledPostList({
     user,
     displayName,
     status,
+    isAbsent,
 }: Props) {
     const {formatMessage} = useIntl();
 
@@ -84,6 +86,7 @@ export default function ScheduledPostList({
                             item={scheduledPost}
                             displayName={displayName}
                             status={status}
+                            isAbsent={isAbsent}
                             user={user}
                             scrollIntoView={targetScheduledPostId.current === scheduledPost.id} // scroll into view if this is the target scheduled post
                         />

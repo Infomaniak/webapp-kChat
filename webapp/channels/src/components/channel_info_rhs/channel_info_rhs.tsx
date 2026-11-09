@@ -35,6 +35,7 @@ export interface DMUser {
     display_name: string;
     is_guest: boolean;
     status: string;
+    is_absent: boolean;
 }
 
 export interface Props {

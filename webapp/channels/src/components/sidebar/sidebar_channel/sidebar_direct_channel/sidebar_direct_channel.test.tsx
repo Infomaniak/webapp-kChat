@@ -31,6 +31,7 @@ describe('components/sidebar/sidebar_channel/sidebar_direct_channel', () => {
             group_constrained: false,
         },
         teammate: TestHelper.getUserMock(),
+        teammateStatus: '',
         currentTeamName: 'team_name',
         currentUserId: 'current_user_id',
         redirectChannel: 'redirect-channel',

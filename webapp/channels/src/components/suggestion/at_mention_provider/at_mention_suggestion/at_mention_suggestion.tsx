@@ -34,6 +34,7 @@ export interface Item extends UserProfile {
 
 export interface AtMentionSuggestionProps extends SuggestionProps<Item> {
     status?: string;
+    isAbsent?: boolean;
 }
 
 export const AtMentionSuggestion = React.forwardRef<HTMLLIElement, AtMentionSuggestionProps>((props, ref) => {
@@ -137,7 +138,10 @@ export const AtMentionSuggestion = React.forwardRef<HTMLLIElement, AtMentionSugg
                         url={Utils.imageURLForUser(item.id, item.last_picture_update)}
                     />
                 </span>
-                <StatusIcon status={item.is_bot ? undefined : (props.status || (item && item.status))}/>
+                <StatusIcon
+                    status={item.is_bot ? undefined : (props.status || (item && item.status))}
+                    isAbsent={item.is_bot ? undefined : props.isAbsent}
+                />
             </span>
         );
 

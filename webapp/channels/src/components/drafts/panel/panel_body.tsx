@@ -28,6 +28,7 @@ type Props = {
     message: string;
     priority?: PostPriorityMetadata;
     status: UserStatus['status'];
+    isAbsent?: boolean;
     uploadsInProgress: PostDraft['uploadsInProgress'];
     userId: UserProfile['id'];
     username: UserProfile['username'];
@@ -48,6 +49,7 @@ function PanelBody({
     message,
     priority,
     status,
+    isAbsent,
     uploadsInProgress,
     userId,
     username,
@@ -63,6 +65,7 @@ function PanelBody({
             <div className='DraftPanelBody__left post__img'>
                 <ProfilePicture
                     status={status}
+                    isAbsent={isAbsent}
                     channelId={channelId}
                     username={username}
                     userId={userId}

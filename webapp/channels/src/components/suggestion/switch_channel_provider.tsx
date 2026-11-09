@@ -53,6 +53,7 @@ import {isGuest} from 'mattermost-redux/utils/user_utils';
 
 import {loadProfilesMissingStatus} from 'actions/status_actions';
 import {getPostDraft} from 'selectors/rhs';
+import {hasCurrentAbsenceForUserId} from 'selectors/views/scheduled_absence';
 import globalStore from 'stores/redux_store';
 
 import CustomStatusEmoji from 'components/custom_status/custom_status_emoji';
@@ -131,12 +132,13 @@ type Props = SuggestionProps<WrappedChannel> & WrappedComponentProps & {
     hasDraft: boolean;
     isPartOfOnlyOneTeam: boolean;
     status?: string;
+    isAbsent?: boolean;
     team?: Team;
     id: string;
 }
 
 const SwitchChannelSuggestion = React.forwardRef<HTMLLIElement, Props>((props, ref) => {
-    const {item, status, collapsedThreads, isPartOfOnlyOneTeam} = props;
+    const {item, status, isAbsent, collapsedThreads, isPartOfOnlyOneTeam} = props;
     const channel = item.channel;
     const channelIsArchived = channel.delete_at && channel.delete_at !== 0;
 
@@ -215,6 +217,7 @@ const SwitchChannelSuggestion = React.forwardRef<HTMLLIElement, Props>((props, r
             <ProfilePicture
                 src={Utils.imageURLForUser(teammate.id, teammate.last_picture_update)}
                 status={teammate.is_bot ? undefined : status}
+                isAbsent={teammate.is_bot ? false : isAbsent}
                 size='sm'
                 username={teammate.username}
             />
@@ -333,8 +336,10 @@ function mapStateToPropsForSwitchChannelSuggestion(state: GlobalState, ownProps:
     }
 
     let status;
+    let isAbsent: boolean | undefined;
     if (dmChannelTeammate) {
         status = getStatusForUserId(state, dmChannelTeammate.id);
+        isAbsent = hasCurrentAbsenceForUserId(state, dmChannelTeammate.id);
     }
 
     const collapsedThreads = isCollapsedThreadsEnabled(state);
@@ -351,6 +356,7 @@ function mapStateToPropsForSwitchChannelSuggestion(state: GlobalState, ownProps:
         hasDraft: draft && Boolean(draft.message.trim() || draft.fileInfos.length || draft.uploadsInProgress.length),
         dmChannelTeammate,
         status,
+        isAbsent,
         collapsedThreads,
         team,
         isPartOfOnlyOneTeam,

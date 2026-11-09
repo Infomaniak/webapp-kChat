@@ -11,6 +11,8 @@ import {get} from 'mattermost-redux/selectors/entities/preferences';
 import {getUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 import {ensureString} from 'mattermost-redux/utils/post_utils';
 
+import {hasCurrentAbsenceForUserId} from 'selectors/views/scheduled_absence';
+
 import {Preferences} from 'utils/constants';
 
 import PostProfilePicture from './post_profile_picture';
@@ -39,6 +41,7 @@ function mapStateToProps(state: GlobalState, ownProps: Props) {
         overwriteIcon,
         hasImageProxy: config.HasImageProxy === 'true',
         status: getStatusForUserId(state, ownProps.userId),
+        isAbsent: hasCurrentAbsenceForUserId(state, ownProps.userId),
         isBot: Boolean(user && user.is_bot),
         user,
     };

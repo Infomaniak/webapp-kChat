@@ -56,6 +56,7 @@ import './draft_row.scss';
 type Props = {
     user: UserProfile;
     status: UserStatus['status'];
+    isAbsent?: boolean;
     displayName: string;
     item: PostDraft | ScheduledPost;
     isRemote?: boolean;
@@ -68,6 +69,7 @@ function DraftRow({
     item,
     user,
     status,
+    isAbsent,
     displayName,
     isRemote,
     scrollIntoView,
@@ -409,6 +411,7 @@ function DraftRow({
                             fileInfos={fileInfos}
                             message={item.message}
                             status={status}
+                            isAbsent={isAbsent}
                             priority={rootId ? undefined : item.metadata?.priority}
                             uploadsInProgress={uploadsInProgress}
                             userId={user.id}

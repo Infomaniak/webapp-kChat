@@ -10,10 +10,11 @@ import {getCurrentChannel, getDirectTeammate, getMyCurrentChannelMembership, isC
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {get} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
-import {getCurrentUser, getProfilesInCurrentChannel, getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUser, getProfilesInCurrentChannel, getCurrentUserId, getUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {getCurrentLocale} from 'selectors/i18n';
 import {getIsMobileView} from 'selectors/views/browser';
+import {hasCurrentAbsenceForUserId} from 'selectors/views/scheduled_absence';
 
 import {Preferences} from 'utils/constants';
 import {getDisplayNameByUser} from 'utils/utils';
@@ -46,6 +47,8 @@ function mapStateToProps(state: GlobalState) {
         creatorName: getDisplayNameByUser(state, creator),
         teammate,
         teammateName: getDisplayNameByUser(state, teammate),
+        teammateStatus: teammate ? getStatusForUserId(state, teammate.id) : '',
+        teammateIsAbsent: teammate ? hasCurrentAbsenceForUserId(state, teammate.id) : false,
         currentUser,
         isChannelMember: Boolean(channelMember),
         channelMember,

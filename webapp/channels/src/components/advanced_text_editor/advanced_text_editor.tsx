@@ -27,6 +27,7 @@ import {makeGetDraft} from 'selectors/drafts';
 import {connectionErrorCount} from 'selectors/views/system';
 import LocalStorageStore from 'stores/local_storage_store';
 
+import AbsenceIndicator from 'components/advanced_text_editor/post_box_indicator/absence_indicator';
 import PostBoxIndicator from 'components/advanced_text_editor/post_box_indicator/post_box_indicator';
 import {makeAsyncComponent} from 'components/async_load';
 import useDidUpdate from 'components/common/hooks/useDidUpdate';
@@ -807,6 +808,12 @@ const AdvancedTextEditor = ({
                         className={'AdvancedTextEditor__body'}
                         disabled={isDisabled}
                     >
+                        {!isInEditMode && location === Locations.CENTER && (
+                            <AbsenceIndicator
+                                channelId={channelId}
+                                displayName={teammateDisplayName}
+                            />
+                        )}
                         <GuestBanner channelId={channelId}/>
                         <DndBanner channelId={channelId}/>
                         {fileUploadOverlay}

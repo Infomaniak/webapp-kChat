@@ -25,6 +25,8 @@ type Props = {
     intl: IntlShape;
     channel: Channel;
     teammate?: UserProfile;
+    teammateStatus: string;
+    teammateIsAbsent?: boolean;
     currentTeamName: string;
     currentUserId: string;
     redirectChannel: string;
@@ -52,7 +54,7 @@ class SidebarDirectChannel extends React.PureComponent<Props> {
     };
 
     getIcon = () => {
-        const {channel, teammate} = this.props;
+        const {teammate, teammateStatus, teammateIsAbsent} = this.props;
 
         if (!teammate) {
             return null;
@@ -65,19 +67,24 @@ class SidebarDirectChannel extends React.PureComponent<Props> {
         }
 
         let className = '';
-        if (channel.status === 'online') {
+        if (teammateIsAbsent && (teammateStatus === 'away' || teammateStatus === 'offline')) {
+            className = 'status-absence';
+        } else if (teammateStatus === 'online') {
             className = 'status-online';
-        } else if (channel.status === 'away') {
+        } else if (teammateStatus === 'away') {
             className = 'status-away';
-        } else if (channel.status === 'dnd') {
+        } else if (teammateStatus === 'dnd') {
             className = 'status-dnd';
+        } else if (teammateStatus === 'absence') {
+            className = 'status-absence';
         }
 
         return (
             <ProfilePicture
                 src={Client4.getProfilePictureUrl(teammate.id, teammate.last_picture_update)}
                 size={'xs'}
-                status={teammate.is_bot ? '' : channel.status}
+                status={teammate.is_bot ? '' : teammateStatus}
+                isAbsent={teammate.is_bot ? false : teammateIsAbsent}
                 wrapperClass='DirectChannel__profile-picture'
                 newStatusIcon={true}
                 statusClass={`DirectChannel__status-icon ${className}`}

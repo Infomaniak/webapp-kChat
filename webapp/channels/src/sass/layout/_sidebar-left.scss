@@ -1337,6 +1337,11 @@ $sidebarOpacityAnimationDuration: 0.15s;
             border-radius: 100%;
             background: var(--sidebar-bg);
             font-size: 12px;
+
+            svg {
+                width: 1em;
+                height: 1em;
+            }
         }
     }
 

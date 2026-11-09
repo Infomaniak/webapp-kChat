@@ -8,6 +8,7 @@ import {getCurrentUser, getStatusForUserId} from 'mattermost-redux/selectors/ent
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import {makeGetDrafts} from 'selectors/drafts';
+import {hasCurrentAbsenceForUserId} from 'selectors/views/scheduled_absence';
 
 import type {GlobalState} from 'types/store';
 
@@ -24,6 +25,7 @@ function makeMapStateToProps() {
             drafts: getDrafts(state),
             draftRemotes: state.views.drafts.remotes,
             status,
+            isAbsent: hasCurrentAbsenceForUserId(state, user.id),
             user,
         };
     };

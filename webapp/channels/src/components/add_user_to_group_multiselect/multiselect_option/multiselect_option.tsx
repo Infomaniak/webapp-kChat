@@ -24,6 +24,7 @@ type Props = {
     onAdd: (user: UserProfileValue) => void;
     onMouseMove: (user: UserProfileValue) => void;
     userStatuses: RelationOneToOne<UserProfile, string>;
+    userAbsences: Record<string, boolean>;
     isSelected: boolean;
 }
 
@@ -32,6 +33,7 @@ const MultiSelectOption = React.forwardRef(({
     onAdd,
     onMouseMove,
     userStatuses,
+    userAbsences,
     isSelected,
 }: Props, ref?: React.Ref<HTMLDivElement>) => {
     return (
@@ -45,6 +47,7 @@ const MultiSelectOption = React.forwardRef(({
             <ProfilePicture
                 src={Client4.getProfilePictureUrl(option.id, option.last_picture_update)}
                 status={userStatuses[option.id]}
+                isAbsent={userAbsences[option.id]}
                 size='md'
                 username={option.username}
             />

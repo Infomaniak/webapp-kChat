@@ -2,6 +2,8 @@ import {connect} from 'react-redux';
 
 import {getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 
+import {hasCurrentAbsenceForUserId} from 'selectors/views/scheduled_absence';
+
 import type {GlobalState} from 'types/store';
 
 import {AtMentionSuggestion} from './at_mention_suggestion';
@@ -14,10 +16,11 @@ type OwnProps = {
 }
 
 function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
-    const status = ownProps.item?.user_id && ownProps.item?.id ? getStatusForUserId(state, ownProps.item.id) : undefined;
+    const userId = ownProps.item?.user_id && ownProps.item?.id ? ownProps.item.id : undefined;
 
     return {
-        status,
+        status: userId ? getStatusForUserId(state, userId) : undefined,
+        isAbsent: userId ? hasCurrentAbsenceForUserId(state, userId) : undefined,
     };
 }
 

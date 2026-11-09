@@ -40,6 +40,7 @@ type Props = {
     user: UserProfile;
     displayName: string;
     status: UserStatus['status'];
+    isAbsent?: boolean;
     draftRemotes: Record<string, boolean>;
 }
 
@@ -48,6 +49,7 @@ function Drafts({
     drafts,
     draftRemotes,
     status,
+    isAbsent,
     user,
 }: Props) {
     const dispatch = useDispatch();
@@ -172,6 +174,7 @@ function Drafts({
                             displayName={displayName}
                             draftRemotes={draftRemotes}
                             status={status}
+                            isAbsent={isAbsent}
                         />
                     </Tab>
 
@@ -186,6 +189,7 @@ function Drafts({
                             user={user}
                             displayName={displayName}
                             status={status}
+                            isAbsent={isAbsent}
                         />
                     </Tab>
                 </Tabs>
@@ -199,6 +203,7 @@ function Drafts({
                     displayName={displayName}
                     draftRemotes={draftRemotes}
                     status={status}
+                    isAbsent={isAbsent}
                 />
             }
         </div>

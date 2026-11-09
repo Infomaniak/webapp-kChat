@@ -25,6 +25,7 @@ type Props = {
     hasImageProxy: boolean;
     post: Post;
     status?: string;
+    isAbsent?: boolean;
     user: UserProfile;
     isBot?: boolean;
     overwriteIcon?: string;
@@ -68,6 +69,7 @@ export default class PostProfilePicture extends React.PureComponent<Props> {
         const {
             availabilityStatusOnPosts,
             compactDisplay,
+            isAbsent,
             post,
             user,
             isBot,
@@ -97,6 +99,7 @@ export default class PostProfilePicture extends React.PureComponent<Props> {
                 profileSrc={profileSrc}
                 isEmoji={isEmoji}
                 status={availabilityStatusOnPosts === 'true' ? status : ''}
+                isAbsent={isAbsent}
                 userId={user?.id}
                 channelId={post.channel_id}
                 username={user?.username}

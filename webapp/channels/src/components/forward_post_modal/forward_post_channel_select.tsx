@@ -21,6 +21,8 @@ import {getMyTeams, getTeam} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId, getStatusForUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 import {isGuest} from 'mattermost-redux/utils/user_utils';
 
+import {hasCurrentAbsenceForUserId} from 'selectors/views/scheduled_absence';
+
 import CustomStatusEmoji from 'components/custom_status/custom_status_emoji';
 import ProfilePicture from 'components/profile_picture';
 import SharedChannelIndicator from 'components/shared_channel_indicator';
@@ -60,6 +62,7 @@ const FormattedOption = (props: ChannelOption & {className: string; isSingleValu
     const currentUserId = useSelector((state: GlobalState) => getCurrentUserId(state));
     const user = useSelector((state: GlobalState) => getUser(state, details.userId || ''));
     const status = useSelector((state: GlobalState) => getStatusForUserId(state, details.userId || ''));
+    const isAbsent = useSelector((state: GlobalState) => hasCurrentAbsenceForUserId(state, details.userId || ''));
     const teammate = useSelector((state: GlobalState) => getDirectTeammate(state, details.id));
     const team = useSelector((state: GlobalState) => getTeam(state, details.team_id));
     const userImageUrl = user?.id && Utils.imageURLForUser(user.id, user.last_picture_update);
@@ -88,6 +91,7 @@ const FormattedOption = (props: ChannelOption & {className: string; isSingleValu
             <ProfilePicture
                 src={userImageUrl}
                 status={teammate && teammate.is_bot ? undefined : status}
+                isAbsent={teammate && teammate.is_bot ? false : isAbsent}
                 size='sm'
                 username={user?.username}
             />

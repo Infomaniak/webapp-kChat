@@ -85,6 +85,7 @@ export type UsersState = {
     profilesInGroup: RelationOneToManyUnique<Group, UserProfile>;
     profilesNotInGroup: RelationOneToManyUnique<Group, UserProfile>;
     statuses: RelationOneToOne<UserProfile, string>;
+    scheduledAbsences: RelationOneToOne<UserProfile, ScheduledAbsence>;
     stats: Partial<UsersStats>;
     filteredStats: Partial<UsersStats>;
     myUserAccessTokens: Record<string, UserAccessToken>;
@@ -128,6 +129,11 @@ export type UserCustomStatus = {
     text: string;
     duration: CustomStatusDuration;
     expires_at?: string;
+};
+
+export type ScheduledAbsence = {
+    start: number;
+    end: number;
 };
 
 export type UserAccessToken = {

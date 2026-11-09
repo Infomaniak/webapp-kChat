@@ -27,6 +27,7 @@ exports[`components/sidebar/sidebar_channel/sidebar_direct_channel should match 
       newStatusIcon={true}
       size="xs"
       src="/api/v4/users/user_id/image"
+      status=""
       statusClass="DirectChannel__status-icon "
       username="some-user"
       wrapperClass="DirectChannel__profile-picture"
@@ -63,6 +64,7 @@ exports[`components/sidebar/sidebar_channel/sidebar_direct_channel should match 
   channelLeaveHandler={[Function]}
   icon={
     <ProfilePicture
+      isAbsent={false}
       newStatusIcon={true}
       size="xs"
       src="/api/v4/users/user_id/image"
@@ -106,6 +108,7 @@ exports[`components/sidebar/sidebar_channel/sidebar_direct_channel should match 
       newStatusIcon={true}
       size="xs"
       src="/api/v4/users/user_id/image"
+      status=""
       statusClass="DirectChannel__status-icon "
       username="some-user"
       wrapperClass="DirectChannel__profile-picture"

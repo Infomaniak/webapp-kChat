@@ -41,6 +41,7 @@ describe('component/add_user_to_group_multiselect', () => {
         addUserCallback: jest.fn(),
         deleteUserCallback: jest.fn(),
         profiles: [],
+        userAbsences: {},
         userStatuses: {},
         saving: false,
         actions: {

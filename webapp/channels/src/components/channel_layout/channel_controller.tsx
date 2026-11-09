@@ -7,7 +7,9 @@ import {useDispatch, useSelector} from 'react-redux';
 
 import {cleanUpStatusAndProfileFetchingPoll} from 'mattermost-redux/actions/status_profile_polling';
 import {getIsUserStatusesConfigEnabled} from 'mattermost-redux/selectors/entities/common';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
+import {fetchTeamScheduledAbsences} from 'actions/scheduled_absence_actions';
 import {addVisibleUsersInCurrentChannelAndSelfToStatusPoll} from 'actions/status_actions';
 
 import {makeAsyncComponent} from 'components/async_load';
@@ -36,7 +38,14 @@ type Props = {
 
 export default function ChannelController(props: Props) {
     const enabledUserStatuses = useSelector(getIsUserStatusesConfigEnabled);
+    const currentTeamId = useSelector(getCurrentTeamId);
     const dispatch = useDispatch();
+
+    useEffect(() => {
+        if (currentTeamId) {
+            dispatch(fetchTeamScheduledAbsences(currentTeamId));
+        }
+    }, [currentTeamId, dispatch]);
 
     useEffect(() => {
         const isMsBrowser = isInternetExplorer() || isEdge();

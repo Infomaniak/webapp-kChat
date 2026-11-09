@@ -19,6 +19,7 @@ import {openModal} from 'actions/views/modals';
 import {closeRightHandSide, showChannelFiles, showChannelMembers, showPinnedPosts} from 'actions/views/rhs';
 import {getIsMobileView} from 'selectors/views/browser';
 import {isModalOpen} from 'selectors/views/modals';
+import {hasCurrentAbsenceForUserId} from 'selectors/views/scheduled_absence';
 
 import {Constants, ModalIdentifiers} from 'utils/constants';
 import {getDisplayNameByUser, getUserIdFromChannelId} from 'utils/utils';
@@ -76,6 +77,7 @@ function mapStateToProps(state: GlobalState) {
             display_name: getDisplayNameByUser(state, user),
             is_guest: isGuest(user.roles),
             status: getStatusForUserId(state, user.id),
+            is_absent: hasCurrentAbsenceForUserId(state, user.id),
         };
     }
 

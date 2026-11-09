@@ -39,6 +39,8 @@ type Props = {
     creatorName: string;
     teammate?: UserProfileType;
     teammateName?: string;
+    teammateStatus?: string;
+    teammateIsAbsent?: boolean;
     currentUser: UserProfileType;
     isChannelMember?: boolean;
     channelMember?: ChannelMembership;
@@ -76,6 +78,8 @@ export default class ChannelIntroMessage extends React.PureComponent<Props> {
             creatorName,
             teammate,
             teammateName,
+            teammateStatus,
+            teammateIsAbsent,
             currentUser,
             isChannelMember,
             isMobileView,
@@ -91,7 +95,7 @@ export default class ChannelIntroMessage extends React.PureComponent<Props> {
         }
 
         if (channel.type === Constants.DM_CHANNEL) {
-            return createDMIntroMessage(channel, centeredIntro, currentUser, isFavorite, isMobileView, this.toggleFavorite, teammate, teammateName);
+            return createDMIntroMessage(channel, centeredIntro, currentUser, isFavorite, isMobileView, this.toggleFavorite, teammate, teammateName, teammateStatus, teammateIsAbsent);
         } else if (channel.type === Constants.GM_CHANNEL) {
             return createGMIntroMessage(channel, centeredIntro, isFavorite, isMobileView, this.toggleFavorite, channelProfiles, currentUserId, currentUser);
         } else if (channel.name === Constants.DEFAULT_CHANNEL) {
@@ -185,6 +189,8 @@ function createDMIntroMessage(
     toggleFavorite: () => void,
     teammate?: UserProfileType,
     teammateName?: string,
+    teammateStatus?: string,
+    teammateIsAbsent?: boolean,
 ) {
     const channelIntroId = 'channelIntro';
     if (teammate) {
@@ -214,7 +220,8 @@ function createDMIntroMessage(
                     <ProfilePicture
                         src={src}
                         size='xl-custom-DM'
-                        status={teammate.is_bot ? '' : channel.status}
+                        status={teammate.is_bot ? '' : teammateStatus}
+                        isAbsent={teammate.is_bot ? false : teammateIsAbsent}
                         userId={teammate?.id}
                         username={teammate?.username}
                     />

@@ -11,6 +11,8 @@ import {getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 import type {ActionResult} from 'mattermost-redux/types/actions';
 import {isSyncableSource} from 'mattermost-redux/utils/group_utils';
 
+import {hasCurrentAbsenceForUserId} from 'selectors/views/scheduled_absence';
+
 import StatusIcon from 'components/status_icon';
 import Avatar from 'components/widgets/users/avatar';
 
@@ -48,6 +50,7 @@ const ViewUserGroupListItem = (props: Props) => {
     }, [user.id, groupId, props.decrementMemberCount, props.actions.removeUsersFromGroup]);
 
     const status = useSelector((state: GlobalState) => getStatusForUserId(state, user?.id) || UserStatuses.OFFLINE);
+    const isAbsent = useSelector((state: GlobalState) => hasCurrentAbsenceForUserId(state, user?.id));
 
     return (
         <div
@@ -63,6 +66,7 @@ const ViewUserGroupListItem = (props: Props) => {
                 />
                 <StatusIcon
                     status={status}
+                    isAbsent={isAbsent}
                 />
             </span>
             <div className='group-member-name'>

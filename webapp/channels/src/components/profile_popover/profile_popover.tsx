@@ -8,7 +8,7 @@ import {getCurrentChannelId, getCurrentUserId} from 'mattermost-redux/selectors/
 import {getFeatureFlagValue} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentRelativeTeamUrl, getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentTimezone} from 'mattermost-redux/selectors/entities/timezone';
-import {getStatusForUserId, getUser} from 'mattermost-redux/selectors/entities/users';
+import {getUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {openDirectChannelToUserId} from 'actions/channel_actions';
 import * as GlobalActions from 'actions/global_actions';
@@ -16,6 +16,7 @@ import {closeModal} from 'actions/views/modals';
 import {getMembershipForEntities} from 'actions/views/profile_popover';
 import {getSelectedPost} from 'selectors/rhs';
 import {getIsMobileView} from 'selectors/views/browser';
+import {hasCurrentAbsenceForUserId} from 'selectors/views/scheduled_absence';
 
 import {getHistory} from 'utils/browser_history';
 import {A11yCustomEventTypes, UserStatuses} from 'utils/constants';
@@ -77,6 +78,7 @@ const ProfilePopover = ({
     const teamUrl = useSelector(getCurrentRelativeTeamUrl);
     const modals = useSelector((state: GlobalState) => state.views.modals);
     const status = useSelector((state: GlobalState) => getStatusForUserId(state, userId) || UserStatuses.OFFLINE);
+    const isAbsent = useSelector((state: GlobalState) => hasCurrentAbsenceForUserId(state, userId));
     const currentUserTimezone = useSelector(getCurrentTimezone);
     const currentUserId = useSelector(getCurrentUserId);
     const enableCustomProfileAttributes = useSelector((state: GlobalState) => getFeatureFlagValue(state, 'CustomProfileAttributes') === 'true');
@@ -169,6 +171,7 @@ const ProfilePopover = ({
                     urlSrc={urlSrc}
                     username={user.username}
                     status={status}
+                    isAbsent={isAbsent}
                 />
                 <ProfilePopoverLastActive userId={user.id}/>
                 <ProfilePopoverName

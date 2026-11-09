@@ -6,7 +6,7 @@ import type {AnyAction} from 'redux';
 import {combineReducers} from 'redux';
 
 import type {Team} from '@mattermost/types/teams';
-import type {UserProfile, UsersState} from '@mattermost/types/users';
+import type {ScheduledAbsence, UserProfile, UsersState} from '@mattermost/types/users';
 import type {IDMappedObjects, RelationOneToManyUnique, RelationOneToOne} from '@mattermost/types/utilities';
 
 import type {MMReduxAction} from 'mattermost-redux/action_types';
@@ -87,6 +87,15 @@ function removeProfileFromSet(state: RelationOneToManyUnique<Team, UserProfile>,
         ...state,
         [id]: nextSet,
     };
+}
+
+function removeUserEntry<T>(state: Record<string, T>, userId: string): Record<string, T> {
+    if (!state[userId]) {
+        return state;
+    }
+    const nextState = {...state};
+    delete nextState[userId];
+    return nextState;
 }
 
 function currentUserId(state: UsersState['currentUserId'] = '', action: MMReduxAction) {
@@ -258,14 +267,8 @@ function profiles(state: UsersState['profiles'] = {}, action: MMReduxAction) {
             },
         };
     }
-    case UserTypes.PROFILE_NO_LONGER_VISIBLE: {
-        if (state[action.data.user_id]) {
-            const newState = {...state};
-            delete newState[action.data.user_id];
-            return newState;
-        }
-        return state;
-    }
+    case UserTypes.PROFILE_NO_LONGER_VISIBLE:
+        return removeUserEntry(state, action.data.user_id);
 
     case UserTypes.LOGOUT_SUCCESS:
         return {};
@@ -517,14 +520,8 @@ function dndEndTimes(state: UsersState['dndEndTimes'] = {}, action: MMReduxActio
     case UserTypes.RECEIVED_DND_END_TIMES: {
         return {...state, ...action.data};
     }
-    case UserTypes.PROFILE_NO_LONGER_VISIBLE: {
-        if (state[action.data.user_id]) {
-            const newState = {...state};
-            delete newState[action.data.user_id];
-            return newState;
-        }
-        return state;
-    }
+    case UserTypes.PROFILE_NO_LONGER_VISIBLE:
+        return removeUserEntry(state, action.data.user_id);
 
     case UserTypes.LOGOUT_SUCCESS:
         return {};
@@ -539,14 +536,8 @@ function statuses(state: RelationOneToOne<UserProfile, string> = {}, action: MMR
         return Array.isArray(action.data) ? Object.assign({}, state, ...action.data) : {...state, ...action.data};
     }
 
-    case UserTypes.PROFILE_NO_LONGER_VISIBLE: {
-        if (state[action.data.user_id]) {
-            const newState = {...state};
-            delete newState[action.data.user_id];
-            return newState;
-        }
-        return state;
-    }
+    case UserTypes.PROFILE_NO_LONGER_VISIBLE:
+        return removeUserEntry(state, action.data.user_id);
 
     case UserTypes.LOGOUT_SUCCESS:
         return {};
@@ -561,14 +552,34 @@ function isManualStatus(state: RelationOneToOne<UserProfile, boolean> = {}, acti
         return {...state, ...action.data};
     }
 
-    case UserTypes.PROFILE_NO_LONGER_VISIBLE: {
-        if (state[action.data.user_id]) {
-            const newState = {...state};
-            delete newState[action.data.user_id];
-            return newState;
-        }
+    case UserTypes.PROFILE_NO_LONGER_VISIBLE:
+        return removeUserEntry(state, action.data.user_id);
+
+    case UserTypes.LOGOUT_SUCCESS:
+        return {};
+    default:
         return state;
     }
+}
+
+function scheduledAbsences(state: UsersState['scheduledAbsences'] = {}, action: MMReduxAction) {
+    switch (action.type) {
+    case UserTypes.RECEIVED_SCHEDULED_ABSENCES: {
+        const data = action.data as Record<string, ScheduledAbsence | null>;
+        const nextState = {...state};
+        for (const userId of Object.keys(data)) {
+            const absence = data[userId];
+            if (absence == null) {
+                delete nextState[userId];
+            } else {
+                nextState[userId] = absence;
+            }
+        }
+        return nextState;
+    }
+
+    case UserTypes.PROFILE_NO_LONGER_VISIBLE:
+        return removeUserEntry(state, action.data.user_id);
 
     case UserTypes.LOGOUT_SUCCESS:
         return {};
@@ -663,14 +674,8 @@ function lastActivity(state: UsersState['lastActivity'] = {}, action: MMReduxAct
     }
     case UserTypes.LOGOUT_SUCCESS:
         return {};
-    case UserTypes.PROFILE_NO_LONGER_VISIBLE: {
-        if (state[action.data.user_id]) {
-            const newState = {...state};
-            delete newState[action.data.user_id];
-            return newState;
-        }
-        return state;
-    }
+    case UserTypes.PROFILE_NO_LONGER_VISIBLE:
+        return removeUserEntry(state, action.data.user_id);
     default:
         return state;
     }
@@ -722,6 +727,9 @@ export default combineReducers({
 
     // object where every key is the user id and has a value with a flag determining if their status was set manually
     isManualStatus,
+
+    // object where every key is the user id and has a value with their scheduled absence, if any
+    scheduledAbsences,
 
     // Total user stats
     stats,

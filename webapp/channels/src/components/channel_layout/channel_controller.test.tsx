@@ -47,6 +47,9 @@ describe('ChannelController', () => {
                 preferences: {
                     myPreferences: TestHelper.getPreferencesMock(),
                 },
+                teams: {
+                    currentTeamId: '',
+                },
             },
         } as unknown as GlobalState;
         jest.useFakeTimers();

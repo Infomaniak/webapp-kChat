@@ -31,7 +31,10 @@
     "unused-exports": "warn",
     "unused-types": "off",
     "unused-class-members": "off",
-    "circular-dependencies": "warn"
+    "circular-dependencies": "warn",
+    "complexity-cyclomatic": "warn",
+    "complexity-cognitive": "warn",
+    "complexity-crap": "warn"
   },
   "overrides": [
     {

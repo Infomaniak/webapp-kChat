@@ -63,6 +63,7 @@ describe('components/channel_invite_modal', () => {
     const baseProps = {
         channel,
         profilesNotInCurrentChannel: [],
+        userAbsences: {},
         profilesInCurrentChannel: [],
         profilesNotInCurrentTeam: [],
         profilesFromRecentDMs: [],

@@ -29,6 +29,7 @@ const state: GlobalState = {
             profilesInGroup: {},
             profilesNotInGroup: {},
             statuses: {},
+            scheduledAbsences: {},
             stats: {},
             filteredStats: {},
             myUserAccessTokens: {},

@@ -2,16 +2,18 @@
 // See LICENSE.txt for license information.
 
 import type {ServerError} from './errors';
-import type {UserProfile} from './users';
+import type {ScheduledAbsence, UserProfile} from './users';
 import type {RelationOneToOne} from './utilities';
 
 export type TeamMembership = TeamUnread & {
+    id?: string;
     user_id: string;
     roles: string;
     delete_at: number;
     scheme_admin: boolean;
     scheme_guest: boolean;
     scheme_user: boolean;
+    scheduled_absence?: ScheduledAbsence | null;
 };
 
 export type TeamMemberWithError = {
@@ -91,6 +93,7 @@ export type TeamUnread = {
 export type GetTeamMembersOpts = {
     sort?: 'Username';
     exclude_deleted_users?: boolean;
+    status?: string;
 };
 
 export type TeamsWithCount = {

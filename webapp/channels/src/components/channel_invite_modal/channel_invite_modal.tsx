@@ -52,6 +52,7 @@ export type Props = {
     profilesFromRecentDMs: UserProfile[];
     intl: IntlShape;
     userStatuses: RelationOneToOne<UserProfile, string>;
+    userAbsences: Record<string, boolean>;
     onExited: () => void;
     channel: Channel;
     teammateNameDisplaySetting: string;
@@ -359,6 +360,7 @@ export class ChannelInviteModal extends React.PureComponent<Props, State> {
                     <ProfilePicture
                         src={Client4.getProfilePictureUrl(option.id, option.last_picture_update)}
                         status={this.props.userStatuses[option.id]}
+                        isAbsent={this.props.userAbsences[option.id]}
                         isBot={option.is_bot}
                         size='md'
                         username={option.username}

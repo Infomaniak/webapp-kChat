@@ -25,6 +25,7 @@ import {addUsersToChannel} from 'actions/channel_actions';
 import {loadStatusesForProfilesList} from 'actions/status_actions';
 import {searchAssociatedGroupsForReference} from 'actions/views/group';
 import {closeModal} from 'actions/views/modals';
+import {getCurrentAbsences} from 'selectors/views/scheduled_absence';
 
 import type {GlobalState} from 'types/store';
 
@@ -81,6 +82,7 @@ function makeMapStateToProps(initialState: GlobalState, initialProps: OwnProps) 
         const isGroupsEnabled = enableCustomUserGroups || (license?.IsLicensed === 'true' && license?.LDAPGroups === 'true');
 
         const userStatuses = getUserStatuses(state);
+        const userAbsences = getCurrentAbsences(state);
 
         const teammateNameDisplaySetting = getTeammateNameDisplaySetting(state);
         const groups = getAllAssociatedGroupsForReference(state, true);
@@ -95,6 +97,7 @@ function makeMapStateToProps(initialState: GlobalState, initialProps: OwnProps) 
             teammateNameDisplaySetting,
             profilesFromRecentDMs,
             userStatuses,
+            userAbsences,
             canInviteGuests,
             emailInvitationsEnabled,
             groups,

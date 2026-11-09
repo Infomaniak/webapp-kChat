@@ -7,6 +7,8 @@ import type {UserProfile} from '@mattermost/types/users';
 
 import {getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 
+import {hasCurrentAbsenceForUserId} from 'selectors/views/scheduled_absence';
+
 import type {GlobalState} from 'types/store';
 
 import UserListRow from './user_list_row_with_error';
@@ -19,6 +21,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     const user = ownProps.user;
     return {
         status: getStatusForUserId(state, user.id),
+        isAbsent: hasCurrentAbsenceForUserId(state, user.id),
     };
 }
 

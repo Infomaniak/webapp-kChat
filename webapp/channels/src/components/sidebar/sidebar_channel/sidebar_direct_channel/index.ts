@@ -6,14 +6,16 @@ import {bindActionCreators} from 'redux';
 import type {Dispatch} from 'redux';
 
 import type {Channel} from '@mattermost/types/channels';
-import type {GlobalState} from '@mattermost/types/store';
 
 import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getCurrentChannelId, getRedirectChannelNameForTeam} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
-import {getCurrentUser, getUser} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUser, getUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {leaveDirectChannel} from 'actions/views/channel';
+import {hasCurrentAbsenceForUserId} from 'selectors/views/scheduled_absence';
+
+import type {GlobalState} from 'types/store';
 
 import SidebarDirectChannel from './sidebar_direct_channel';
 
@@ -32,6 +34,8 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
 
     return {
         teammate,
+        teammateStatus: teammate ? getStatusForUserId(state, teammate.id) : '',
+        teammateIsAbsent: teammate ? hasCurrentAbsenceForUserId(state, teammate.id) : false,
         currentUserId: currentUser.id,
         redirectChannel,
         active,

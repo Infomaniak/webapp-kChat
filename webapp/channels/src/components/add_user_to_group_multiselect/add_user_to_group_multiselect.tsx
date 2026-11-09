@@ -26,6 +26,7 @@ type UserProfileValue = Value & UserProfile;
 export type Props = {
     multilSelectKey: string;
     userStatuses: RelationOneToOne<UserProfile, string>;
+    userAbsences: Record<string, boolean>;
     focusOnLoad?: boolean;
 
     intl: IntlShape;
@@ -188,6 +189,7 @@ export class AddUserToGroupMultiSelect extends React.PureComponent<Props, State>
                 isSelected={isSelected}
                 onMouseMove={onMouseMove}
                 userStatuses={this.props.userStatuses}
+                userAbsences={this.props.userAbsences}
                 ref={isSelected ? this.selectedItemRef : undefined}
                 key={option.id}
             />

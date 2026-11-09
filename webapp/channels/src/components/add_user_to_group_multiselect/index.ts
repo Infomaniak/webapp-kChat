@@ -11,6 +11,7 @@ import {getProfilesNotInGroup, searchProfiles, getProfiles} from 'mattermost-red
 import {getProfilesNotInCurrentGroup, getUserStatuses, getProfiles as getUsers} from 'mattermost-redux/selectors/entities/users';
 
 import {loadStatusesForProfilesList} from 'actions/status_actions';
+import {getCurrentAbsences} from 'selectors/views/scheduled_absence';
 
 import type {Value} from 'components/multiselect/multiselect';
 
@@ -33,11 +34,13 @@ function mapStateToProps(state: GlobalState, props: OwnProps) {
         profiles = getUsers(state) as UserProfileValue[];
     }
     const userStatuses = getUserStatuses(state);
+    const userAbsences = getCurrentAbsences(state);
 
     return {
         groupId: props.groupId,
         profiles,
         userStatuses,
+        userAbsences,
     };
 }
 

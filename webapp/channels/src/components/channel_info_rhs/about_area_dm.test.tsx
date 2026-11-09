@@ -128,6 +128,7 @@ describe('channel_info_rhs/about_area_dm', () => {
             } as UserProfile,
             display_name: 'my_username',
             is_guest: false,
+            is_absent: false,
             status: Constants.UserStatuses.ONLINE,
         },
         actions: {

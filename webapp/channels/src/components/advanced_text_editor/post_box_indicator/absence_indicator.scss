@@ -1,0 +1,27 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+
+.AbsenceIndicator {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    padding: 7px 12px;
+    border-radius: 2px 2px 0 0;
+    border-bottom: 1px solid var(--ik-illustration-grey-7);
+    background: var(--ik-absence-indicator-bg);
+    color: var(--ik-absence-indicator-text);
+    font-size: 14px;
+    gap: 8px;
+    line-height: 20px;
+
+    .icon {
+        display: inline-flex;
+
+        svg {
+            display: block;
+        }
+    }
+
+    .prefix {
+        font-weight: 500;
+    }
+}

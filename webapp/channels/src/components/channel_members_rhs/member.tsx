@@ -4,13 +4,17 @@
 import classNames from 'classnames';
 import React from 'react';
 import {FormattedMessage, useIntl} from 'react-intl';
+import {useSelector} from 'react-redux';
 import styled from 'styled-components';
 
 import type {Channel, PendingGuest as PendingGuestType} from '@mattermost/types/channels';
 import type {UserProfile} from '@mattermost/types/users';
 
 import {Client4} from 'mattermost-redux/client';
+import {getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 import {isGuest} from 'mattermost-redux/utils/user_utils';
+
+import {hasCurrentAbsenceForUserId} from 'selectors/views/scheduled_absence';
 
 import ChannelMembersDropdown from 'components/channel_members_dropdown';
 import CustomStatusEmoji from 'components/custom_status/custom_status_emoji';
@@ -21,6 +25,8 @@ import SharedChannelIndicator from 'components/shared_channel_indicator';
 import PendingGuestIcon from 'components/widgets/icons/pending_guest_icon';
 import GuestTag from 'components/widgets/tag/guest_tag';
 import WithTooltip from 'components/with_tooltip';
+
+import type {GlobalState} from 'types/store';
 
 import type {ChannelMember} from './channel_members_rhs';
 
@@ -115,6 +121,8 @@ interface Props {
 
 const Member = ({className, channel, member, index, totalUsers, editing, actions}: Props) => {
     const {formatMessage} = useIntl();
+    const status = useSelector((state: GlobalState) => getStatusForUserId(state, member.user.id));
+    const isAbsent = useSelector((state: GlobalState) => hasCurrentAbsenceForUserId(state, member.user.id));
 
     const userProfileSrc = Client4.getProfilePictureUrl(member.user.id, member.user.last_picture_update);
 
@@ -127,7 +135,8 @@ const Member = ({className, channel, member, index, totalUsers, editing, actions
                 <Avatar>
                     <ProfilePicture
                         size='sm'
-                        status={member.status}
+                        status={member.user.is_bot ? '' : status}
+                        isAbsent={member.user.is_bot ? false : isAbsent}
                         isBot={member.user.is_bot}
                         userId={member.user.id}
                         username={member.user.username}

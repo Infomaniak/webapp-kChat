@@ -10,12 +10,14 @@ type Props = {
     username?: string;
     hideStatus?: boolean;
     status?: string;
+    isAbsent?: boolean;
     urlSrc: string;
 }
 const ProfilePopoverAvatar = ({
     username,
     hideStatus,
     status,
+    isAbsent,
     urlSrc,
 }: Props) => {
     return (
@@ -29,6 +31,7 @@ const ProfilePopoverAvatar = ({
             />
             <StatusIcon
                 className='status user-popover-status'
+                isAbsent={isAbsent}
                 status={hideStatus ? undefined : status}
                 button={true}
             />

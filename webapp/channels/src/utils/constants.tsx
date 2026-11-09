@@ -562,6 +562,7 @@ export const UserStatuses = {
     AWAY: 'away',
     ONLINE: 'online',
     DND: 'dnd',
+    ABSENCE: 'absence',
 } as const;
 
 export const EmailNotificationStatuses = {
@@ -717,6 +718,7 @@ export const SocketEvents = {
     PREFERENCES_DELETED: 'preferences_deleted',
     EPHEMERAL_MESSAGE: 'ephemeral_message',
     STATUS_CHANGED: 'status_change',
+    SCHEDULED_ABSENCE_UPDATED: 'scheduled_absence_updated',
     HELLO: 'hello',
     REACTION_ADDED: 'reaction_added',
     REACTION_REMOVED: 'reaction_removed',
