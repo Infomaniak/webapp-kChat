@@ -13,5 +13,7 @@ declare namespace JSX {
         'wc-identity-sheet': any;
         'wc-pill': any;
         'module-header-title-component': any;
+        'wc-user-panel': any;
+        'wc-mev-event-crud-modal-view': any;
     }
 }

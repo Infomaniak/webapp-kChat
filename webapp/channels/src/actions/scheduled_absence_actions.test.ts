@@ -24,7 +24,7 @@ function teamMember(id: string, numericUserId: number, scheduledAbsence: Schedul
 }
 
 describe('fetchTeamScheduledAbsences', () => {
-    test('should dispatch the scheduled absences of the team members keyed by membership id', async () => {
+    test('should dispatch the scheduled absences of the team members keyed by kChat user id', async () => {
         const absence = {start: 1000, end: 2000};
         (Client4.getTeamMembers as jest.Mock).mockResolvedValue([
             teamMember('user1-uuid', 2039675, absence),

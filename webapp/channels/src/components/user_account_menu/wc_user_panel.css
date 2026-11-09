@@ -1,0 +1,18 @@
+/* Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved. */
+
+.wcUserPanel {
+    display: flex;
+    height: 46px;
+    align-items: center;
+
+    wc-user-panel {
+        --wc-user-panel-size: 32px;
+
+        top: 0;
+        margin: 0;
+    }
+}
+
+.wcUserPanel wc-user-panel:not(.status) {
+    margin-left: 8px;
+}

@@ -1,0 +1,27 @@
+/* Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved. */
+
+.wcUserPanel__absenceDialogBackdrop {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.64);
+    z-index: 1000;
+}
+
+.wcUserPanel__absenceDialogBackdrop--closed {
+    display: none;
+}
+
+.wcUserPanel__absenceDialog {
+    width: 480px;
+
+    wc-mev-event-crud-modal-view {
+        display: block;
+        width: 100%;
+    }
+}

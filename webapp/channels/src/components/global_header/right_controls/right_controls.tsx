@@ -21,9 +21,11 @@ import {
     SettingsTour,
     useShowOnboardingTutorialStep,
 } from 'components/tours/onboarding_tour';
-import UserAccountMenu from 'components/user_account_menu';
+import WcAbsenceDialog from 'components/user_account_menu/wc_absence_dialog';
+import WcUserPanel from 'components/user_account_menu/wc_user_panel';
 import WithTooltip from 'components/with_tooltip';
 
+import {isInIframe} from 'utils/url-ksuite-redirect';
 import {isDesktopApp as getIsDesktopApp} from 'utils/user_agent';
 
 import imagePath from 'images/icons/messages-bubble-user-feedback.svg';
@@ -210,7 +212,8 @@ const RightControls = (): JSX.Element => {
                     </div>
                 </WithTooltip>
             )}
-            <UserAccountMenu/>
+            <WcUserPanel/>
+            {!isInIframe() && <WcAbsenceDialog/>}
             <FlagNext/>
         </RightControlsContainer>
     );
