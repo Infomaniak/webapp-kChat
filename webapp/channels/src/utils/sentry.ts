@@ -142,5 +142,27 @@ export function transformStateForSentry(state: GlobalState | undefined): SentryR
         });
     }
 
+    if (transformedState.storage?.storage) {
+        transformedState.storage.storage = {};
+    }
+
+    if (transformedState.entities?.posts?.messagesHistory?.messages) {
+        transformedState.entities.posts.messagesHistory.messages = transformedState.entities.posts.messagesHistory.messages.map(() => '[REDACTED_MESSAGE]');
+    }
+
+    if (transformedState.entities?.posts?.postEditHistory) {
+        transformedState.entities.posts.postEditHistory.forEach((post) => {
+            post.message = '[REDACTED_MESSAGE]';
+        });
+    }
+
+    if (transformedState.entities?.scheduledPosts?.byId) {
+        Object.values(transformedState.entities.scheduledPosts.byId).forEach((scheduled) => {
+            if (scheduled) {
+                scheduled.message = '[REDACTED_MESSAGE]';
+            }
+        });
+    }
+
     return transformedState;
 }
