@@ -669,6 +669,22 @@ export function escapeRegex(text?: string): string {
     return text?.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') || '';
 }
 
+// Matches a mention key as a standalone word: JavaScript \b is ASCII-only, so it inverts
+// boundaries around non-ASCII characters (a key ending with "ï" would never match "Shaï "
+// but would match "Shaï2"). The suffix uses an ASCII \w lookahead instead. The prefix keeps
+// the ES3-safe consuming \W form: this pattern is built at runtime with new RegExp, so
+// lookbehind would throw SyntaxError on the babel targets (safari 12, firefox 60, edge 42).
+export function getMentionKeyPattern(key: string, flags: string): RegExp {
+    if (cjkrPattern.test(key)) {
+        return new RegExp(`()(${escapeRegex(key)})()`, flags);
+    }
+
+    return new RegExp(
+        '(^|\\W)(' + escapeRegex(key) + ')((?![A-Za-z0-9_])|_+(?![A-Za-z0-9_]))',
+        flags,
+    );
+}
+
 export function escapeReplaceSpecialPatterns(text?: string): string {
     return text?.replace(/[$]/g, '$$$$') || '';
 }
@@ -754,17 +770,7 @@ export function highlightCurrentMentions(
             flags += 'i';
         }
 
-        let pattern;
-        if (cjkrPattern.test(mention.key)) {
-            // In the case of CJK mention key, even if there's no delimiters (such as spaces) at both ends of a word, it is recognized as a mention key
-            pattern = new RegExp(`()(${escapeRegex(mention.key)})()`, flags);
-        } else {
-            pattern = new RegExp(
-                `(^|\\W)(${escapeRegex(mention.key)})(\\b|_+\\b)`,
-                flags,
-            );
-        }
-        output = output.replace(pattern, replaceCurrentMentionWithToken);
+        output = output.replace(getMentionKeyPattern(mention.key, flags), replaceCurrentMentionWithToken);
     }
 
     return output;
@@ -827,17 +833,8 @@ export function highlightWithoutNotificationKeywords(
                 return;
             }
 
-            let pattern;
-            if (cjkrPattern.test(key)) {
-            // If the key contains Chinese, Japanese, Korean or Russian characters, don't mark word boundaries
-                pattern = new RegExp(`()(${escapeRegex(key)})()`, 'gi');
-            } else {
-            // If the key contains only English characters, mark word boundaries
-                pattern = new RegExp(`(^|\\W)(${escapeRegex(key)})(\\b|_+\\b)`, 'gi');
-            }
-
             // Replace the key with the token for each occurrence of the key
-            output = output.replace(pattern, replaceHighlightKeywordsWithToken);
+            output = output.replace(getMentionKeyPattern(key, 'gi'), replaceHighlightKeywordsWithToken);
         });
 
     return output;

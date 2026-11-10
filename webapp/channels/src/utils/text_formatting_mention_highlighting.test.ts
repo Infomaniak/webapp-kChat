@@ -65,6 +65,26 @@ describe('TextFormatting.mentionHighlighting', () => {
         mentionKeys: [{key: '@words'}],
         expected: '<p>These are <span class="mention--highlight">@words</span></p>',
     }, {
+        name: 'mention with diacritics at the end',
+        input: 'coucou Shaï',
+        mentionKeys: [{key: 'Shaï'}],
+        expected: '<p>coucou <span class="mention--highlight">Shaï</span></p>',
+    }, {
+        name: 'mention with diacritics followed by punctuation',
+        input: 'Shaï !',
+        mentionKeys: [{key: 'Shaï', caseSensitive: true}],
+        expected: '<p><span class="mention--highlight">Shaï</span> !</p>',
+    }, {
+        name: 'mention with diacritics not matched when glued to a digit',
+        input: 'Shaï2',
+        mentionKeys: [{key: 'Shaï'}],
+        expected: '<p>Shaï2</p>',
+    }, {
+        name: 'mention with diacritics matched when glued to a non-ascii letter, like ascii keys glued to accented letters',
+        input: 'Shaïé',
+        mentionKeys: [{key: 'Shaï'}],
+        expected: '<p><span class="mention--highlight">Shaï</span>é</p>',
+    }, {
         name: 'mention highlighting disabled',
         input: 'These are words',
         mentionHighlight: false,

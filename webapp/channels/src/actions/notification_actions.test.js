@@ -534,6 +534,30 @@ describe('notification_actions', () => {
                     expect(spy).toHaveBeenCalled();
                 });
             });
+            test('should notify when channel setting MENTION and the first name contains a diacritic', async () => {
+                const store = testConfigureStore(baseState);
+                baseState.entities.users.profiles.current_user_id.first_name = 'Shaï';
+                channelSettings.desktop = NotificationLevels.MENTION;
+                post.message = 'Shaï';
+                post.channel_id = 'gm_channel';
+                msgProps.team_id = '';
+
+                return store.dispatch(sendDesktopNotification(post, msgProps)).then(() => {
+                    expect(spy).toHaveBeenCalled();
+                });
+            });
+            test('should notify when channel setting MENTION and a custom keyword contains a diacritic', async () => {
+                const store = testConfigureStore(baseState);
+                userSettings.mention_keys = 'Shaï';
+                channelSettings.desktop = NotificationLevels.MENTION;
+                post.message = 'coucou Shaï !';
+                post.channel_id = 'gm_channel';
+                msgProps.team_id = '';
+
+                return store.dispatch(sendDesktopNotification(post, msgProps)).then(() => {
+                    expect(spy).toHaveBeenCalled();
+                });
+            });
             test('should notify when channel setting MENTION and there is a channel mention', async () => {
                 const store = testConfigureStore(baseState);
                 channelSettings.desktop = NotificationLevels.MENTION;

@@ -31,7 +31,7 @@ import {stripMarkdown, formatWithRenderer} from 'utils/markdown';
 import MentionableRenderer from 'utils/markdown/mentionable_renderer';
 import {DesktopNotificationSounds, ding} from 'utils/notification_sounds';
 import {showNotification} from 'utils/notifications';
-import {cjkrPattern, escapeRegex} from 'utils/text_formatting';
+import {getMentionKeyPattern} from 'utils/text_formatting';
 import {isDesktopApp, isMobileApp} from 'utils/user_agent';
 import * as Utils from 'utils/utils';
 
@@ -367,18 +367,7 @@ function shouldSkipNotification(
                 flags += 'i';
             }
 
-            let pattern;
-            if (cjkrPattern.test(mention.key)) {
-                // In the case of CJK mention key, even if there's no delimiters (such as spaces) at both ends of a word, it is recognized as a mention key
-                pattern = new RegExp(`()(${escapeRegex(mention.key)})()`, flags);
-            } else {
-                pattern = new RegExp(
-                    `(^|\\W)(${escapeRegex(mention.key)})(\\b|_+\\b)`,
-                    flags,
-                );
-            }
-
-            if (pattern.test(mentionableText)) {
+            if (getMentionKeyPattern(mention.key, flags).test(mentionableText)) {
                 isExplicitlyMentioned = true;
                 break;
             }
