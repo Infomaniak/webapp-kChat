@@ -10,8 +10,8 @@ export default function StatusDndAbsenceIcon(props: React.HTMLAttributes<HTMLSpa
             <svg
                 x='0px'
                 y='0px'
-                width='13px'
-                height='13px'
+                width='100%'
+                height='100%'
                 viewBox='0 0 16 16'
                 role='img'
                 aria-label={formatMessage({id: 'mobile.set_status.absence.icon', defaultMessage: 'Scheduled Absence Icon'})}

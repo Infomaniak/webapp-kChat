@@ -11,8 +11,8 @@ export default function StatusOnlineAbsenceIcon(props: React.HTMLAttributes<HTML
             <svg
                 x='0px'
                 y='0px'
-                width='13px'
-                height='13px'
+                width='100%'
+                height='100%'
                 viewBox='0 0 16 16'
                 style={style}
                 role='img'
