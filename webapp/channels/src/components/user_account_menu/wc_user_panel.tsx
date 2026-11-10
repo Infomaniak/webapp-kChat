@@ -14,6 +14,8 @@ import {getScheduledAbsenceForUserId} from 'selectors/views/scheduled_absence';
 import UserAccountMenu from 'components/user_account_menu';
 import {ELEMENT_ID_FOR_USER_ACCOUNT_MENU_BUTTON} from 'components/user_account_menu/user_account_menu';
 
+import {isDesktopApp} from 'utils/user_agent';
+
 import type {GlobalState} from 'types/store';
 
 import {useWcUserLogoutListener, useWcUserStatusSync} from './wc_user_panel_hooks';
@@ -84,6 +86,7 @@ export default function WcUserPanel() {
                 user-uuid={currentUser.id}
                 user-presence={toWebComponentPresence(status)}
                 {...customStatusProps}
+                show-manage-profile={!isDesktopApp()}
                 server-url={window.location.origin}
             />
         </div>
