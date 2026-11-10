@@ -36,6 +36,7 @@ import AtMentionsButton from './at_mentions_button/at_mentions_button';
 import ReportingToolsButton from './reporting_tools_button';
 import SavedPostsButton from './saved_posts_button/saved_posts_button';
 import SettingsButton from './settings_button/index';
+import ToggleNextButton from './toggle_next_button';
 
 // import PlanUpgradeButton from './plan_upgrade_button';
 
@@ -154,6 +155,7 @@ const RightControls = (): JSX.Element => {
             <ReportingToolsWrapper className='wc-trigger-reporting-tools--flex'>
                 <ReportingToolsButton/>
             </ReportingToolsWrapper>
+            <ToggleNextButton/>
             <WithTooltip title={tooltipUserReport}>
                 {/* eslint-disable-next-line @mattermost/use-external-link */}
                 <a

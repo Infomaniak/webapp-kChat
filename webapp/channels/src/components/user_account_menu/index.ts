@@ -10,15 +10,12 @@ import {Client4} from 'mattermost-redux/client';
 import {Preferences} from 'mattermost-redux/constants';
 import {getKSuiteBridge} from 'mattermost-redux/selectors/entities/ksuiteBridge';
 import {get} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentTimezone} from 'mattermost-redux/selectors/entities/timezone';
 import {getCurrentUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {openModal} from 'actions/views/modals';
 import {getCurrentLocale} from 'selectors/i18n';
 import {makeGetCustomStatus, isCustomStatusExpired, isCustomStatusEnabled} from 'selectors/views/custom_status';
-
-import {isStaff} from 'utils/team_utils';
 
 import type {GlobalState} from 'types/store';
 
@@ -34,8 +31,6 @@ function makeMapStateToProps() {
         const userFirstName = currentUser?.first_name;
         const userLastName = currentUser?.last_name;
         const customStatus = getCustomStatus(state, userId);
-        const currentTeam = getCurrentTeam(state);
-        const showNextSwitch = isStaff(currentTeam);
         const ksuiteBridge = getKSuiteBridge(state);
         const locale = getCurrentLocale(state);
 
@@ -52,7 +47,6 @@ function makeMapStateToProps() {
             isCustomStatusExpired: isCustomStatusExpired(state, customStatus),
             isCustomStatusEnabled: isCustomStatusEnabled(state),
             timezone: getCurrentTimezone(state),
-            showNextSwitch,
             ksuiteBridge,
             isBridgeConnected: ksuiteBridge?.isConnected,
         };
