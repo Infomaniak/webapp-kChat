@@ -4,18 +4,25 @@
 import React from 'react';
 import type {AutoSizerProps} from 'react-virtualized-auto-sizer';
 
+import {CustomStatusDuration} from '@mattermost/types/users';
 import type {DeepPartial} from '@mattermost/types/utilities';
 
+import {setCustomStatus} from 'mattermost-redux/actions/users';
 import {Preferences} from 'mattermost-redux/constants';
 
 import {TestHelper} from 'utils/test_helper';
 
 import mergeObjects from 'packages/mattermost-redux/test/merge_objects';
-import {act, renderWithContext, screen, userEvent} from 'tests/react_testing_utils';
+import {act, fireEvent, renderWithContext, screen, userEvent} from 'tests/react_testing_utils';
 
 import type {GlobalState} from 'types/store';
 
 import CustomStatusModal from './custom_status_modal';
+
+jest.mock('mattermost-redux/actions/users', () => ({
+    ...jest.requireActual('mattermost-redux/actions/users'),
+    setCustomStatus: jest.fn(() => ({type: 'MOCK_SET_CUSTOM_STATUS'})),
+}));
 
 jest.mock('react-virtualized-auto-sizer', () => (props: AutoSizerProps) => props.children({height: 100, width: 100}));
 jest.mock('images/img_trans.gif', () => 'img_trans.gif');
@@ -113,6 +120,59 @@ describe('CustomStatusModal', () => {
         expect(screen.getByText('SUGGESTIONS')).toBeInTheDocument();
         expect(screen.getByText('Eating a taco')).toBeInTheDocument();
         expect(screen.getByLabelText(':taco:')).toBeInTheDocument();
+    });
+
+    test('should save the selected recent status with an empty text when its description is deleted', () => {
+        const recentStatus = TestHelper.getCustomStatusMock({
+            emoji: 'taco',
+            text: 'Eating a taco',
+            duration: CustomStatusDuration.TODAY,
+        });
+
+        const testState = mergeObjects(initialState, {
+            entities: {
+                users: {
+                    currentUserId: 'current_user_id',
+                    profiles: {
+                        current_user_id: TestHelper.getUserMock({
+                            id: 'current_user_id',
+                            props: {customStatus: JSON.stringify(recentStatus)},
+                        }),
+                    },
+                },
+                preferences: {
+                    myPreferences: TestHelper.getPreferencesMock([
+                        {
+                            category: Preferences.CATEGORY_CUSTOM_STATUS,
+                            name: Preferences.NAME_RECENT_CUSTOM_STATUSES,
+                            value: JSON.stringify([recentStatus]),
+                        },
+                    ]),
+                },
+            },
+        });
+
+        renderWithContext(
+            <CustomStatusModal
+                {...baseProps}
+            />,
+            testState,
+            renderOptions,
+        );
+
+        const input = screen.getByPlaceholderText('Set a status');
+        fireEvent.click(screen.getByText('Eating a taco'));
+        userEvent.clear(input);
+        userEvent.click(screen.getByText(/Clear after/));
+        userEvent.click(screen.getByText('Choose date and time'));
+        userEvent.click(screen.getByRole('button', {name: 'Set Status'}));
+
+        expect(setCustomStatus).toHaveBeenCalledWith({
+            emoji: 'taco',
+            text: '',
+            duration: CustomStatusDuration.DATE_AND_TIME,
+            expires_at: expect.any(String),
+        });
     });
 
     test('should render recently used statuses with custom emojis which exist', () => {

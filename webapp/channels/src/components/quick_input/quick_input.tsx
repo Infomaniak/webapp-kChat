@@ -113,11 +113,20 @@ export class QuickInput extends React.PureComponent<Props> {
     }
 
     private updateInputFromProps = () => {
-        if (!this.input || this.input.value === this.props.value) {
+        if (!this.input) {
             return;
         }
 
-        this.input.value = this.props.value;
+        if (this.input.value !== this.props.value) {
+            this.input.value = this.props.value;
+            return;
+        }
+
+        // React's ChangeEventPlugin swallows an input event whose value matches its internal
+        // value tracker; a defaultValue-driven update (RM-643071) leaves it stale, so resync it
+        // or the next user edit landing on the stale value is never reported. Re-verify on React upgrade.
+        // eslint-disable-next-line no-underscore-dangle
+        (this.input as HTMLInputElement & {_valueTracker?: {setValue: (value: string) => void}})._valueTracker?.setValue(this.props.value);
     };
 
     private setInputRef = (input: HTMLInputElement) => {
