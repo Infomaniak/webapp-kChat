@@ -1699,7 +1699,7 @@
   "multiselect.placeholder": "Search for people",
   "multiselect.placeholder.peopleOrGroups": "Search for people or groups",
   "multiselect.placeholder.peopOrGroups": "Séléctionner un ou des utilisateurs",
-  "multiselect.quit": "Quit",
+  "multiselect.quit": "Leave",
   "multiselect.saveDetailsButton": "Save Details",
   "multiselect.savingDetailsButton": "Saving...",
   "multiselect.selectChannels": "Use ↑↓ to browse, ↵ to select.",

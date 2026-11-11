@@ -1698,7 +1698,7 @@
   "multiselect.placeholder": "Mitglieder suchen",
   "multiselect.placeholder.peopleOrGroups": "Suche nach Personen oder Gruppen",
   "multiselect.placeholder.peopOrGroups": "Einen oder mehrere Benutzer auswählen",
-  "multiselect.quit": "Beenden",
+  "multiselect.quit": "Verlassen",
   "multiselect.saveDetailsButton": "Details speichern",
   "multiselect.savingDetailsButton": "Speichern...",
   "multiselect.selectChannels": "Benutze ↑↓ zum Navigieren, ↵ zum Auswählen.",

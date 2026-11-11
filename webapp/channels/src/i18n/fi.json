@@ -1698,7 +1698,7 @@
   "multiselect.placeholder": "Etsi käyttäjiä",
   "multiselect.placeholder.peopleOrGroups": "Etsi henkilöitä tai ryhmiä",
   "multiselect.placeholder.peopOrGroups": "Valitse yksi tai useampi käyttäjä",
-  "multiselect.quit": "Lopeta",
+  "multiselect.quit": "Poistu",
   "multiselect.saveDetailsButton": "Tallenna tiedot",
   "multiselect.savingDetailsButton": "Tallennetaan...",
   "multiselect.selectChannels": "Käytä ylös- ja alanuolia selaamiseen ja Enter-näppäintä valintaan.",

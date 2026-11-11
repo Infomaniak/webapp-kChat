@@ -1698,7 +1698,7 @@
   "multiselect.placeholder": "Sök efter användare",
   "multiselect.placeholder.peopleOrGroups": "Sök efter personer eller grupper",
   "multiselect.placeholder.peopOrGroups": "Välj en eller flera användare",
-  "multiselect.quit": "Avsluta",
+  "multiselect.quit": "Lämna",
   "multiselect.saveDetailsButton": "Spara detaljer",
   "multiselect.savingDetailsButton": "Sparar...",
   "multiselect.selectChannels": "Använd ↑↓ för att bläddra, ↵ för att välja.",

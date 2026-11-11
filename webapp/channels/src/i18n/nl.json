@@ -1698,7 +1698,7 @@
   "multiselect.placeholder": "Mensen zoeken",
   "multiselect.placeholder.peopleOrGroups": "Personen of groepen zoeken",
   "multiselect.placeholder.peopOrGroups": "Selecteer één of meerdere gebruikers",
-  "multiselect.quit": "Stoppen",
+  "multiselect.quit": "Verlaten",
   "multiselect.saveDetailsButton": "Details bewaren",
   "multiselect.savingDetailsButton": "Bezig met bewaren...",
   "multiselect.selectChannels": "Gebruik ↑↓ om te bladeren, ↵ om te selecteren.",
