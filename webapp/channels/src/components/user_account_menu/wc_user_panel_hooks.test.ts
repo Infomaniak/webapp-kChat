@@ -22,8 +22,9 @@ describe('components/user_account_menu/wc_user_panel_hooks', () => {
     describe('useWcUserStatusSync', () => {
         type StatusSyncProps = {userId: number | null; userStatus: string | undefined; absence: ScheduledAbsence | undefined};
 
-        it('dispatches the status update once the identity is resolved', () => {
+        it('dispatches the status update once the web component is defined', async () => {
             const scheduledAbsence = {start: 1793400000000, end: 1793486000000} as ScheduledAbsence;
+            jest.spyOn(customElements, 'whenDefined').mockResolvedValue(HTMLElement);
 
             const {rerender} = renderHook<StatusSyncProps, void>(
                 ({userId, userStatus, absence}) => useWcUserStatusSync(userId, userStatus, absence),
@@ -32,7 +33,10 @@ describe('components/user_account_menu/wc_user_panel_hooks', () => {
 
             expect(dispatchWcUserStatusUpdate).not.toHaveBeenCalled();
 
-            rerender({userId: 1728507, userStatus: 'dnd', absence: scheduledAbsence});
+            await act(async () => {
+                rerender({userId: 1728507, userStatus: 'dnd', absence: scheduledAbsence});
+                await Promise.resolve();
+            });
 
             expect(dispatchWcUserStatusUpdate).toHaveBeenCalledWith(1728507, 'dnd', scheduledAbsence);
         });

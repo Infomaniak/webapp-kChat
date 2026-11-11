@@ -14,10 +14,19 @@ import {
 export function useWcUserStatusSync(infomaniakUserId: number | null, status: string | undefined, scheduledAbsence: ScheduledAbsence | undefined) {
     useEffect(() => {
         if (!infomaniakUserId) {
-            return;
+            return undefined;
         }
 
-        dispatchWcUserStatusUpdate(infomaniakUserId, status, scheduledAbsence);
+        let isMounted = true;
+        customElements.whenDefined('wc-user-panel').then(() => {
+            if (isMounted) {
+                dispatchWcUserStatusUpdate(infomaniakUserId, status, scheduledAbsence);
+            }
+        });
+
+        return () => {
+            isMounted = false;
+        };
     }, [infomaniakUserId, status, scheduledAbsence]);
 }
 

@@ -13,6 +13,7 @@ import type {ScheduledAbsenceEditRequestDetail, WcMevEventCrudModalElement} from
 import {
     WC_EVENT_CREATE_SCHEDULED_ABSENCE,
     WC_EVENT_OPEN_SCHEDULED_ABSENCE,
+    WC_EVENT_EDIT_SCHEDULED_ABSENCE,
     closeUserPanel,
 } from './wc_user_panel_platform';
 
@@ -30,17 +31,20 @@ export function useWcAbsenceDialogController(): {dialogState: WcAbsenceDialogSta
             setDialogState({mode: 'create'});
         };
         const handleEditScheduledAbsence = (event: Event) => {
-            const {uuid} = (event as CustomEvent<ScheduledAbsenceEditRequestDetail>).detail ?? {};
+            const {absence} = (event as CustomEvent<ScheduledAbsenceEditRequestDetail>).detail ?? {};
+            const uuid = absence?.uuid;
             if (uuid) {
                 closeUserPanel();
                 setDialogState({mode: 'edit', absenceUuid: uuid});
             }
         };
-        window.addEventListener(WC_EVENT_CREATE_SCHEDULED_ABSENCE, handleCreateScheduledAbsence);
-        window.addEventListener(WC_EVENT_OPEN_SCHEDULED_ABSENCE, handleEditScheduledAbsence);
+        document.addEventListener(WC_EVENT_CREATE_SCHEDULED_ABSENCE, handleCreateScheduledAbsence);
+        document.addEventListener(WC_EVENT_OPEN_SCHEDULED_ABSENCE, handleCreateScheduledAbsence);
+        document.addEventListener(WC_EVENT_EDIT_SCHEDULED_ABSENCE, handleEditScheduledAbsence);
         return () => {
-            window.removeEventListener(WC_EVENT_CREATE_SCHEDULED_ABSENCE, handleCreateScheduledAbsence);
-            window.removeEventListener(WC_EVENT_OPEN_SCHEDULED_ABSENCE, handleEditScheduledAbsence);
+            document.removeEventListener(WC_EVENT_CREATE_SCHEDULED_ABSENCE, handleCreateScheduledAbsence);
+            document.removeEventListener(WC_EVENT_OPEN_SCHEDULED_ABSENCE, handleCreateScheduledAbsence);
+            document.removeEventListener(WC_EVENT_EDIT_SCHEDULED_ABSENCE, handleEditScheduledAbsence);
         };
     }, []);
 

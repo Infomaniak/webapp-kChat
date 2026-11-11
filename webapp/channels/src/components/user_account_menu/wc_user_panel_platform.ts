@@ -9,6 +9,7 @@ import {UserStatuses} from 'utils/constants';
 
 export const WC_EVENT_CREATE_SCHEDULED_ABSENCE = 'createScheduledAbsence';
 export const WC_EVENT_OPEN_SCHEDULED_ABSENCE = 'openScheduledAbsence';
+export const WC_EVENT_EDIT_SCHEDULED_ABSENCE = 'editScheduledAbsence';
 export const WC_EVENT_USER_LOGOUT = 'wc-user-logout';
 export const WC_EVENT_USER_STATUS_UPDATE = 'wcUserStatusUpdate';
 
@@ -33,7 +34,8 @@ export type WcMevEventCrudModalElement = HTMLElement & {
 };
 
 export type ScheduledAbsenceEditRequestDetail = {
-    uuid: string;
+    absence?: {uuid?: string};
+    scope?: 'one' | 'all';
 };
 
 type UserWithInfomaniakId = UserProfile & {user_id?: number};

@@ -11,12 +11,14 @@ import type {WcMevEventCrudModalElement} from './wc_user_panel_platform';
 import {
     WC_EVENT_CREATE_SCHEDULED_ABSENCE,
     WC_EVENT_OPEN_SCHEDULED_ABSENCE,
+    WC_EVENT_EDIT_SCHEDULED_ABSENCE,
     closeUserPanel,
 } from './wc_user_panel_platform';
 
 jest.mock('./wc_user_panel_platform', () => ({
     WC_EVENT_CREATE_SCHEDULED_ABSENCE: 'createScheduledAbsence',
     WC_EVENT_OPEN_SCHEDULED_ABSENCE: 'openScheduledAbsence',
+    WC_EVENT_EDIT_SCHEDULED_ABSENCE: 'editScheduledAbsence',
     closeUserPanel: jest.fn(),
 }));
 
@@ -38,7 +40,7 @@ describe('components/user_account_menu/wc_absence_dialog_hooks', () => {
         const renderAndCreate = () => {
             const {result} = renderHook(() => useWcAbsenceDialogController());
             act(() => {
-                window.dispatchEvent(new CustomEvent(WC_EVENT_CREATE_SCHEDULED_ABSENCE));
+                document.dispatchEvent(new CustomEvent(WC_EVENT_CREATE_SCHEDULED_ABSENCE));
             });
             return result;
         };
@@ -49,11 +51,21 @@ describe('components/user_account_menu/wc_absence_dialog_hooks', () => {
             expect(result.current.dialogState).toEqual({mode: 'create'});
         });
 
+        it('opens the dialog in create mode for open requests', () => {
+            const {result} = renderHook(() => useWcAbsenceDialogController());
+
+            act(() => {
+                document.dispatchEvent(new CustomEvent(WC_EVENT_OPEN_SCHEDULED_ABSENCE));
+            });
+
+            expect(result.current.dialogState).toEqual({mode: 'create'});
+        });
+
         it('opens the dialog in edit mode with the emitted absence uuid', () => {
             const result = renderAndCreate();
 
             act(() => {
-                window.dispatchEvent(new CustomEvent(WC_EVENT_OPEN_SCHEDULED_ABSENCE, {detail: {uuid: 'absence-1'}}));
+                document.dispatchEvent(new CustomEvent(WC_EVENT_EDIT_SCHEDULED_ABSENCE, {detail: {absence: {uuid: 'absence-1'}}}));
             });
 
             expect(result.current.dialogState).toEqual({mode: 'edit', absenceUuid: 'absence-1'});
@@ -64,7 +76,7 @@ describe('components/user_account_menu/wc_absence_dialog_hooks', () => {
             const result = renderAndCreate();
 
             act(() => {
-                window.dispatchEvent(new CustomEvent(WC_EVENT_OPEN_SCHEDULED_ABSENCE));
+                document.dispatchEvent(new CustomEvent(WC_EVENT_EDIT_SCHEDULED_ABSENCE));
             });
 
             expect(result.current.dialogState).toEqual({mode: 'create'});
