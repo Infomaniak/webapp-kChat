@@ -37,9 +37,19 @@ function isIkAutologError(err: ServerError) {
     return err.error?.code === 'not_authorized' && err.error.description === 'You are autologged but do not have the right to access this route';
 }
 
+function isOnMaintenanceErrorPage() {
+    const basename = window.basename || '';
+    const {pathname, search} = document.location;
+    const path = pathname.startsWith(basename) ? pathname.slice(basename.length) : pathname;
+    return path === '/error' && new URLSearchParams(search).get('type') === 'maintenance';
+}
+
 export function redirectToErrorPageIfNecessary(err: ServerError) {
     switch (err.status_code) {
     case statusCodes.HTTP_MAINTENANCE:
+        if (isOnMaintenanceErrorPage()) {
+            return;
+        }
         getHistory().replace('/error?type=maintenance');
         break;
     case statusCodes.HTTP_BLOCKED:
