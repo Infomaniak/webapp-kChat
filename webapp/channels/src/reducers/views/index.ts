@@ -20,7 +20,6 @@ import modals from './modals';
 import notice from './notice';
 import onboardingTasks from './onboarding_tasks';
 import posts from './posts';
-import productMenu from './product_menu';
 import rhs from './rhs';
 import rhsSuppressed from './rhs_suppressed';
 import search from './search';
@@ -54,7 +53,6 @@ export default combineReducers({
     addChannelCtaDropdown,
     onboardingTasks,
     threads,
-    productMenu,
     drafts,
     calls,
     theme,

@@ -22,7 +22,6 @@ import {
     setShowOnboardingVisitConsoleTour,
     switchToChannels,
 } from 'actions/views/onboarding_tasks';
-import {setProductMenuSwitcherOpen} from 'actions/views/product_menu';
 import {getOnboardingTaskPreferences} from 'selectors/onboarding';
 
 import Gears from 'components/common/svg_images_components/gears_svg';
@@ -222,7 +221,6 @@ export const useHandleOnBoardingTaskTrigger = () => {
             break;
         }
         case OnboardingTasksName.VISIT_SYSTEM_CONSOLE: {
-            dispatch(setProductMenuSwitcherOpen(true));
             dispatch(setShowOnboardingVisitConsoleTour(true));
             handleSaveData(taskName, TaskNameMapToSteps[taskName].STARTED, true);
             break;

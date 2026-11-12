@@ -215,7 +215,6 @@ export const KDriveActionTypes = keyMirror({
 export const ActionTypes = keyMirror({
     SET_INFOMANIAK_TOKEN: null,
 
-    SET_PRODUCT_SWITCHER_OPEN: null,
     RECEIVED_FOCUSED_POST: null,
     PERMALINK_LOAD_FAILED: null,
     SELECT_POST: null,
@@ -469,9 +468,7 @@ export const ModalIdentifiers = {
     NOTIFY_CONFIRM_MODAL: 'notify_confirm_modal',
     CONFIRM_LICENSE_REMOVAL: 'confirm_license_removal',
     CONFIRM: 'confirm',
-    USER_GROUPS: 'user_groups',
     USER_GROUPS_CREATE: 'user_groups_create',
-    VIEW_USER_GROUP: 'view_user_group',
     ADD_USERS_TO_GROUP: 'add_users_to_group',
     EDIT_GROUP_MODAL: 'edit_group_modal',
     POST_DELETED_MODAL: 'post_deleted_modal',
