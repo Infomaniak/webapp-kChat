@@ -53,6 +53,8 @@ const LeftControls = styled.div`
     flex: 1 1 auto;
     min-width: 0;
     overflow: hidden;
+    padding: 6px;
+    margin: -6px;
 `;
 
 const HiddenControlsContent = styled.div`
