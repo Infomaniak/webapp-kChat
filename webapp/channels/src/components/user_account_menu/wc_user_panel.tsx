@@ -37,8 +37,9 @@ export default function WcUserPanel() {
     const customStatus = useSelector((state: GlobalState) => getCustomStatus(state));
     const customStatusExpired = useSelector((state: GlobalState) => isCustomStatusExpired(state, customStatus));
     const customStatusEnabled = useSelector(isCustomStatusEnabled);
+    const displayCustomStatus = customStatusEnabled && customStatus?.emoji && !customStatusExpired ? customStatus : undefined;
     const infomaniakUserId = getInfomaniakUserId(currentUser);
-    useWcUserStatusSync(infomaniakUserId, status, scheduledAbsence);
+    useWcUserStatusSync(infomaniakUserId, status, scheduledAbsence, displayCustomStatus);
     useWcUserLogoutListener();
     const forwardingClickRef = useRef(false);
 
@@ -64,7 +65,6 @@ export default function WcUserPanel() {
 
     const avatarUrl = Client4.getProfilePictureUrl(currentUser.id, currentUser.last_picture_update);
     const displayName = getFullName(currentUser) || currentUser.username;
-    const displayCustomStatus = customStatusEnabled && customStatus?.emoji && !customStatusExpired ? customStatus : undefined;
     const customStatusProps = displayCustomStatus ? {
         'custom-status-text': displayCustomStatus.text,
         'custom-status-emoji': displayCustomStatus.emoji,

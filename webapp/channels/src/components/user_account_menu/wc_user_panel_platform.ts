@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {ScheduledAbsence, UserProfile} from '@mattermost/types/users';
+import type {ScheduledAbsence, UserCustomStatus, UserProfile} from '@mattermost/types/users';
 
 import {emitUserLoggedOutEvent} from 'actions/global_actions';
 
@@ -48,6 +48,7 @@ type WcUserStatusUpdateDetail = {
     id: number;
     presence: {status: string};
     scheduledAbsence: {start: number; end: number} | null;
+    customStatus: UserCustomStatus | undefined;
 };
 
 export function toWebComponentPresence(status?: string): string {
@@ -95,7 +96,7 @@ export function closeUserPanel() {
     }
 }
 
-export function dispatchWcUserStatusUpdate(infomaniakUserId: number, status: string | undefined, scheduledAbsence: ScheduledAbsence | undefined) {
+export function dispatchWcUserStatusUpdate(infomaniakUserId: number, status: string | undefined, scheduledAbsence: ScheduledAbsence | undefined, customStatus: UserCustomStatus | undefined) {
     const detail: WcUserStatusUpdateDetail = {
         id: infomaniakUserId,
         presence: {status: toWebComponentPresence(status)},
@@ -103,6 +104,7 @@ export function dispatchWcUserStatusUpdate(infomaniakUserId: number, status: str
             start: scheduledAbsence.start,
             end: scheduledAbsence.end,
         } : null,
+        customStatus,
     };
 
     window.dispatchEvent(new CustomEvent(WC_EVENT_USER_STATUS_UPDATE, {detail}));

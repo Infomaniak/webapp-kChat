@@ -3,7 +3,7 @@
 
 import {act, renderHook} from '@testing-library/react-hooks';
 
-import type {ScheduledAbsence} from '@mattermost/types/users';
+import type {ScheduledAbsence, UserCustomStatus} from '@mattermost/types/users';
 
 import {useWcUserLogoutListener, useWcUserStatusSync} from './wc_user_panel_hooks';
 import {
@@ -20,25 +20,26 @@ jest.mock('./wc_user_panel_platform', () => ({
 
 describe('components/user_account_menu/wc_user_panel_hooks', () => {
     describe('useWcUserStatusSync', () => {
-        type StatusSyncProps = {userId: number | null; userStatus: string | undefined; absence: ScheduledAbsence | undefined};
+        type StatusSyncProps = {userId: number | null; userStatus: string | undefined; absence: ScheduledAbsence | undefined; customStatus: UserCustomStatus | undefined};
 
         it('dispatches the status update once the web component is defined', async () => {
             const scheduledAbsence = {start: 1793400000000, end: 1793486000000} as ScheduledAbsence;
+            const customStatus = {emoji: 'palm_tree', text: 'vacation'} as UserCustomStatus;
             jest.spyOn(customElements, 'whenDefined').mockResolvedValue(HTMLElement);
 
             const {rerender} = renderHook<StatusSyncProps, void>(
-                ({userId, userStatus, absence}) => useWcUserStatusSync(userId, userStatus, absence),
-                {initialProps: {userId: null, userStatus: 'dnd', absence: undefined}},
+                ({userId, userStatus, absence, customStatus}) => useWcUserStatusSync(userId, userStatus, absence, customStatus),
+                {initialProps: {userId: null, userStatus: 'dnd', absence: undefined, customStatus: undefined}},
             );
 
             expect(dispatchWcUserStatusUpdate).not.toHaveBeenCalled();
 
             await act(async () => {
-                rerender({userId: 1728507, userStatus: 'dnd', absence: scheduledAbsence});
+                rerender({userId: 1728507, userStatus: 'dnd', absence: scheduledAbsence, customStatus});
                 await Promise.resolve();
             });
 
-            expect(dispatchWcUserStatusUpdate).toHaveBeenCalledWith(1728507, 'dnd', scheduledAbsence);
+            expect(dispatchWcUserStatusUpdate).toHaveBeenCalledWith(1728507, 'dnd', scheduledAbsence, customStatus);
         });
     });
 
