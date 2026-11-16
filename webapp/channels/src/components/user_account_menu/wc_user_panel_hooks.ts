@@ -3,7 +3,7 @@
 
 import {useEffect} from 'react';
 
-import type {ScheduledAbsence} from '@mattermost/types/users';
+import type {ScheduledAbsence, UserCustomStatus} from '@mattermost/types/users';
 
 import {
     WC_EVENT_USER_LOGOUT,
@@ -11,7 +11,7 @@ import {
     handleWcUserLogout,
 } from './wc_user_panel_platform';
 
-export function useWcUserStatusSync(infomaniakUserId: number | null, status: string | undefined, scheduledAbsence: ScheduledAbsence | undefined) {
+export function useWcUserStatusSync(infomaniakUserId: number | null, status: string | undefined, scheduledAbsence: ScheduledAbsence | undefined, customStatus: UserCustomStatus | undefined) {
     useEffect(() => {
         if (!infomaniakUserId) {
             return undefined;
@@ -20,14 +20,14 @@ export function useWcUserStatusSync(infomaniakUserId: number | null, status: str
         let isMounted = true;
         customElements.whenDefined('wc-user-panel').then(() => {
             if (isMounted) {
-                dispatchWcUserStatusUpdate(infomaniakUserId, status, scheduledAbsence);
+                dispatchWcUserStatusUpdate(infomaniakUserId, status, scheduledAbsence, customStatus);
             }
         });
 
         return () => {
             isMounted = false;
         };
-    }, [infomaniakUserId, status, scheduledAbsence]);
+    }, [infomaniakUserId, status, scheduledAbsence, customStatus]);
 }
 
 export function useWcUserLogoutListener() {

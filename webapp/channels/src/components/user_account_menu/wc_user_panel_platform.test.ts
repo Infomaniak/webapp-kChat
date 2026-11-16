@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {ScheduledAbsence, UserProfile} from '@mattermost/types/users';
+import type {ScheduledAbsence, UserProfile, UserCustomStatus} from '@mattermost/types/users';
 
 import {emitUserLoggedOutEvent} from 'actions/global_actions';
 
@@ -63,22 +63,25 @@ describe('components/user_account_menu/wc_user_panel_platform', () => {
 
         it('dispatches the status update with presence and absence detail', () => {
             const scheduledAbsence = {start: 1793404800000, end: 1793440800000} as ScheduledAbsence;
+            const customStatus = {emoji: 'palm_tree', text: 'vacation'} as UserCustomStatus;
 
-            dispatchWcUserStatusUpdate(1728507, UserStatuses.DND, scheduledAbsence);
+            dispatchWcUserStatusUpdate(1728507, UserStatuses.DND, scheduledAbsence, customStatus);
 
             expect(dispatchListener).toHaveBeenCalledTimes(1);
             const detail = dispatchListener.mock.calls[0][0].detail;
             expect(detail.id).toBe(1728507);
             expect(detail.presence.status).toBe('dnd');
             expect(detail.scheduledAbsence).toEqual({start: 1793404800000, end: 1793440800000});
+            expect(detail.customStatus).toBe(customStatus);
         });
 
         it('dispatches a null absence when none is set', () => {
-            dispatchWcUserStatusUpdate(1728507, UserStatuses.ONLINE, undefined);
+            dispatchWcUserStatusUpdate(1728507, UserStatuses.ONLINE, undefined, undefined);
 
             const detail = dispatchListener.mock.calls[0][0].detail;
             expect(detail.presence.status).toBe('online');
             expect(detail.scheduledAbsence).toBeNull();
+            expect(detail.customStatus).toBeUndefined();
         });
     });
 
